@@ -1,0 +1,3 @@
+dev-lang/python::gentoo
+dev-perl/Net-SSLeay::gentoo
+dev-libs/openssl::gentoo
