@@ -1,0 +1,32 @@
+#!/bin/sh
+
+#while true; do
+#	xsetroot -name "$( date +"%F %R" )"
+#	sleep 1m
+#done &
+#if command -v dbus-launch >/dev/null && test -z "${DBUS_SESSION_BUS_ADDRESS}"; then
+#       eval $(dbus-launch --sh-syntax --exit-with-session)
+#fi
+#dwmstatus 2>&1 >/dev/null &
+#echo "export XDG_RUNTIME_DIR=/run/user/1000" >> ~/.bashrc &
+#source ~/.bashrc &
+slstatus &
+#dsbar &
+#pipewire &
+#pipewire-pulse &
+#gentoo-pipewire-launcher &
+#picom --daemon
+xcompmgr &
+openrazer-daemon &
+pulseaudio --realtime &
+doas mount -a &
+doas chown -R stefan /home/stefan/hdd &
+/usr/bin/feh --bg-scale '/home/stefan/images/wallpaper.png' &
+xset -dpms &
+xset s off &
+doas ntpd &
+#doas pkill dbus &
+#doas pkill dbus-daemon &
+#doas rc-service dbus stop &
+exec dbus-launch --exit-with-session dwm
+#exec dwm
