@@ -1,1 +1,1 @@
-Basically just a backup on my configs.
+Just a backup on my configs.
