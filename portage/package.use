@@ -1,5 +1,10 @@
 #app-arch/libarchive -lz4
 #sys-apps/openrazer -client
+app-emulation/wine-vanilla -samba
+media-video/vlc -ssl -libnotify -xml -gcrypt
+www-client/librewolf eme-free
+net-irc/hexchat -dbus -gtk
+net-misc/youtube-viewer -gtk
 net-fs/cifs-utils creds
 media-libs/freetype -harfbuzz
 app-crypt/mit-krb5 -pkinit
@@ -10,6 +15,7 @@ sys-libs/zlib minizip
 media-video/ffmpeg encode
 media-libs/libvpx postproc
 net-libs/nodejs -ssl -system-ssl -npm
+www-client/torbrowser hardened
 # required by dev-lang/ruby-3.1.2-r1::libressl
 # required by virtual/ruby-ssl-12::gentoo[ruby_targets_ruby31]
 # required by dev-ruby/racc-1.6.0::gentoo
@@ -169,30 +175,56 @@ net-libs/nodejs -ssl -system-ssl -npm
 # required by virtual/wine-0-r10::gentoo
 # required by wine (argument)
 >=media-libs/libsdl2-2.24.0-r2 haptic
-# required by app-emulation/wine-vanilla-7.20::gentoo[samba]
-# required by virtual/wine-0-r10::gentoo
-# required by wine (argument)
->=net-fs/samba-4.16.6 winbind
-# required by dev-python/PyQtWebEngine-5.15.5::gentoo
-# required by sys-apps/polychromatic-0.7.3-r1::gentoo[python_single_target_python3_10]
-# required by sys-apps/polychromatic (argument)
->=dev-python/PyQt5-5.15.7 webchannel
-# required by dev-python/PyQtWebEngine-5.15.5::gentoo
-# required by sys-apps/polychromatic-0.7.3-r1::gentoo[python_single_target_python3_10]
-# required by sys-apps/polychromatic (argument)
->=dev-qt/qtwebengine-5.15.5_p20220618 widgets
-# required by dev-qt/qtwebengine-5.15.5_p20220618::gentoo
-# required by dev-python/PyQtWebEngine-5.15.5::gentoo
-# required by sys-apps/polychromatic-0.7.3-r1::gentoo[python_single_target_python3_10]
-# required by sys-apps/polychromatic (argument)
->=dev-qt/qtwebchannel-5.15.5 qml
-# required by dev-qt/qtwebengine-5.15.5_p20220618::gentoo
-# required by dev-python/PyQtWebEngine-5.15.5::gentoo
-# required by sys-apps/polychromatic-0.7.3-r1::gentoo[python_single_target_python3_10]
-# required by sys-apps/polychromatic (argument)
->=net-libs/nodejs-18.11.0 ssl
-# required by dev-python/PyQt5-5.15.7::gentoo[multimedia]
-# required by dev-python/PyQtWebEngine-5.15.5::gentoo
-# required by sys-apps/polychromatic-0.7.3-r1::gentoo[python_single_target_python3_10]
-# required by sys-apps/polychromatic (argument)
->=dev-qt/qtmultimedia-5.15.5-r1 widgets
+# required by www-client/librewolf-108.0.1_p1::librewolf[X,pgo]
+# required by librewolf (argument)
+>=x11-base/xorg-server-21.1.5 xvfb
+# required by x11-libs/gtk+-3.24.35::gentoo
+# required by sys-apps/openrazer-3.5.1::gentoo[-test,daemon]
+# required by @selected
+# required by @world (argument)
+#>=x11-libs/pango-1.50.12 introspection
+# required by x11-libs/pango-1.50.12::gentoo
+# required by x11-libs/gtk+-3.24.35::gentoo
+# required by sys-apps/openrazer-3.5.1::gentoo[-test,daemon]
+# required by @selected
+# required by @world (argument)
+#>=media-libs/harfbuzz-6.0.0 introspection
+# required by sys-apps/openrazer-3.5.1::gentoo[daemon,-test]
+# required by @selected
+# required by @world (argument)
+#>=x11-libs/gtk+-3.24.35 introspection
+# required by x11-libs/gtk+-3.24.35::gentoo
+# required by media-video/vlc-3.0.18::gentoo[libnotify]
+# required by @selected
+# required by @world (argument)
+#>=app-accessibility/at-spi2-core-2.46.0 introspection
+# required by x11-libs/gtk+-3.24.35::gentoo
+# required by media-video/vlc-3.0.18::gentoo[libnotify]
+# required by @selected
+# required by @world (argument)
+#>=x11-libs/gdk-pixbuf-2.42.10-r1 introspection
+# required by sys-apps/openrazer-3.5.1::gentoo[daemon,-test]
+# required by @selected
+# required by @world (argument)
+>=x11-libs/gtk+-3.24.35 introspection
+# required by x11-libs/gtk+-3.24.35::gentoo
+# required by net-im/discord-bin-0.0.22::gentoo
+# required by @selected
+# required by @world (argument)
+>=app-accessibility/at-spi2-core-2.46.0 introspection
+# required by x11-libs/gtk+-3.24.35::gentoo
+# required by net-im/discord-bin-0.0.22::gentoo
+# required by @selected
+# required by @world (argument)
+>=x11-libs/gdk-pixbuf-2.42.10-r1 introspection
+# required by x11-libs/gtk+-3.24.35::gentoo
+# required by net-im/discord-bin-0.0.22::gentoo
+# required by @selected
+# required by @world (argument)
+>=x11-libs/pango-1.50.12 introspection
+# required by x11-libs/pango-1.50.12::gentoo
+# required by x11-libs/gtk+-3.24.35::gentoo
+# required by net-im/discord-bin-0.0.22::gentoo
+# required by @selected
+# required by @world (argument)
+>=media-libs/harfbuzz-6.0.0 introspection

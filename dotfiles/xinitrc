@@ -17,14 +17,24 @@ slstatus &
 #gentoo-pipewire-launcher &
 #picom --daemon
 xcompmgr &
-openrazer-daemon &
-pulseaudio --realtime &
-doas mount -a &
-doas chown -R stefan /home/stefan/hdd &
-/usr/bin/feh --bg-scale '/home/stefan/images/wallpaper.png' &
+#openrazer-daemon &
+#pulseaudio --realtime &
+#doas chmod =666 /etc/hosts &
+#curl https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts > /etc/hosts &
+#doas mount -a &
+#doas chown -R stefan /home/stefan/hdd &
+/usr/bin/feh --bg-fill '/home/stefan/images/wallpapers/2.jpg' &
 xset -dpms &
 xset s off &
 doas ntpd &
+openrazer-daemon &
+pulseaudio --realtime &
+doas chmod =666 /etc/hosts &
+curl https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts > /etc/hosts &
+#doas chmod =644 /etc/hosts &
+doas mount -a &
+doas chown -R stefan /home/stefan/hdd &
+#doas chmod =644 /etc/hosts &
 #doas pkill dbus &
 #doas pkill dbus-daemon &
 #doas rc-service dbus stop &

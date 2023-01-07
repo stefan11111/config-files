@@ -18,5 +18,8 @@ fi
 # Put your fun stuff here.
 
 alias screenshot="maim /home/stefan/screenshots/temp.png"
-
+alias emergeall="doas emerge --deep --update --newuse --verbose --ask --keep-going --autounmask-write --with-bdeps=y"
+alias startx="startx && /home/stefan/.startup"
+alias kirc="cd /home/stefan/HDD1/irc && kirc -s irc.rizon.net -c subsplease -n hentai_god"
+#alias nano="nano -l"
 neofetch

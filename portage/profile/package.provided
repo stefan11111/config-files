@@ -1,1 +1,3 @@
-sys-kernel/gentoo-sources-6.0.7
+sys-kernel/gentoo-sources-6.1.2
+#virtual/awk-0
+#dev-libs/openssl-0
