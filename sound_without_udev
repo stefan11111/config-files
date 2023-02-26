@@ -1,0 +1,38 @@
+mkdir /dev/snd
+mknod -m 660 /dev/snd/controlC0 c 116 0
+mknod -m 660 /dev/snd/pcmC0D0p c 116 16
+mknod -m 660 /dev/snd/timer c 116 33
+mknod -m 660 /dev/snd/seq c 166 1
+mknod -m 660 /dev/snd/controlC2 c 116 64
+mknod -m 660 /dev/snd/controlC1 c 116 32
+mknod -m 660 /dev/snd/pcmC0D0c c 116 24
+mknod -m 660 /dev/snd/hwC1D0 c 116 36
+mknod -m 660 /dev/snd/hwC2D0 c 116 68
+mknod -m 660 /dev/snd/pcmC1D0c c 116 56
+mknod -m 660 /dev/snd/pcmC1D0p c 116 48
+mknod -m 660 /dev/snd/pcmC1D1p c 116 49
+mknod -m 660 /dev/snd/pcmC1D2c c 116 58
+mknod -m 660 /dev/snd/pcmC2D3p c 116 83
+chown root:audio /dev/snd/*
+chown root:audio /dev/snd
+modprobe snd_rawmidi
+modprobe snd_usbmidi_lib
+modprobe snd_hda_core
+modprobe snd_hda_codec
+modprobe snd_hda_codec_generic
+modprobe snd_hda_intel
+modprobe snd_hda_codec_realtek
+modprobe ledtrig_audio
+modprobe pcspkr
+modprobe snd_usb_audio
+modprobe snd_hwdep
+modprobe snd_intel_sdw_acpi
+modprobe snd_intel_dspcfg
+modprobe snd_usb_audio
+modprobe mc
+modprobe snd
+modprobe soundcore
+modprobe snd_seq_device
+modprobe snd_timer
+modprobe snd_pcm
+chmod -R a+rw /dev/snd

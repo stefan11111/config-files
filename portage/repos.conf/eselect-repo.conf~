@@ -1,0 +1,7 @@
+# created by eselect-repo
+
+
+[gentoo-static]
+location = /var/db/repos/gentoo-static
+sync-type = git
+sync-uri = https://github.com/NeddySeagoon/gentoo-static.git

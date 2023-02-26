@@ -1,0 +1,9 @@
+#sys-kernel/gentoo-sources-6.1.2
+#virtual/awk-0
+#dev-libs/openssl-0
+#sys-apps/dbus-1.8
+#app-accessibility/at-spi2-core-2.46.0
+net-libs/glib-networking-0.4.18
+x11-base/xorg-drivers-21.1-r2
+virtual/tmpfiles-0-r3
+sys-fs/udev-init-scripts-35

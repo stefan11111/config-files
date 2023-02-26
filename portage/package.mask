@@ -1,0 +1,14 @@
+# use libressl
+dev-libs/libevent::gentoo
+dev-lang/python::gentoo
+dev-lang/ruby::gentoo
+dev-lang/rust::gentoo
+dev-perl/Net-SSLeay::gentoo
+dev-libs/openssl::gentoo
+# go back to a static /dev
+sys-fs/eudev
+sys-fs/udev
+sys-auth/polkit
+sys-auth/consolekit
+media-sound/pulseaudio
+sys-apps/systemd

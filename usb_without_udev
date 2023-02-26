@@ -1,0 +1,6 @@
+mknod -m 600 /dev/sdc b 8 32
+mknod -m 600 /dev/sdc1 b 8 33
+chown root:root /dev/sdc
+chown root:root /dev/sdc1
+modprobe usb_storage
+modprobe uas

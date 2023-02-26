@@ -1,0 +1,8 @@
+acct-group/render
+acct-group/audio
+acct-group/disk
+acct-group/video
+acct-group/input
+acct-group/cdrom
+acct-group/dialout
+acct-group/tty
