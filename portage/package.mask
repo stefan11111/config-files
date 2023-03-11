@@ -8,7 +8,18 @@ dev-libs/openssl::gentoo
 # go back to a static /dev
 sys-fs/eudev
 sys-fs/udev
+virtual/udev
 sys-auth/polkit
 sys-auth/consolekit
+sys-auth/rtkit
 media-sound/pulseaudio
 sys-apps/systemd
+# purge systemd
+#sys-apps/openrc::gentoo
+sys-apps/systemd-utils
+# librewolf without dbus
+>=dev-libs/atk-2.46.0
+x11-libs/gtk+::gentoo
+# other bloat
+sys-libs/pam
+sys-auth/pambase

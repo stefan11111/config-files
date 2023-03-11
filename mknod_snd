@@ -12,6 +12,7 @@ mknod -m 777 /dev/snd/pcmC1D0c c 116 56
 mknod -m 777 /dev/snd/pcmC1D0p c 116 48
 mknod -m 777 /dev/snd/pcmC1D1p c 116 49
 mknod -m 777 /dev/snd/pcmC1D2c c 116 58
+mknod -m 777 /dev/snd/pcmC2D0p c 116 80
 mknod -m 777 /dev/snd/pcmC2D3p c 116 83
 chown root:audio /dev/snd/*
 chown root:audio /dev/snd

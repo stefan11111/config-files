@@ -1,0 +1,5888 @@
+diff --git a/atk-adaptor/accessible-stateset.c b/atk-adaptor/accessible-stateset.c
+index 7e9ddad..7bae6b6 100644
+--- a/atk-adaptor/accessible-stateset.c
++++ b/atk-adaptor/accessible-stateset.c
+@@ -177,7 +177,13 @@ spi_state_set_cache_from_sequence (GArray *seq)
+   
+   states = g_newa (AtkStateType, seq->len);
+   for (i = 0; i < seq->len; i++)
+-    states [i] = state_spi_to_atk (g_array_index (seq, dbus_int32_t, i));
++    states [i] = state_spi_to_atk (g_array_index (seq,
++#if defined(ENABLE_DBUS)
++                dbus_int32_t,
++#else
++                gint32,
++#endif // #if defined(ENABLE_DBUS)
++                i));
+ 
+   set = atk_state_set_new ();
+   atk_state_set_add_states (set, states, seq->len);
+@@ -187,7 +193,13 @@ spi_state_set_cache_from_sequence (GArray *seq)
+ }
+ 
+ void
+-spi_atk_state_to_dbus_array (AtkObject * object, dbus_uint32_t * array)
++spi_atk_state_to_dbus_array (AtkObject * object,
++#if defined(ENABLE_DBUS)
++        dbus_uint32_t * array
++#else
++        guint32 * array
++#endif // #if defined(ENABLE_DBUS)
++        )
+ {
+   AtkStateSet *set = atk_object_ref_state_set (object);
+   spi_atk_state_set_to_dbus_array (set, array);
+@@ -195,7 +207,13 @@ spi_atk_state_to_dbus_array (AtkObject * object, dbus_uint32_t * array)
+ }
+ 
+ void
+-spi_atk_state_set_to_dbus_array (AtkStateSet * set, dbus_uint32_t * array)
++spi_atk_state_set_to_dbus_array (AtkStateSet * set,
++#if defined(ENABLE_DBUS)
++        dbus_uint32_t * array
++#else
++        guint32 * array
++#endif // #if defined(ENABLE_DBUS)
++        )
+ {
+   int i;
+ 
+diff --git a/atk-adaptor/accessible-stateset.h b/atk-adaptor/accessible-stateset.h
+index 4896cb6..72eb613 100644
+--- a/atk-adaptor/accessible-stateset.h
++++ b/atk-adaptor/accessible-stateset.h
+@@ -32,8 +32,20 @@ G_BEGIN_DECLS
+ /* private - internal API to abstract away atk API */
+ AtkStateSet *spi_state_set_cache_from_sequence(GArray *seq);
+ AtkState     spi_atk_state_from_spi_state     (AtspiStateType state);
+-void spi_atk_state_to_dbus_array (AtkObject * object, dbus_uint32_t * array);
+-void spi_atk_state_set_to_dbus_array (AtkStateSet *set, dbus_uint32_t * array);
++void spi_atk_state_to_dbus_array (AtkObject * object,
++#if defined(ENABLE_DBUS)
++        dbus_uint32_t * array
++#else
++        guint32 * array
++#endif // #if defined(ENABLE_DBUS)
++        );
++void spi_atk_state_set_to_dbus_array (AtkStateSet *set,
++#if defined(ENABLE_DBUS)
++        dbus_uint32_t * array
++#else
++        guint32 * array
++#endif // #if defined(ENABLE_DBUS)
++        );
+ #define      spi_state_set_cache_ref(s)        g_object_ref (s)
+ #define      spi_state_set_cache_unref(s)      g_object_unref (s)
+ #define      spi_state_set_cache_new(seq)      spi_state_set_cache_from_sequence (seq)
+diff --git a/atk-adaptor/adaptors/accessible-adaptor.c b/atk-adaptor/adaptors/accessible-adaptor.c
+index baafda5..30dee5a 100644
+--- a/atk-adaptor/adaptors/accessible-adaptor.c
++++ b/atk-adaptor/adaptors/accessible-adaptor.c
+@@ -33,6 +33,7 @@
+ #include "introspection.h"
+ #include <string.h>
+ 
++#if defined(ENABLE_DBUS)
+ static dbus_bool_t
+ impl_get_Name (DBusMessageIter * iter, void *user_data)
+ {
+@@ -537,8 +538,10 @@ impl_get_AccessibleId (DBusMessageIter * iter, void *user_data)
+ 
+   return droute_return_v_string (iter, atk_object_get_accessible_id (object));
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ static DRouteMethod methods[] = {
++#if defined(ENABLE_DBUS)
+   {impl_GetChildAtIndex, "GetChildAtIndex"},
+   {impl_GetChildren, "GetChildren"},
+   {impl_GetIndexInParent, "GetIndexInParent"},
+@@ -551,9 +554,13 @@ static DRouteMethod methods[] = {
+   {impl_GetApplication, "GetApplication"},
+   {impl_GetInterfaces, "GetInterfaces"},
+   {NULL, NULL}
++#else
++  {NULL}
++#endif // #if defined(ENABLE_DBUS)
+ };
+ 
+ static DRouteProperty properties[] = {
++#if defined(ENABLE_DBUS)
+   {impl_get_Name, NULL, "Name"},
+   {impl_get_Description, NULL, "Description"},
+   {impl_get_Locale, NULL, "Locale"},
+@@ -562,6 +569,9 @@ static DRouteProperty properties[] = {
+   {impl_get_Attributes, NULL, "Attributes"},
+   {impl_get_AccessibleId, NULL, "AccessibleId"},
+   {NULL, NULL, NULL}
++#else
++  {NULL}
++#endif // #if defined(ENABLE_DBUS)
+ };
+ 
+ void
+diff --git a/atk-adaptor/adaptors/action-adaptor.c b/atk-adaptor/adaptors/action-adaptor.c
+index ab80590..8001da6 100644
+--- a/atk-adaptor/adaptors/action-adaptor.c
++++ b/atk-adaptor/adaptors/action-adaptor.c
+@@ -30,6 +30,7 @@
+ 
+ #include "introspection.h"
+ 
++#if defined(ENABLE_DBUS)
+ static dbus_bool_t
+ impl_get_NActions (DBusMessageIter * iter, void *user_data)
+ {
+@@ -222,8 +223,10 @@ impl_DoAction (DBusConnection * bus, DBusMessage * message, void *user_data)
+   atk_action_do_action (action, index);
+   return NULL;
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ DRouteMethod methods[] = {
++#if defined(ENABLE_DBUS)
+   {impl_get_description, "GetDescription"}
+   ,
+   {impl_get_name, "GetName"}
+@@ -237,11 +240,18 @@ DRouteMethod methods[] = {
+   {impl_DoAction, "DoAction"}
+   ,
+   {NULL, NULL}
++#else
++  {NULL}
++#endif // #if defined(ENABLE_DBUS)
+ };
+ 
+ static DRouteProperty properties[] = {
++#if defined(ENABLE_DBUS)
+   {impl_get_NActions, NULL, "NActions"},
+   {NULL, NULL}
++#else
++  {NULL}
++#endif // #if defined(ENABLE_DBUS)
+ };
+ 
+ void
+diff --git a/atk-adaptor/adaptors/application-adaptor.c b/atk-adaptor/adaptors/application-adaptor.c
+index ab9bb27..c6793c5 100644
+--- a/atk-adaptor/adaptors/application-adaptor.c
++++ b/atk-adaptor/adaptors/application-adaptor.c
+@@ -31,6 +31,7 @@
+ /* for spi_global_app_data  is there a better way? */
+ #include "../bridge.h"
+ 
++#if defined(ENABLE_DBUS)
+ static dbus_bool_t
+ impl_get_ToolkitName (DBusMessageIter * iter, void *user_data)
+ {
+@@ -108,21 +109,30 @@ if (reply)
+ 
+ return reply;
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ static DRouteMethod methods[] = {
++#if defined(ENABLE_DBUS)
+   {impl_registerToolkitEventListener, "registerToolkitEventListener"},
+   {impl_registerObjectEventListener, "registerObjectEventListener"},
+   {impl_GetLocale, "GetLocale"},
+   {impl_get_app_bus, "GetApplicationBusAddress"},
+   {NULL, NULL}
++#else
++  {NULL}
++#endif // #if defined(ENABLE_DBUS)
+ };
+ 
+ static DRouteProperty properties[] = {
++#if defined(ENABLE_DBUS)
+   {impl_get_ToolkitName, NULL, "ToolkitName"},
+   {impl_get_Version, NULL, "Version"},
+   {impl_get_AtspiVersion, NULL, "AtspiVersion"},
+   {impl_get_Id, impl_set_Id, "Id"},
+   {NULL, NULL, NULL}
++#else
++  {NULL}
++#endif // #if defined(ENABLE_DBUS)
+ };
+ 
+ /*static long
+diff --git a/atk-adaptor/adaptors/cache-adaptor.c b/atk-adaptor/adaptors/cache-adaptor.c
+index 2f86d09..736de76 100644
+--- a/atk-adaptor/adaptors/cache-adaptor.c
++++ b/atk-adaptor/adaptors/cache-adaptor.c
+@@ -62,6 +62,7 @@
+ 
+ /*---------------------------------------------------------------------------*/
+ 
++#if defined(ENABLE_DBUS)
+ static const char *
+ get_toolkit_name (AtkObject *obj)
+ {
+@@ -252,12 +253,14 @@ add_to_list_hf (gpointer key, gpointer obj_data, gpointer data)
+   GSList **listptr = data;
+   *listptr = g_slist_prepend (*listptr, key);
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ /*---------------------------------------------------------------------------*/
+ 
+ static void
+ emit_cache_remove (SpiCache *cache, GObject * obj)
+ {
++#if defined(ENABLE_DBUS)
+   DBusMessage *message;
+ 
+   if ((message = dbus_message_new_signal (SPI_CACHE_OBJECT_PATH,
+@@ -274,11 +277,13 @@ emit_cache_remove (SpiCache *cache, GObject * obj)
+ 
+       dbus_message_unref (message);
+     }
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ static void
+ emit_cache_add (SpiCache *cache, GObject * obj)
+ {
++#if defined(ENABLE_DBUS)
+   AtkObject *accessible = ATK_OBJECT (obj);
+   DBusMessage *message;
+ 
+@@ -297,11 +302,13 @@ emit_cache_add (SpiCache *cache, GObject * obj)
+ 
+       dbus_message_unref (message);
+     }
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ 
+ /*---------------------------------------------------------------------------*/
+ 
++#if defined(ENABLE_DBUS)
+ static DBusMessage *
+ impl_GetRoot (DBusConnection * bus, DBusMessage * message, void *user_data)
+ {
+@@ -332,13 +339,18 @@ impl_GetItems (DBusConnection * bus, DBusMessage * message, void *user_data)
+   dbus_message_iter_close_container (&iter, &iter_array);
+   return reply;
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ /*---------------------------------------------------------------------------*/
+ 
+ static DRouteMethod methods[] = {
++#if defined(ENABLE_DBUS)
+   {impl_GetRoot, "GetRoot"},
+   {impl_GetItems, "GetItems"},
+   {NULL, NULL}
++#else
++  {NULL}
++#endif // #if defined(ENABLE_DBUS)
+ };
+ 
+ void
+diff --git a/atk-adaptor/adaptors/collection-adaptor.c b/atk-adaptor/adaptors/collection-adaptor.c
+index f53acb3..88a0116 100644
+--- a/atk-adaptor/adaptors/collection-adaptor.c
++++ b/atk-adaptor/adaptors/collection-adaptor.c
+@@ -50,6 +50,7 @@ struct _MatchRulePrivate
+   gboolean invert;
+ };
+ 
++#if defined(ENABLE_DBUS)
+ static gboolean
+ child_interface_p (AtkObject * child, gchar * repo_id)
+ {
+@@ -822,7 +823,8 @@ static int
+ inorder (AtkObject * collection, MatchRulePrivate * mrp,
+          GList * ls, gint kount, gint max,
+          AtkObject * obj,
+-         gboolean flag, AtkObject * pobj, dbus_bool_t traverse)
++         gboolean flag, AtkObject * pobj,
++         dbus_bool_t traverse)
+ {
+   int i = 0;
+ 
+@@ -1155,6 +1157,7 @@ append_accessible_properties (DBusMessageIter *iter, AtkObject *obj,
+     }
+   }
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ #if 0
+ static void
+@@ -1247,6 +1250,7 @@ walkm (DBusMessage *message)
+ }
+ #endif
+ 
++#if defined(ENABLE_DBUS)
+ static DBusMessage *
+ impl_GetTree (DBusConnection * bus,
+               DBusMessage * message, void *user_data)
+@@ -1333,13 +1337,18 @@ impl_GetMatches (DBusConnection * bus, DBusMessage * message, void *user_data)
+   free_mrp_data (&rule);
+   return return_and_free_list (message, ls);
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ static DRouteMethod methods[] = {
++#if defined(ENABLE_DBUS)
+   {impl_GetMatchesFrom, "GetMatchesFrom"},
+   {impl_GetMatchesTo, "GetMatchesTo"},
+   {impl_GetTree, "GetTree"},
+   {impl_GetMatches, "GetMatches"},
+   {NULL, NULL}
++#else
++  {NULL}
++#endif // #if defined(ENABLE_DBUS)
+ };
+ 
+ void
+diff --git a/atk-adaptor/adaptors/component-adaptor.c b/atk-adaptor/adaptors/component-adaptor.c
+index 78d06aa..bd917dc 100644
+--- a/atk-adaptor/adaptors/component-adaptor.c
++++ b/atk-adaptor/adaptors/component-adaptor.c
+@@ -32,6 +32,7 @@
+ #include "object.h"
+ #include "introspection.h"
+ 
++#if defined(ENABLE_DBUS)
+ static DBusMessage *
+ impl_Contains (DBusConnection * bus, DBusMessage * message, void *user_data)
+ {
+@@ -480,8 +481,10 @@ impl_ScrollToPoint (DBusConnection * bus,
+     }
+   return reply;
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ static DRouteMethod methods[] = {
++#if defined(ENABLE_DBUS)
+   {impl_Contains, "Contains"},
+   {impl_GetAccessibleAtPoint, "GetAccessibleAtPoint"},
+   {impl_GetExtents, "GetExtents"},
+@@ -499,11 +502,18 @@ static DRouteMethod methods[] = {
+   {impl_ScrollTo, "ScrollTo"},
+   {impl_ScrollToPoint, "ScrollToPoint"},
+   {NULL, NULL}
++#else
++  {NULL}
++#endif // #if defined(ENABLE_DBUS)
+ };
+ 
+ static DRouteProperty properties[] = {
++#if defined(ENABLE_DBUS)
+   {impl_get_ScreenExtents, NULL, "ScreenExtents"},
+   {NULL, NULL, NULL}
++#else
++  {NULL}
++#endif // #if defined(ENABLE_DBUS)
+ };
+ void
+ spi_initialize_component (DRoutePath * path)
+diff --git a/atk-adaptor/adaptors/document-adaptor.c b/atk-adaptor/adaptors/document-adaptor.c
+index 471ab46..d23f978 100644
+--- a/atk-adaptor/adaptors/document-adaptor.c
++++ b/atk-adaptor/adaptors/document-adaptor.c
+@@ -31,6 +31,7 @@
+ #include "object.h"
+ #include "introspection.h"
+ 
++#if defined(ENABLE_DBUS)
+ static dbus_bool_t
+ impl_get_CurrentPageNumber (DBusMessageIter * iter, void *user_data)
+ {
+@@ -121,18 +122,27 @@ impl_GetAttributes (DBusConnection * bus, DBusMessage * message,
+     atk_attribute_set_free (attributes);
+   return reply;
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ static DRouteMethod methods[] = {
++#if defined(ENABLE_DBUS)
+   {impl_GetLocale, "GetLocale"},
+   {impl_GetAttributeValue, "GetAttributeValue"},
+   {impl_GetAttributes, "GetAttributes"},
+   {NULL, NULL}
++#else
++  {NULL}
++#endif // #if defined(ENABLE_DBUS)
+ };
+ 
+ static DRouteProperty properties[] = {
++#if defined(ENABLE_DBUS)
+   {impl_get_CurrentPageNumber, NULL, "CurrentPageNumber"},
+   {impl_get_PageCount, NULL, "PageCount"},
+   {NULL, NULL, NULL}
++#else
++  {NULL}
++#endif // #if defined(ENABLE_DBUS)
+ };
+ 
+ void
+diff --git a/atk-adaptor/adaptors/editabletext-adaptor.c b/atk-adaptor/adaptors/editabletext-adaptor.c
+index b82fdec..3dd33c7 100644
+--- a/atk-adaptor/adaptors/editabletext-adaptor.c
++++ b/atk-adaptor/adaptors/editabletext-adaptor.c
+@@ -29,6 +29,7 @@
+ 
+ #include "spi-dbus.h"
+ 
++#if defined(ENABLE_DBUS)
+ static DBusMessage *
+ impl_SetTextContents (DBusConnection * bus, DBusMessage * message,
+                       void *user_data)
+@@ -188,8 +189,10 @@ impl_PasteText (DBusConnection * bus, DBusMessage * message, void *user_data)
+     }
+   return reply;
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ static DRouteMethod methods[] = {
++#if defined(ENABLE_DBUS)
+   {impl_SetTextContents, "SetTextContents"},
+   {impl_InsertText, "InsertText"},
+   {impl_CopyText, "CopyText"},
+@@ -197,6 +200,9 @@ static DRouteMethod methods[] = {
+   {impl_DeleteText, "DeleteText"},
+   {impl_PasteText, "PasteText"},
+   {NULL, NULL}
++#else
++  {NULL}
++#endif // #if defined(ENABLE_DBUS)
+ };
+ 
+ void
+diff --git a/atk-adaptor/adaptors/hyperlink-adaptor.c b/atk-adaptor/adaptors/hyperlink-adaptor.c
+index 4cd6ebf..6b3076c 100644
+--- a/atk-adaptor/adaptors/hyperlink-adaptor.c
++++ b/atk-adaptor/adaptors/hyperlink-adaptor.c
+@@ -40,6 +40,7 @@ get_hyperlink (void *user_data)
+   return NULL;
+ }
+ 
++#if defined(ENABLE_DBUS)
+ static dbus_bool_t
+ impl_get_NAnchors (DBusMessageIter * iter, void *user_data)
+ {
+@@ -131,19 +132,32 @@ impl_IsValid (DBusConnection * bus, DBusMessage * message, void *user_data)
+     }
+   return reply;
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ static DRouteMethod methods[] = {
++#if defined(ENABLE_DBUS)
+   {impl_GetObject, "GetObject"},
+   {impl_GetURI, "GetURI"},
+   {impl_IsValid, "IsValid"},
+-  {NULL, NULL}
++#endif // #if defined(ENABLE_DBUS)
++  {
++#if defined(ENABLE_DBUS)
++    NULL,
++#endif // #if defined(ENABLE_DBUS)
++    NULL}
+ };
+ 
+ static DRouteProperty properties[] = {
++#if defined(ENABLE_DBUS)
+   {impl_get_NAnchors, NULL, "NAnchors"},
+   {impl_get_StartIndex, NULL, "StartIndex"},
+   {impl_get_EndIndex, NULL, "EndIndex"},
+-  {NULL, NULL, NULL}
++#endif // #if defined(ENABLE_DBUS)
++  {
++#if defined(ENABLE_DBUS)
++    NULL, NULL,
++#endif // #if defined(ENABLE_DBUS)
++    NULL}
+ };
+ 
+ void
+diff --git a/atk-adaptor/adaptors/hypertext-adaptor.c b/atk-adaptor/adaptors/hypertext-adaptor.c
+index c15b0d2..7c1eff5 100644
+--- a/atk-adaptor/adaptors/hypertext-adaptor.c
++++ b/atk-adaptor/adaptors/hypertext-adaptor.c
+@@ -31,6 +31,7 @@
+ 
+ #include "introspection.h"
+ 
++#if defined(ENABLE_DBUS)
+ static DBusMessage *
+ impl_GetNLinks (DBusConnection * bus, DBusMessage * message, void *user_data)
+ {
+@@ -96,12 +97,17 @@ impl_GetLinkIndex (DBusConnection * bus, DBusMessage * message,
+     }
+   return reply;
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ static DRouteMethod methods[] = {
++#if defined(ENABLE_DBUS)
+   {impl_GetNLinks, "GetNLinks"},
+   {impl_GetLink, "GetLink"},
+   {impl_GetLinkIndex, "GetLinkIndex"},
+   {NULL, NULL}
++#else
++  {NULL}
++#endif // #if defined(ENABLE_DBUS)
+ };
+ 
+ void
+diff --git a/atk-adaptor/adaptors/image-adaptor.c b/atk-adaptor/adaptors/image-adaptor.c
+index e47f4cf..420b864 100644
+--- a/atk-adaptor/adaptors/image-adaptor.c
++++ b/atk-adaptor/adaptors/image-adaptor.c
+@@ -30,6 +30,7 @@
+ #include "object.h"
+ #include "introspection.h"
+ 
++#if defined(ENABLE_DBUS)
+ static dbus_bool_t
+ impl_get_ImageDescription (DBusMessageIter * iter, void *user_data)
+ {
+@@ -118,18 +119,27 @@ impl_GetImageSize (DBusConnection * bus, DBusMessage * message,
+     }
+   return reply;
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ static DRouteMethod methods[] = {
++#if defined(ENABLE_DBUS)
+   {impl_GetImageExtents, "GetImageExtents"},
+   {impl_GetImagePosition, "GetImagePosition"},
+   {impl_GetImageSize, "GetImageSize"},
+   {NULL, NULL}
++#else
++  {NULL}
++#endif // #if defined(ENABLE_DBUS)
+ };
+ 
+ static DRouteProperty properties[] = {
++#if defined(ENABLE_DBUS)
+   {impl_get_ImageDescription, NULL, "ImageDescription"},
+   {impl_get_ImageLocale, NULL, "ImageLocale"},
+   {NULL, NULL, NULL}
++#else
++  {NULL}
++#endif // #if defined(ENABLE_DBUS)
+ };
+ 
+ void
+diff --git a/atk-adaptor/adaptors/selection-adaptor.c b/atk-adaptor/adaptors/selection-adaptor.c
+index 5dbb445..f38443e 100644
+--- a/atk-adaptor/adaptors/selection-adaptor.c
++++ b/atk-adaptor/adaptors/selection-adaptor.c
+@@ -30,6 +30,7 @@
+ #include "object.h"
+ #include "introspection.h"
+ 
++#if defined(ENABLE_DBUS)
+ static dbus_bool_t
+ impl_get_NSelectedChildren (DBusMessageIter * iter, void *user_data)
+ {
+@@ -230,8 +231,10 @@ impl_DeselectChild (DBusConnection * bus, DBusMessage * message,
+     }
+   return reply;
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ static DRouteMethod methods[] = {
++#if defined(ENABLE_DBUS)
+   {impl_GetSelectedChild, "GetSelectedChild"},
+   {impl_SelectChild, "SelectChild"},
+   {impl_DeselectSelectedChild, "DeselectSelectedChild"},
+@@ -240,11 +243,18 @@ static DRouteMethod methods[] = {
+   {impl_ClearSelection, "ClearSelection"},
+   {impl_DeselectChild, "DeselectChild"},
+   {NULL, NULL}
++#else
++  {NULL}
++#endif // #if defined(ENABLE_DBUS)
+ };
+ 
+ static DRouteProperty properties[] = {
++#if defined(ENABLE_DBUS)
+   {impl_get_NSelectedChildren, NULL, "NSelectedChildren"},
+   {NULL, NULL, NULL}
++#else
++  {NULL}
++#endif // #if defined(ENABLE_DBUS)
+ };
+ 
+ void
+diff --git a/atk-adaptor/adaptors/socket-adaptor.c b/atk-adaptor/adaptors/socket-adaptor.c
+index 57fe3f7..1eb06e9 100644
+--- a/atk-adaptor/adaptors/socket-adaptor.c
++++ b/atk-adaptor/adaptors/socket-adaptor.c
+@@ -31,6 +31,7 @@
+ #include "introspection.h"
+ #include "bridge.h"
+ 
++#if defined(ENABLE_DBUS)
+ static DBusMessage *
+ new_socket_call_message (AtkComponent *component, const char *member)
+ {
+@@ -214,10 +215,15 @@ impl_Embedded (DBusConnection *bus,
+ 
+   return dbus_message_new_method_return (message);
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ static DRouteMethod methods[] = {
++#if defined(ENABLE_DBUS)
+   {impl_Embedded, "Embedded"},
+   {NULL, NULL}
++#else
++  {NULL}
++#endif // #if defined(ENABLE_DBUS)
+ };
+ 
+ void
+diff --git a/atk-adaptor/adaptors/table-adaptor.c b/atk-adaptor/adaptors/table-adaptor.c
+index 483788d..75321d2 100644
+--- a/atk-adaptor/adaptors/table-adaptor.c
++++ b/atk-adaptor/adaptors/table-adaptor.c
+@@ -31,6 +31,7 @@
+ #include "object.h"
+ #include "introspection.h"
+ 
++#if defined(ENABLE_DBUS)
+ static dbus_bool_t
+ impl_get_NRows (DBusMessageIter * iter, void *user_data)
+ {
+@@ -631,8 +632,10 @@ impl_GetRowColumnExtentsAtIndex (DBusConnection * bus, DBusMessage * message,
+     }
+   return reply;
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ static DRouteMethod methods[] = {
++#if defined(ENABLE_DBUS)
+   {impl_GetAccessibleAt, "GetAccessibleAt"},
+   {impl_GetIndexAt, "GetIndexAt"},
+   {impl_GetRowAtIndex, "GetRowAtIndex"},
+@@ -654,9 +657,13 @@ static DRouteMethod methods[] = {
+   {impl_RemoveColumnSelection, "RemoveColumnSelection"},
+   {impl_GetRowColumnExtentsAtIndex, "GetRowColumnExtentsAtIndex"},
+   {NULL, NULL}
++#else
++  {NULL}
++#endif // #if defined(ENABLE_DBUS)
+ };
+ 
+ static DRouteProperty properties[] = {
++#if defined(ENABLE_DBUS)
+   {impl_get_NRows, NULL, "NRows"},
+   {impl_get_NColumns, NULL, "NColumns"},
+   {impl_get_Caption, NULL, "Caption"},
+@@ -664,6 +671,9 @@ static DRouteProperty properties[] = {
+   {impl_get_NSelectedRows, NULL, "NSelectedRows"},
+   {impl_get_NSelectedColumns, NULL, "NSelectedColumns"},
+   {NULL, NULL, NULL}
++#else
++  {NULL}
++#endif // #if defined(ENABLE_DBUS)
+ };
+ 
+ void
+diff --git a/atk-adaptor/adaptors/table-cell-adaptor.c b/atk-adaptor/adaptors/table-cell-adaptor.c
+index 6f2cbf5..c6ac789 100644
+--- a/atk-adaptor/adaptors/table-cell-adaptor.c
++++ b/atk-adaptor/adaptors/table-cell-adaptor.c
+@@ -29,6 +29,7 @@
+ #include "object.h"
+ #include "introspection.h"
+ 
++#if defined(ENABLE_DBUS)
+ static dbus_bool_t
+ impl_get_ColumnSpan (DBusMessageIter * iter, void *user_data)
+ {
+@@ -165,20 +166,29 @@ impl_GetRowColumnSpan (DBusConnection * bus, DBusMessage * message,
+     }
+   return reply;
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ static DRouteMethod methods[] = {
++#if defined(ENABLE_DBUS)
+   {impl_GetRowHeaderCells, "GetRowHeaderCells"},
+   {impl_GetColumnHeaderCells, "GetColumnHeaderCells"},
+   {impl_GetRowColumnSpan, "GetRowColumnSpan"},
+   {NULL, NULL}
++#else
++  {NULL}
++#endif // #if defined(ENABLE_DBUS)
+ };
+ 
+ static DRouteProperty properties[] = {
++#if defined(ENABLE_DBUS)
+   {impl_get_ColumnSpan, NULL, "ColumnSpan"},
+   {impl_get_Position, NULL, "Position"},
+   {impl_get_RowSpan, NULL, "RowSpan"},
+   {impl_get_Table, NULL, "Table"},
+   {NULL, NULL, NULL}
++#else
++  {NULL}
++#endif // #if defined(ENABLE_DBUS)
+ };
+ 
+ void
+diff --git a/atk-adaptor/adaptors/text-adaptor.c b/atk-adaptor/adaptors/text-adaptor.c
+index 74d8a46..8237a00 100644
+--- a/atk-adaptor/adaptors/text-adaptor.c
++++ b/atk-adaptor/adaptors/text-adaptor.c
+@@ -33,6 +33,7 @@
+ #include "object.h"
+ #include "introspection.h"
+ 
++#if defined(ENABLE_DBUS)
+ static dbus_bool_t
+ impl_get_CharacterCount (DBusMessageIter * iter, void *user_data)
+ {
+@@ -914,8 +915,10 @@ impl_ScrollSubstringToPoint (DBusConnection * bus,
+     }
+   return reply;
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ static DRouteMethod methods[] = {
++#if defined(ENABLE_DBUS)
+   {impl_GetText, "GetText"},
+   {impl_SetCaretOffset, "SetCaretOffset"},
+   {impl_GetTextBeforeOffset, "GetTextBeforeOffset"},
+@@ -940,12 +943,19 @@ static DRouteMethod methods[] = {
+   {impl_ScrollSubstringTo, "ScrollSubstringTo"},
+   {impl_ScrollSubstringToPoint, "ScrollSubstringToPoint"},
+   {NULL, NULL}
++#else
++  {NULL}
++#endif // #if defined(ENABLE_DBUS)
+ };
+ 
+ static DRouteProperty properties[] = {
++#if defined(ENABLE_DBUS)
+   {impl_get_CharacterCount, NULL, "CharacterCount"},
+   {impl_get_CaretOffset, NULL, "CaretOffset"},
+   {NULL, NULL, NULL}
++#else
++  {NULL}
++#endif // #if defined(ENABLE_DBUS)
+ };
+ 
+ void
+diff --git a/atk-adaptor/adaptors/value-adaptor.c b/atk-adaptor/adaptors/value-adaptor.c
+index d84d1b8..21ce557 100644
+--- a/atk-adaptor/adaptors/value-adaptor.c
++++ b/atk-adaptor/adaptors/value-adaptor.c
+@@ -32,6 +32,7 @@
+ #include "spi-dbus.h"
+ #include "introspection.h"
+ 
++#if defined(ENABLE_DBUS)
+ static dbus_bool_t
+ impl_get_MinimumValue (DBusMessageIter * iter, void *user_data)
+ {
+@@ -249,19 +250,28 @@ impl_get_Text (DBusMessageIter * iter, void *user_data)
+ 
+   return droute_return_v_string (iter, "");
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ static DRouteMethod methods[] = {
++#if defined(ENABLE_DBUS)
+   {impl_SetCurrentValue, "SetCurrentValue"},
+   {NULL, NULL}
++#else
++  {NULL}
++#endif // #if defined(ENABLE_DBUS)
+ };
+ 
+ static DRouteProperty properties[] = {
++#if defined(ENABLE_DBUS)
+   {impl_get_MinimumValue, NULL, "MinimumValue"},
+   {impl_get_MaximumValue, NULL, "MaximumValue"},
+   {impl_get_MinimumIncrement, NULL, "MinimumIncrement"},
+   {impl_get_CurrentValue, impl_set_CurrentValue, "CurrentValue"},
+   {impl_get_Text, NULL, "Text"},
+   {NULL, NULL, NULL}
++#else
++  {NULL}
++#endif // #if defined(ENABLE_DBUS)
+ };
+ 
+ void
+diff --git a/atk-adaptor/bitarray.h b/atk-adaptor/bitarray.h
+index 6f66cc8..5cf62a0 100644
+--- a/atk-adaptor/bitarray.h
++++ b/atk-adaptor/bitarray.h
+@@ -23,7 +23,9 @@
+ #ifndef _BITARRAY_H
+ #define _BITARRAY_H
+ 
++#if defined(ENABLE_DBUS)
+ #include "dbus/dbus.h"
++#endif // #if defined(ENABLE_DBUS)
+ #include "glib.h"
+ 
+ #define BITARRAY_SEQ_TERM 0xffffffff
+diff --git a/atk-adaptor/bridge.c b/atk-adaptor/bridge.c
+index d0cd773..aca8ea6 100644
+--- a/atk-adaptor/bridge.c
++++ b/atk-adaptor/bridge.c
+@@ -51,11 +51,14 @@
+ 
+ /*---------------------------------------------------------------------------*/
+ 
++#if defined(ENABLE_DBUS)
+ static DBusHandlerResult
+ signal_filter (DBusConnection *bus, DBusMessage *message, void *user_data);
++#endif // #if defined(ENABLE_DBUS)
+ 
+ SpiBridge *spi_global_app_data = NULL;
+ 
++#if defined(ENABLE_DBUS)
+ static gboolean inited = FALSE;
+ static gboolean atexit_added = FALSE;
+ 
+@@ -99,6 +102,7 @@ tally_event_reply ()
+     spi_global_app_data->events_initialized = TRUE;
+   }
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ GType
+ _atk_bridge_type_from_iface (const char *iface)
+@@ -128,6 +132,7 @@ _atk_bridge_type_from_iface (const char *iface)
+   return 0;
+ }
+ 
++#if defined(ENABLE_DBUS)
+ DRoutePropertyFunction
+ _atk_bridge_find_property_func (const char *property, GType *type)
+ {
+@@ -402,25 +407,32 @@ register_reply (DBusPendingCall *pending, void *user_data)
+   if (!spi_global_app_data->events_initialized)
+     get_registered_event_listeners (spi_global_app_data);
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ static gboolean
+ register_application (gpointer data)
+ {
++#if defined(ENABLE_DBUS)
+   SpiBridge * app = data;
++#if defined(ENABLE_DBUS)
+   DBusMessage *message;
+   DBusMessageIter iter;
+   DBusPendingCall *pending;
++#endif // #if defined(ENABLE_DBUS)
+ 
+   spi_global_app_data->registration_pending = 0;
+ 
++#if defined(ENABLE_DBUS)
+   message = dbus_message_new_method_call (SPI_DBUS_NAME_REGISTRY,
+                                           ATSPI_DBUS_PATH_ROOT,
+                                           ATSPI_DBUS_INTERFACE_SOCKET,
+                                           "Embed");
+ 
+   dbus_message_iter_init_append (message, &iter);
++#endif // #if defined(ENABLE_DBUS)
+   spi_object_append_reference (&iter, app->root);
+   
++#if defined(ENABLE_DBUS)
+     if (!dbus_connection_send_with_reply (app->bus, message, &pending, -1)
+         || !pending)
+     {
+@@ -435,8 +447,12 @@ register_application (gpointer data)
+ 
+   if (message)
+     dbus_message_unref (message);
++#endif // #if defined(ENABLE_DBUS)
+ 
+   return FALSE;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ void
+@@ -466,6 +482,7 @@ _atk_bridge_remove_pending_application_registration (SpiBridge *app)
+ 
+ /*---------------------------------------------------------------------------*/
+ 
++#if defined(ENABLE_DBUS)
+ static void
+ remove_socket ()
+ {
+@@ -519,11 +536,13 @@ deregister_application (SpiBridge * app)
+   g_free (app->desktop_path);
+   app->desktop_path = NULL;
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ /*---------------------------------------------------------------------------*/
+ 
+ /*---------------------------------------------------------------------------*/
+ 
++#if defined(ENABLE_DBUS)
+ static AtkPlugClass *plug_class;
+ static AtkSocketClass *socket_class;
+ 
+@@ -539,10 +558,12 @@ get_plug_id (AtkPlug * plug)
+   g_free (path);
+   return g_string_free (str, FALSE);
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ AtkStateSet *
+ socket_ref_state_set (AtkObject *accessible)
+ {
++#if defined(ENABLE_DBUS)
+   char *child_name, *child_path;
+   AtkSocket *socket = ATK_SOCKET (accessible);
+   int count = 0;
+@@ -597,8 +618,12 @@ socket_ref_state_set (AtkObject *accessible)
+   while (dbus_message_iter_next (&iter_array));
+   dbus_message_unref (reply);
+   return set;
++#else
++  return atk_state_set_new ();
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
++#if defined(ENABLE_DBUS)
+ static void
+ socket_embed_hook (AtkSocket * socket, const gchar * plug_id)
+ {
+@@ -702,9 +727,11 @@ new_connection_cb (DBusServer *server, DBusConnection *con, void *data)
+ 
+   spi_global_app_data->direct_connections = g_list_append (spi_global_app_data->direct_connections, con);
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ 
+ gchar *atspi_dbus_name = NULL;
++#if defined(ENABLE_DBUS)
+ static gboolean atspi_no_register = FALSE;
+ 
+ static GOptionEntry atspi_option_entries[] = {
+@@ -830,7 +857,9 @@ remove_events (const char *bus_name, const char *event)
+ 
+   g_strfreev (remove_data);
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
++#if defined(ENABLE_DBUS)
+ static void
+ handle_event_listener_deregistered (DBusConnection *bus, DBusMessage *message,
+                                     void *user_data)
+@@ -923,10 +952,12 @@ signal_filter (DBusConnection *bus, DBusMessage *message, void *user_data)
+ 
+   return result;
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ int
+ spi_atk_create_socket (SpiBridge *app)
+ {
++#if defined(ENABLE_DBUS)
+ #ifndef DISABLE_P2P
+   DBusServer *server;
+   DBusError error;
+@@ -980,6 +1011,7 @@ spi_atk_create_socket (SpiBridge *app)
+ 
+   app->server = server;
+ #endif
++#endif // #if defined(ENABLE_DBUS)
+ 
+   return 0;
+ }
+@@ -992,6 +1024,7 @@ spi_atk_create_socket (SpiBridge *app)
+  * Returns TRUE if there isn't anything on the environment preventing
+  * you to load the bridge, FALSE otherwise
+  */
++#if defined(ENABLE_DBUS)
+ static gboolean
+ check_envvar (void)
+ {
+@@ -1004,16 +1037,20 @@ check_envvar (void)
+   else
+     return TRUE;
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ void
+ spi_atk_activate ()
+ {
++#if defined(ENABLE_DBUS)
+   DRoutePath *treepath;
++#endif // #if defined(ENABLE_DBUS)
+ 
+   spi_atk_register_event_listeners ();
+   if (!spi_global_cache)
+     {
+       spi_global_cache    = g_object_new (SPI_CACHE_TYPE, NULL);
++#if defined(ENABLE_DBUS)
+       treepath = droute_add_one (spi_global_app_data->droute,
+                                  "/org/a11y/atspi/cache", spi_global_cache);
+ 
+@@ -1025,9 +1062,11 @@ spi_atk_activate ()
+       spi_initialize_cache (treepath);
+       if (spi_global_app_data->bus)
+         droute_path_register (treepath, spi_global_app_data->bus);
++#endif // #if defined(ENABLE_DBUS)
+     }
+ }
+ 
++#if defined(ENABLE_DBUS)
+ static gboolean
+ spi_object_has_dbus_interface (void *obj, const char *interface)
+ {
+@@ -1066,6 +1105,7 @@ spi_object_has_dbus_interface (void *obj, const char *interface)
+ 
+     return TRUE;
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ /**
+  * atk_bridge_adaptor_init: initializes the atk bridge adaptor
+@@ -1083,6 +1123,7 @@ spi_object_has_dbus_interface (void *obj, const char *interface)
+ int
+ atk_bridge_adaptor_init (gint * argc, gchar ** argv[])
+ {
++#if defined(ENABLE_DBUS)
+   GOptionContext *opt;
+   GError *err = NULL;
+   DBusError error;
+@@ -1225,11 +1266,15 @@ atk_bridge_adaptor_init (gint * argc, gchar ** argv[])
+ 
+   dbus_error_free (&error);
+   return 0;
++#else
++  return -1;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ void
+ atk_bridge_adaptor_cleanup (void)
+ {
++#if defined(ENABLE_DBUS)
+   GList *l;
+   GSList *ls;
+ 
+@@ -1285,16 +1330,20 @@ atk_bridge_adaptor_cleanup (void)
+   spi_global_app_data = NULL;
+ 
+   inited = FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /*---------------------------------------------------------------------------*/
+ 
++#if defined(ENABLE_DBUS)
+ static gchar *name_match_tmpl =
+        "type='signal', interface='org.freedesktop.DBus', member='NameOwnerChanged', arg0='%s'";
++#endif // #if defined(ENABLE_DBUS)
+ 
+ void
+ spi_atk_add_client (const char *bus_name)
+ {
++#if defined(ENABLE_DBUS)
+   GSList *l;
+   gchar *match;
+ 
+@@ -1309,11 +1358,13 @@ spi_atk_add_client (const char *bus_name)
+   match = g_strdup_printf (name_match_tmpl, bus_name);
+   dbus_bus_add_match (spi_global_app_data->bus, match, NULL);
+   g_free (match);
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ void
+ spi_atk_remove_client (const char *bus_name)
+ {
++#if defined(ENABLE_DBUS)
+   GSList *l;
+   GSList *next_node;
+ 
+@@ -1336,6 +1387,7 @@ spi_atk_remove_client (const char *bus_name)
+ 
+     l = next_node;
+   }
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ void
+@@ -1345,6 +1397,7 @@ spi_atk_add_interface (DRoutePath *path,
+                        const DRouteMethod   *methods,
+                        const DRouteProperty *properties)
+ {
++#if defined(ENABLE_DBUS)
+   droute_path_add_interface (path, name, introspect, methods, properties);
+ 
+   if (properties)
+@@ -1356,5 +1409,6 @@ spi_atk_add_interface (DRoutePath *path,
+     g_hash_table_insert (spi_global_app_data->property_hash, g_strdup (name),
+                          (gpointer) properties);
+   }
++#endif // #if defined(ENABLE_DBUS)
+ }
+ /*END------------------------------------------------------------------------*/
+diff --git a/atk-adaptor/bridge.h b/atk-adaptor/bridge.h
+index 9fc10fd..82c3588 100644
+--- a/atk-adaptor/bridge.h
++++ b/atk-adaptor/bridge.h
+@@ -38,7 +38,9 @@ struct _AtspiPropertyDefinition
+ {
+   char *name;
+   GType type;
++#if defined(ENABLE_DBUS)
+   DRoutePropertyFunction func;
++#endif // #if defined(ENABLE_DBUS)
+ };
+ 
+ typedef struct _event_data event_data;
+@@ -55,10 +57,14 @@ struct _SpiBridge
+ 
+   AtkObject *root;
+ 
++#if defined(ENABLE_DBUS)
+   DBusConnection *bus;
++#endif // #if defined(ENABLE_DBUS)
+   DRouteContext  *droute;
+   GMainContext *main_context;
++#if defined(ENABLE_DBUS)
+   DBusServer *server;
++#endif // #if defined(ENABLE_DBUS)
+   GList *direct_connections;
+ 
+ /*
+@@ -89,8 +95,10 @@ void spi_atk_add_interface (DRoutePath *path,
+                             const DRouteMethod   *methods,
+                             const DRouteProperty *properties);
+ 
++#if defined(ENABLE_DBUS)
+ DRoutePropertyFunction _atk_bridge_find_property_func (const char *property,
+                                                        GType *type);
++#endif // #if defined(ENABLE_DBUS)
+ 
+ GType _atk_bridge_type_from_iface (const char *iface);
+ 
+diff --git a/atk-adaptor/event.c b/atk-adaptor/event.c
+index ac68295..995b273 100644
+--- a/atk-adaptor/event.c
++++ b/atk-adaptor/event.c
+@@ -56,23 +56,31 @@ GMainContext *spi_context = NULL;
+ 
+ typedef struct _SpiReentrantCallClosure 
+ {
++#if defined(ENABLE_DBUS)
+   DBusConnection *bus;
++#endif // #if defined(ENABLE_DBUS)
+   GMainLoop   *loop;
++#if defined(ENABLE_DBUS)
+   DBusMessage *reply;
++#endif // #if defined(ENABLE_DBUS)
+   guint timeout;
+ } SpiReentrantCallClosure;
+ 
+ static void
+ switch_main_context (GMainContext *cnx)
+ {
++#if defined(ENABLE_DBUS)
+   GList *list;
+ 
+   if (spi_global_app_data->server)
+     atspi_dbus_server_setup_with_g_main (spi_global_app_data->server, cnx);
+   atspi_dbus_connection_setup_with_g_main (spi_global_app_data->bus, cnx);
++#endif // #if defined(ENABLE_DBUS)
+   atspi_set_main_context (cnx);
++#if defined(ENABLE_DBUS)
+   for (list = spi_global_app_data->direct_connections; list; list = list->next)
+     atspi_dbus_connection_setup_with_g_main (list->data, cnx);
++#endif // #if defined(ENABLE_DBUS)
+ 
+   if (_atk_bridge_remove_pending_application_registration (spi_global_app_data))
+     _atk_bridge_schedule_application_registration (spi_global_app_data);
+@@ -122,6 +130,7 @@ spi_timeout_add_full (gint priority, guint interval, GSourceFunc function,
+   return id;
+ }
+ 
++#if defined(ENABLE_DBUS)
+ static void
+ set_reply (DBusPendingCall * pending, void *user_data)
+ {
+@@ -175,6 +184,7 @@ send_and_allow_reentry (DBusConnection * bus, DBusMessage * message)
+     dbus_pending_call_cancel (pending);
+   return closure.reply;
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ void
+ atk_bridge_set_event_context(GMainContext *cnx)
+@@ -196,6 +206,7 @@ Accessibility_DeviceEventController_NotifyListenersSync (const
+                                                          AtspiDeviceEvent
+                                                          * key_event)
+ {
++#if defined(ENABLE_DBUS)
+   DBusMessage *message;
+   dbus_bool_t consumed = FALSE;
+ 
+@@ -224,16 +235,43 @@ Accessibility_DeviceEventController_NotifyListenersSync (const
+     }
+   dbus_message_unref (message);
+   return consumed;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ static void
+ spi_init_keystroke_from_atk_key_event (AtspiDeviceEvent * keystroke,
+                                        AtkKeyEventStruct * event)
+ {
+-  keystroke->id = (dbus_int32_t) event->keyval;
+-  keystroke->hw_code = (dbus_int16_t) event->keycode;
+-  keystroke->timestamp = (dbus_uint32_t) event->timestamp;
+-  keystroke->modifiers = (dbus_uint16_t) (event->state & 0xFFFF);
++  keystroke->id =
++#if defined(ENABLE_DBUS)
++    (dbus_int32_t)
++#else
++    (gint32)
++#endif // #if defined(ENABLE_DBUS)
++    event->keyval;
++  keystroke->hw_code =
++#if defined(ENABLE_DBUS)
++    (dbus_int16_t)
++#else
++    (gint16)
++#endif // #if defined(ENABLE_DBUS)
++    event->keycode;
++  keystroke->timestamp =
++#if defined(ENABLE_DBUS)
++    (dbus_uint32_t)
++#else
++    (guint32)
++#endif // #if defined(ENABLE_DBUS)
++    event->timestamp;
++  keystroke->modifiers =
++#if defined(ENABLE_DBUS)
++    (dbus_uint16_t)
++#else
++    (guint16)
++#endif // #if defined(ENABLE_DBUS)
++    (event->state & 0xFFFF);
+   if (event->string)
+     {
+       gunichar c;
+@@ -291,6 +329,7 @@ spi_atk_bridge_key_listener (AtkKeyEventStruct * event, gpointer data)
+ 
+ /*---------------------------------------------------------------------------*/
+ 
++#if defined(ENABLE_DBUS)
+ static const void *
+ validate_for_dbus (const gint type,
+               const void *val)
+@@ -597,6 +636,7 @@ emit_event (AtkObject  *obj,
+   g_free(cname);
+   g_free (path);
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ /*---------------------------------------------------------------------------*/
+ 
+@@ -607,8 +647,10 @@ emit_event (AtkObject  *obj,
+ static void
+ focus_tracker (AtkObject * accessible)
+ {
++#if defined(ENABLE_DBUS)
+   emit_event (accessible, ITF_EVENT_FOCUS, "focus", "", 0, 0,
+               DBUS_TYPE_INT32_AS_STRING, 0, append_basic);
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /*---------------------------------------------------------------------------*/
+@@ -628,6 +670,7 @@ property_event_listener (GSignalInvocationHint * signal_hint,
+                          guint n_param_values,
+                          const GValue * param_values, gpointer data)
+ {
++#if defined(ENABLE_DBUS)
+   AtkObject *accessible;
+   AtkPropertyValues *values;
+ 
+@@ -721,6 +764,9 @@ property_event_listener (GSignalInvocationHint * signal_hint,
+             DBUS_TYPE_INT32_AS_STRING, 0, append_basic);
+     }
+   return TRUE;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /*---------------------------------------------------------------------------*/
+@@ -737,6 +783,7 @@ state_event_listener (GSignalInvocationHint * signal_hint,
+                       guint n_param_values,
+                       const GValue * param_values, gpointer data)
+ {
++#if defined(ENABLE_DBUS)
+   AtkObject *accessible;
+   const gchar *pname;
+   guint detail1;
+@@ -752,6 +799,9 @@ state_event_listener (GSignalInvocationHint * signal_hint,
+     spi_register_deregister_object (spi_global_register, G_OBJECT (accessible),
+                                     TRUE);
+   return TRUE;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /*---------------------------------------------------------------------------*/
+@@ -772,6 +822,7 @@ window_event_listener (GSignalInvocationHint * signal_hint,
+                        guint n_param_values,
+                        const GValue * param_values, gpointer data)
+ {
++#if defined(ENABLE_DBUS)
+   AtkObject *accessible;
+   GSignalQuery signal_query;
+   const gchar *name, *s;
+@@ -785,6 +836,9 @@ window_event_listener (GSignalInvocationHint * signal_hint,
+               DBUS_TYPE_STRING_AS_STRING, s, append_basic);
+ 
+   return TRUE;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /*---------------------------------------------------------------------------*/
+@@ -803,6 +857,7 @@ document_event_listener (GSignalInvocationHint * signal_hint,
+                          guint n_param_values,
+                          const GValue * param_values, gpointer data)
+ {
++#if defined(ENABLE_DBUS)
+   AtkObject *accessible;
+   GSignalQuery signal_query;
+   const gchar *name, *s;
+@@ -821,6 +876,9 @@ document_event_listener (GSignalInvocationHint * signal_hint,
+               DBUS_TYPE_STRING_AS_STRING, s, append_basic);
+ 
+   return TRUE;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /*---------------------------------------------------------------------------*/
+@@ -834,6 +892,7 @@ bounds_event_listener (GSignalInvocationHint * signal_hint,
+                        guint n_param_values,
+                        const GValue * param_values, gpointer data)
+ {
++#if defined(ENABLE_DBUS)
+   AtkObject *accessible;
+   AtkRectangle *atk_rect;
+   GSignalQuery signal_query;
+@@ -852,6 +911,9 @@ bounds_event_listener (GSignalInvocationHint * signal_hint,
+                 "(iiii)", atk_rect, append_rect);
+   }
+   return TRUE;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /*---------------------------------------------------------------------------*/
+@@ -866,6 +928,7 @@ active_descendant_event_listener (GSignalInvocationHint * signal_hint,
+                                   guint n_param_values,
+                                   const GValue * param_values, gpointer data)
+ {
++#if defined(ENABLE_DBUS)
+   AtkObject *accessible;
+   AtkObject *child;
+   GSignalQuery signal_query;
+@@ -884,6 +947,9 @@ active_descendant_event_listener (GSignalInvocationHint * signal_hint,
+   emit_event (accessible, ITF_EVENT_OBJECT, name, "", detail1, 0,
+               "(so)", child, append_object);
+   return TRUE;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ static gboolean
+@@ -891,6 +957,7 @@ announcement_event_listener (GSignalInvocationHint * signal_hint,
+                              guint n_param_values,
+                              const GValue * param_values, gpointer data)
+ {
++#if defined(ENABLE_DBUS)
+   AtkObject *accessible;
+   const gchar *text;
+   GSignalQuery signal_query;
+@@ -906,6 +973,9 @@ announcement_event_listener (GSignalInvocationHint * signal_hint,
+   emit_event (accessible, ITF_EVENT_OBJECT, name, "", 0, 0,
+               "s", text, append_basic);
+   return TRUE;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /*---------------------------------------------------------------------------*/
+@@ -920,6 +990,7 @@ link_selected_event_listener (GSignalInvocationHint * signal_hint,
+                               guint n_param_values,
+                               const GValue * param_values, gpointer data)
+ {
++#if defined(ENABLE_DBUS)
+   AtkObject *accessible;
+   GSignalQuery signal_query;
+   const gchar *name, *minor;
+@@ -937,6 +1008,9 @@ link_selected_event_listener (GSignalInvocationHint * signal_hint,
+   emit_event (accessible, ITF_EVENT_OBJECT, name, minor, detail1, 0,
+               DBUS_TYPE_INT32_AS_STRING, 0, append_basic);
+   return TRUE;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /*---------------------------------------------------------------------------*/
+@@ -953,6 +1027,7 @@ text_changed_event_listener (GSignalInvocationHint * signal_hint,
+                              guint n_param_values,
+                              const GValue * param_values, gpointer data)
+ {
++#if defined(ENABLE_DBUS)
+   AtkObject *accessible;
+   GSignalQuery signal_query;
+   const gchar *name, *minor;
+@@ -979,6 +1054,9 @@ text_changed_event_listener (GSignalInvocationHint * signal_hint,
+   g_free (selected);
+ 
+   return TRUE;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /* 
+@@ -991,6 +1069,7 @@ text_insert_event_listener (GSignalInvocationHint * signal_hint,
+                             guint n_param_values,
+                             const GValue * param_values, gpointer data)
+ {
++#if defined(ENABLE_DBUS)
+   AtkObject *accessible;
+   guint text_changed_signal_id;
+   GSignalQuery signal_query;
+@@ -1030,6 +1109,9 @@ text_insert_event_listener (GSignalInvocationHint * signal_hint,
+               DBUS_TYPE_STRING_AS_STRING, text, append_basic);
+   g_free (minor);
+   return TRUE;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /* 
+@@ -1042,6 +1124,7 @@ text_remove_event_listener (GSignalInvocationHint * signal_hint,
+                             guint n_param_values,
+                             const GValue * param_values, gpointer data)
+ {
++#if defined(ENABLE_DBUS)
+   AtkObject *accessible;
+   guint text_changed_signal_id;
+   GSignalQuery signal_query;
+@@ -1081,6 +1164,9 @@ text_remove_event_listener (GSignalInvocationHint * signal_hint,
+               DBUS_TYPE_STRING_AS_STRING, text, append_basic);
+   g_free (minor);
+   return TRUE;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ 
+@@ -1097,6 +1183,7 @@ text_selection_changed_event_listener (GSignalInvocationHint * signal_hint,
+                                        const GValue * param_values,
+                                        gpointer data)
+ {
++#if defined(ENABLE_DBUS)
+   AtkObject *accessible;
+   GSignalQuery signal_query;
+   const gchar *name, *minor;
+@@ -1110,6 +1197,9 @@ text_selection_changed_event_listener (GSignalInvocationHint * signal_hint,
+   emit_event (accessible, ITF_EVENT_OBJECT, name, minor, 0, 0,
+               DBUS_TYPE_STRING_AS_STRING, "", append_basic);
+   return TRUE;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /*---------------------------------------------------------------------------*/
+@@ -1129,6 +1219,7 @@ children_changed_event_listener (GSignalInvocationHint * signal_hint,
+                                  guint n_param_values,
+                                  const GValue * param_values, gpointer data)
+ {
++#if defined(ENABLE_DBUS)
+   GSignalQuery signal_query;
+   const gchar *name, *minor;
+   gint detail1 = 0, detail2 = 0;
+@@ -1177,6 +1268,9 @@ children_changed_event_listener (GSignalInvocationHint * signal_hint,
+     }
+  
+   return TRUE;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /*---------------------------------------------------------------------------*/
+@@ -1196,6 +1290,7 @@ generic_event_listener (GSignalInvocationHint * signal_hint,
+                         guint n_param_values,
+                         const GValue * param_values, gpointer data)
+ {
++#if defined(ENABLE_DBUS)
+   AtkObject *accessible;
+   GSignalQuery signal_query;
+   const gchar *name;
+@@ -1215,6 +1310,9 @@ generic_event_listener (GSignalInvocationHint * signal_hint,
+   emit_event (accessible, ITF_EVENT_OBJECT, name, "", detail1, detail2,
+               DBUS_TYPE_INT32_AS_STRING, 0, append_basic);
+   return TRUE;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /*---------------------------------------------------------------------------*/
+@@ -1411,6 +1509,7 @@ spi_atk_deregister_event_listeners (void)
+ void
+ spi_atk_tidy_windows (void)
+ {
++#if defined(ENABLE_DBUS)
+   AtkObject *root;
+   gint n_children;
+   gint i;
+@@ -1438,6 +1537,7 @@ spi_atk_tidy_windows (void)
+                   DBUS_TYPE_STRING_AS_STRING, name, append_basic);
+       g_object_unref (child);
+     }
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ gboolean
+diff --git a/atk-adaptor/object.c b/atk-adaptor/object.c
+index 1741797..76e20e5 100644
+--- a/atk-adaptor/object.c
++++ b/atk-adaptor/object.c
+@@ -73,6 +73,7 @@ spi_object_lease_if_needed (GObject *obj)
+  * All of them will lease the AtkObject if it is deemed neccessary.
+  */
+ 
++#if defined(ENABLE_DBUS)
+ void
+ spi_object_append_null_reference (DBusMessageIter * iter)
+ {
+@@ -342,6 +343,7 @@ spi_object_append_attribute_set (DBusMessageIter * iter, AtkAttributeSet * attr)
+     }
+   dbus_message_iter_close_container (iter, &dictIter);
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ /*---------------------------------------------------------------------------*/
+ 
+diff --git a/atk-adaptor/object.h b/atk-adaptor/object.h
+index ecb3d11..12ce6fe 100644
+--- a/atk-adaptor/object.h
++++ b/atk-adaptor/object.h
+@@ -25,11 +25,14 @@
+ #define ACCESSIBLE_OBJECT_H
+ 
+ #include <atk/atk.h>
++#if defined(ENABLE_DBUS)
+ #include <dbus/dbus.h>
++#endif // #if defined(ENABLE_DBUS)
+ 
+ void
+ spi_object_lease_if_needed (GObject *obj);
+ 
++#if defined(ENABLE_DBUS)
+ void
+ spi_object_append_reference (DBusMessageIter * iter, AtkObject * obj);
+ 
+@@ -56,6 +59,7 @@ spi_object_append_interfaces (DBusMessageIter * iter, AtkObject * obj);
+ 
+ void
+ spi_object_append_attribute_set (DBusMessageIter * iter, AtkAttributeSet * attr);
++#endif // #if defined(ENABLE_DBUS)
+ 
+ AtspiRole
+ spi_accessible_role_from_atk_role (AtkRole role);
+diff --git a/atk-adaptor/spi-dbus.c b/atk-adaptor/spi-dbus.c
+index 4bc2a5b..bd870b2 100644
+--- a/atk-adaptor/spi-dbus.c
++++ b/atk-adaptor/spi-dbus.c
+@@ -25,10 +25,13 @@
+ #include <string.h>
+ #include <glib.h>
+ #include <glib-object.h>
++#if defined(ENABLE_DBUS)
+ #include <dbus/dbus.h>
++#endif // #if defined(ENABLE_DBUS)
+ 
+ #include <atspi/atspi.h>
+ 
++#if defined(ENABLE_DBUS)
+ DBusMessage *
+ spi_dbus_general_error (DBusMessage * message)
+ {
+@@ -255,6 +258,7 @@ spi_dbus_emit_signal(DBusConnection *bus, const char *path,
+   dbus_connection_send(bus, sig, NULL);
+   dbus_message_unref(sig);
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ 
+ /*
+diff --git a/atk-adaptor/spi-dbus.h b/atk-adaptor/spi-dbus.h
+index 4886d15..d502ebb 100644
+--- a/atk-adaptor/spi-dbus.h
++++ b/atk-adaptor/spi-dbus.h
+@@ -38,6 +38,7 @@ extern int _dbg;
+ #define SPI_DBUS_PATH_NULL "/org/a11y/atspi/null"
+ #define SPI_DBUS_PATH_ROOT "/org/a11y/atspi/accessible/root"
+ 
++#if defined(ENABLE_DBUS)
+ DBusMessage *spi_dbus_general_error(DBusMessage *message);
+ DBusMessage *spi_dbus_return_rect(DBusMessage *message, gint ix, gint iy, gint iwidth, gint iheight);
+ 
+@@ -48,6 +49,7 @@ dbus_bool_t spi_dbus_marshal_deviceEvent(DBusMessage *message, const AtspiDevice
+ dbus_bool_t spi_dbus_demarshal_deviceEvent(DBusMessage *message, AtspiDeviceEvent *e);
+ dbus_bool_t spi_dbus_get_simple_property (DBusConnection *bus, const char *dest, const char *path, const char *interface, const char *prop, int *type, void *ptr, DBusError *error);
+ void spi_dbus_emit_signal(DBusConnection *bus, const char *path, const char *klass, const char *major, const char *minor, dbus_int32_t detail1, dbus_int32_t detail2, const char *type, const void *val);
++#endif // #if defined(ENABLE_DBUS)
+ /*
+ void spi_dbus_add_disconnect_match (DBusConnection *bus, const char *name);
+ void spi_dbus_remove_disconnect_match (DBusConnection *bus, const char *name);
+diff --git a/atspi/atspi-accessible.c b/atspi/atspi-accessible.c
+index 9c4725a..c05b527 100644
+--- a/atspi/atspi-accessible.c
++++ b/atspi/atspi-accessible.c
+@@ -43,6 +43,7 @@ screen_reader_signal_watcher (GSignalInvocationHint *signal_hint,
+                               const GValue          *param_values,
+                               gpointer               data)
+ {
++#if defined(ENABLE_DBUS)
+   GObject *object;
+   AtspiAccessible *accessible;
+   GSignalQuery signal_query;
+@@ -89,6 +90,9 @@ screen_reader_signal_watcher (GSignalInvocationHint *signal_hint,
+   dbus_connection_send (_atspi_bus (), signal, NULL);
+   dbus_message_unref (signal);
+   return TRUE; 
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ static void
+@@ -339,6 +343,7 @@ atspi_accessible_class_init (AtspiAccessibleClass *klass)
+ gchar *
+ atspi_accessible_get_name (AtspiAccessible *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   g_return_val_if_fail (obj != NULL, g_strdup (""));
+ 
+   if (!_atspi_accessible_test_cache (obj, ATSPI_CACHE_NAME))
+@@ -351,6 +356,9 @@ atspi_accessible_get_name (AtspiAccessible *obj, GError **error)
+     _atspi_accessible_add_cache (obj, ATSPI_CACHE_NAME);
+   }
+   return g_strdup (obj->name);
++#else
++  return g_strdup ("");
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -365,6 +373,7 @@ atspi_accessible_get_name (AtspiAccessible *obj, GError **error)
+ gchar *
+ atspi_accessible_get_description (AtspiAccessible *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   g_return_val_if_fail (obj != NULL, g_strdup (""));
+ 
+   if (!_atspi_accessible_test_cache (obj, ATSPI_CACHE_DESCRIPTION))
+@@ -378,6 +387,9 @@ atspi_accessible_get_description (AtspiAccessible *obj, GError **error)
+     _atspi_accessible_add_cache (obj, ATSPI_CACHE_DESCRIPTION);
+   }
+   return g_strdup (obj->description);
++#else
++  return g_strdup ("");
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ const char *str_parent = "Parent";
+@@ -397,6 +409,7 @@ const char *str_parent = "Parent";
+ AtspiAccessible *
+ atspi_accessible_get_parent (AtspiAccessible *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   g_return_val_if_fail (obj != NULL, NULL);
+ 
+   if (!_atspi_accessible_test_cache (obj, ATSPI_CACHE_PARENT))
+@@ -431,6 +444,9 @@ atspi_accessible_get_parent (AtspiAccessible *obj, GError **error)
+   if (!obj->accessible_parent)
+     return NULL;
+   return g_object_ref (obj->accessible_parent);
++#else
++  return NULL;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -446,6 +462,7 @@ atspi_accessible_get_parent (AtspiAccessible *obj, GError **error)
+ gint
+ atspi_accessible_get_child_count (AtspiAccessible *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   g_return_val_if_fail (obj != NULL, -1);
+ 
+   if (!_atspi_accessible_test_cache (obj, ATSPI_CACHE_CHILDREN))
+@@ -461,6 +478,9 @@ atspi_accessible_get_child_count (AtspiAccessible *obj, GError **error)
+     return 0;	/* assume it's disposed */
+ 
+   return obj->children->len;
++#else
++  return -1;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -478,6 +498,7 @@ atspi_accessible_get_child_at_index (AtspiAccessible *obj,
+                             gint    child_index,
+                             GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   AtspiAccessible *child;
+   DBusMessage *reply;
+ 
+@@ -507,6 +528,9 @@ atspi_accessible_get_child_at_index (AtspiAccessible *obj,
+     g_ptr_array_index (obj->children, child_index) = g_object_ref (child);
+   }
+   return child;
++#else
++  return NULL;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -523,6 +547,7 @@ atspi_accessible_get_child_at_index (AtspiAccessible *obj,
+ gint
+ atspi_accessible_get_index_in_parent (AtspiAccessible *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   gint i = 0;
+   dbus_int32_t ret = -1;
+ 
+@@ -544,11 +569,16 @@ dbus:
+   _atspi_dbus_call (obj, atspi_interface_accessible,
+                     "GetIndexInParent", NULL, "=>i", &ret);
+   return ret;
++#else
++  return -1;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ typedef struct
+ {
++#if defined(ENABLE_DBUS)
+   dbus_uint32_t type;
++#endif // #if defined(ENABLE_DBUS)
+   GArray *targets;
+ } Accessibility_Relation;
+ 
+@@ -565,6 +595,7 @@ typedef struct
+ GArray *
+ atspi_accessible_get_relation_set (AtspiAccessible *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   DBusMessage *reply;
+   DBusMessageIter iter, iter_array;
+   GArray *ret;
+@@ -588,6 +619,9 @@ atspi_accessible_get_relation_set (AtspiAccessible *obj, GError **error)
+   }
+   dbus_message_unref (reply);
+   return ret;
++#else
++  return NULL;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -603,6 +637,7 @@ atspi_accessible_get_relation_set (AtspiAccessible *obj, GError **error)
+ AtspiRole
+ atspi_accessible_get_role (AtspiAccessible *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   g_return_val_if_fail (obj != NULL, ATSPI_ROLE_INVALID);
+ 
+   if (!_atspi_accessible_test_cache (obj, ATSPI_CACHE_ROLE))
+@@ -616,6 +651,9 @@ atspi_accessible_get_role (AtspiAccessible *obj, GError **error)
+     }
+   }
+   return obj->role;
++#else
++  return ATSPI_ROLE_INVALID;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -633,6 +671,7 @@ atspi_accessible_get_role (AtspiAccessible *obj, GError **error)
+ gchar *
+ atspi_accessible_get_role_name (AtspiAccessible *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   gchar *retval = NULL;
+   AtspiRole role;
+ 
+@@ -648,6 +687,9 @@ atspi_accessible_get_role_name (AtspiAccessible *obj, GError **error)
+     retval = g_strdup ("");
+ 
+   return retval;
++#else
++  return NULL;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -666,6 +708,7 @@ atspi_accessible_get_role_name (AtspiAccessible *obj, GError **error)
+ gchar *
+ atspi_accessible_get_localized_role_name (AtspiAccessible *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   char *retval = NULL;
+ 
+   g_return_val_if_fail (obj != NULL, NULL);
+@@ -676,8 +719,12 @@ atspi_accessible_get_localized_role_name (AtspiAccessible *obj, GError **error)
+     return g_strdup ("");
+ 
+   return retval;
++#else
++  return NULL;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
++#if defined(ENABLE_DBUS)
+ static AtspiStateSet *
+ defunct_set ()
+ {
+@@ -685,6 +732,7 @@ defunct_set ()
+   atspi_state_set_add (set, ATSPI_STATE_DEFUNCT);
+   return set;
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ /**
+  * atspi_accessible_get_state_set:
+@@ -698,6 +746,7 @@ defunct_set ()
+ AtspiStateSet *
+ atspi_accessible_get_state_set (AtspiAccessible *obj)
+ {
++#if defined(ENABLE_DBUS)
+   /* TODO: Should take a GError **, but would be an API break */
+   if (!obj->parent.app || !obj->parent.app->bus)
+     return defunct_set ();
+@@ -716,6 +765,9 @@ atspi_accessible_get_state_set (AtspiAccessible *obj)
+   }
+ 
+   return g_object_ref (obj->states);
++#else
++  return NULL;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -733,6 +785,7 @@ atspi_accessible_get_state_set (AtspiAccessible *obj)
+ GHashTable *
+ atspi_accessible_get_attributes (AtspiAccessible *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   DBusMessage *message;
+ 
+     g_return_val_if_fail (obj != NULL, NULL);
+@@ -757,8 +810,12 @@ atspi_accessible_get_attributes (AtspiAccessible *obj, GError **error)
+   if (!obj->attributes)
+     return NULL;
+   return g_hash_table_ref (obj->attributes);
++#else
++  return NULL;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
++#if defined(ENABLE_DBUS)
+ static void
+ add_to_attribute_array (gpointer key, gpointer value, gpointer data)
+ {
+@@ -766,6 +823,7 @@ add_to_attribute_array (gpointer key, gpointer value, gpointer data)
+   gchar *str = g_strconcat (key, ":", value, NULL);
+   *array = g_array_append_val (*array, str);
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ /**
+  * atspi_accessible_get_attributes_as_array:
+@@ -782,6 +840,7 @@ add_to_attribute_array (gpointer key, gpointer value, gpointer data)
+ GArray *
+ atspi_accessible_get_attributes_as_array (AtspiAccessible *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   DBusMessage *message;
+ 
+     g_return_val_if_fail (obj != NULL, NULL);
+@@ -800,6 +859,9 @@ atspi_accessible_get_attributes_as_array (AtspiAccessible *obj, GError **error)
+ 
+   message = _atspi_dbus_call_partial (obj, atspi_interface_accessible, "GetAttributes", error, "");
+   return _atspi_dbus_return_attribute_array_from_message (message);
++#else
++  return NULL;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -861,6 +923,7 @@ atspi_accessible_get_application (AtspiAccessible *obj, GError **error)
+ gchar *
+ atspi_accessible_get_toolkit_name (AtspiAccessible *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   g_return_val_if_fail (obj != NULL, NULL);
+ 
+   if (!obj->parent.app)
+@@ -871,6 +934,9 @@ atspi_accessible_get_toolkit_name (AtspiAccessible *obj, GError **error)
+                               error, "s", &obj->parent.app->toolkit_name);
+ 
+   return g_strdup (obj->parent.app->toolkit_name);
++#else
++  return NULL;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -885,6 +951,7 @@ atspi_accessible_get_toolkit_name (AtspiAccessible *obj, GError **error)
+ gchar *
+ atspi_accessible_get_toolkit_version (AtspiAccessible *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   g_return_val_if_fail (obj != NULL, NULL);
+ 
+   if (!obj->parent.app)
+@@ -895,6 +962,9 @@ atspi_accessible_get_toolkit_version (AtspiAccessible *obj, GError **error)
+                               error, "s", &obj->parent.app->toolkit_version);
+ 
+   return g_strdup (obj->parent.app->toolkit_version);
++#else
++  return NULL;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -910,6 +980,7 @@ atspi_accessible_get_toolkit_version (AtspiAccessible *obj, GError **error)
+ gchar *
+ atspi_accessible_get_atspi_version (AtspiAccessible *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   g_return_val_if_fail (obj != NULL, NULL);
+ 
+   if (!obj->parent.app)
+@@ -920,6 +991,9 @@ atspi_accessible_get_atspi_version (AtspiAccessible *obj, GError **error)
+                               error, "s", &obj->parent.app->atspi_version);
+ 
+   return g_strdup (obj->parent.app->atspi_version);
++#else
++  return NULL;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -937,10 +1011,12 @@ atspi_accessible_get_id (AtspiAccessible *obj, GError **error)
+ {
+   gint ret = -1;
+ 
++#if defined(ENABLE_DBUS)
+   g_return_val_if_fail (obj != NULL, -1);
+ 
+   if (!_atspi_dbus_get_property (obj, atspi_interface_application, "Id", error, "i", &ret))
+       return -1;
++#endif // #if defined(ENABLE_DBUS)
+   return ret;
+ }
+ 
+@@ -951,6 +1027,7 @@ static gboolean
+ _atspi_accessible_is_a (AtspiAccessible *accessible,
+ 		      const char *interface_name)
+ {
++#if defined(ENABLE_DBUS)
+   int n;
+ 
+   if (accessible == NULL)
+@@ -973,6 +1050,9 @@ _atspi_accessible_is_a (AtspiAccessible *accessible,
+   n = _atspi_get_iface_num (interface_name);
+   if (n == -1) return FALSE;
+   return (gboolean) ((accessible->interfaces & (1 << n))? TRUE: FALSE);
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -1788,6 +1868,7 @@ atspi_accessible_clear_cache (AtspiAccessible *obj)
+ guint
+ atspi_accessible_get_process_id (AtspiAccessible *accessible, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   DBusMessage *message, *reply;
+   DBusConnection *bus = _atspi_bus ();
+   dbus_uint32_t pid = -1;
+@@ -1821,6 +1902,9 @@ atspi_accessible_get_process_id (AtspiAccessible *accessible, GError **error)
+       dbus_error_free (&d_error);
+     }
+   return pid;
++#else
++  return -1;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ AtspiCache
+@@ -1882,6 +1966,7 @@ _atspi_accessible_add_cache (AtspiAccessible *accessible, AtspiCache flag)
+ const gchar*
+ atspi_accessible_get_object_locale (AtspiAccessible *accessible, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   gchar *locale;
+ 
+   g_return_val_if_fail (accessible != NULL, NULL);
+@@ -1897,6 +1982,9 @@ atspi_accessible_get_object_locale (AtspiAccessible *accessible, GError **error)
+                                g_free);
+   }
+   return locale;
++#else
++  return NULL;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -1915,6 +2003,7 @@ atspi_accessible_get_object_locale (AtspiAccessible *accessible, GError **error)
+ gchar*
+ atspi_accessible_get_accessible_id (AtspiAccessible *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   gchar *accessible_id;
+ 
+   g_return_val_if_fail (obj != NULL, NULL);
+@@ -1924,6 +2013,9 @@ atspi_accessible_get_accessible_id (AtspiAccessible *obj, GError **error)
+     return NULL;
+ 
+   return accessible_id;
++#else
++  return NULL;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ void
+diff --git a/atspi/atspi-action.c b/atspi/atspi-action.c
+index bc9cb7b..f7a0e60 100644
+--- a/atspi/atspi-action.c
++++ b/atspi/atspi-action.c
+@@ -34,6 +34,7 @@
+ gint
+ atspi_action_get_n_actions (AtspiAction *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t retval = 0;
+ 
+   g_return_val_if_fail (obj != NULL, -1);
+@@ -41,6 +42,9 @@ atspi_action_get_n_actions (AtspiAction *obj, GError **error)
+   _atspi_dbus_get_property (obj, atspi_interface_action, "NActions", error, "i", &retval);
+ 
+   return retval;
++#else
++  return 0;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -74,12 +78,16 @@ atspi_action_get_description (AtspiAction *obj, int i, GError **error)
+ gchar *
+ atspi_action_get_action_description (AtspiAction *obj, int i, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_i = i;
++#endif // #if defined(ENABLE_DBUS)
+   char *retval = NULL;
+ 
++#if defined(ENABLE_DBUS)
+   g_return_val_if_fail (obj != NULL, NULL);
+ 
+   _atspi_dbus_call (obj, atspi_interface_action, "GetDescription", error, "i=>s", d_i, &retval);
++#endif // #if defined(ENABLE_DBUS)
+ 
+   return retval;
+ }
+@@ -117,12 +125,16 @@ atspi_action_get_action_description (AtspiAction *obj, int i, GError **error)
+ gchar *
+ atspi_action_get_key_binding (AtspiAction *obj, gint i, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_i = i;
++#endif // #if defined(ENABLE_DBUS)
+   char *retval = NULL;
+ 
++#if defined(ENABLE_DBUS)
+   g_return_val_if_fail (obj != NULL, NULL);
+ 
+   _atspi_dbus_call (obj, atspi_interface_action, "GetKeyBinding", error, "i=>s", d_i, &retval);
++#endif // #if defined(ENABLE_DBUS)
+ 
+   return retval;
+ }
+@@ -158,12 +170,16 @@ atspi_action_get_name (AtspiAction *obj, gint i, GError **error)
+ gchar *
+ atspi_action_get_action_name (AtspiAction *obj, gint i, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_i = i;
++#endif // #if defined(ENABLE_DBUS)
+   char *retval = NULL;
+ 
++#if defined(ENABLE_DBUS)
+   g_return_val_if_fail (obj != NULL, NULL);
+ 
+   _atspi_dbus_call (obj, atspi_interface_action, "GetName", error, "i=>s", d_i, &retval);
++#endif // #if defined(ENABLE_DBUS)
+ 
+   return retval;
+ }
+@@ -181,13 +197,17 @@ atspi_action_get_action_name (AtspiAction *obj, gint i, GError **error)
+ gchar *
+ atspi_action_get_localized_name (AtspiAction *obj, gint i, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_i = i;
++#endif // #if defined(ENABLE_DBUS)
+   char *retval = NULL;
+ 
++#if defined(ENABLE_DBUS)
+   g_return_val_if_fail (obj != NULL, NULL);
+ 
+   _atspi_dbus_call (obj, atspi_interface_action, "GetLocalizedName", error,
+                     "i=>s", d_i, &retval);
++#endif // #if defined(ENABLE_DBUS)
+ 
+   return retval;
+ }
+@@ -204,6 +224,7 @@ atspi_action_get_localized_name (AtspiAction *obj, gint i, GError **error)
+ gboolean
+ atspi_action_do_action (AtspiAction *obj, gint i, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_i = i;
+   dbus_bool_t retval = FALSE;
+ 
+@@ -212,6 +233,9 @@ atspi_action_do_action (AtspiAction *obj, gint i, GError **error)
+   _atspi_dbus_call (obj, atspi_interface_action, "DoAction", error, "i=>b", d_i, &retval);
+ 
+   return retval;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ static void
+diff --git a/atspi/atspi-application.c b/atspi/atspi-application.c
+index cccaf86..88c46d5 100644
+--- a/atspi/atspi-application.c
++++ b/atspi/atspi-application.c
+@@ -41,6 +41,7 @@ atspi_application_dispose (GObject *object)
+ {
+   AtspiApplication *application = ATSPI_APPLICATION (object);
+ 
++#if defined(ENABLE_DBUS)
+   if (application->bus)
+   {
+     if (application->bus != _atspi_bus ())
+@@ -48,6 +49,7 @@ atspi_application_dispose (GObject *object)
+     dbus_connection_unref (application->bus);
+     application->bus = NULL;
+   }
++#endif // #if defined(ENABLE_DBUS)
+ 
+   if (application->hash)
+   {
+diff --git a/atspi/atspi-application.h b/atspi/atspi-application.h
+index 0662031..d9ea182 100644
+--- a/atspi/atspi-application.h
++++ b/atspi/atspi-application.h
+@@ -25,7 +25,9 @@
+ #ifndef _ATSPI_APPLICATION_H_
+ #define _ATSPI_APPLICATION_H_
+ 
++#if defined(ENABLE_DBUS)
+ #include <dbus/dbus.h>
++#endif // #if defined(ENABLE_DBUS)
+ 
+ #include "atspi-types.h"
+ #include "atspi-accessible.h"
+@@ -46,7 +48,9 @@ struct _AtspiApplication
+   GObject parent;
+   GHashTable *hash;
+   char *bus_name;
++#if defined(ENABLE_DBUS)
+   DBusConnection *bus;
++#endif // #if defined(ENABLE_DBUS)
+   struct _AtspiAccessible *root;
+   AtspiCache cache;
+   gchar *toolkit_name;
+diff --git a/atspi/atspi-collection.c b/atspi/atspi-collection.c
+index 34fbbab..3ac9a72 100644
+--- a/atspi/atspi-collection.c
++++ b/atspi/atspi-collection.c
+@@ -40,6 +40,7 @@ atspi_collection_is_ancestor_of (AtspiCollection *collection,
+   return FALSE;
+ }
+ 
++#if defined(ENABLE_DBUS)
+ static DBusMessage *
+ new_message (AtspiCollection *collection, char *method)
+ {
+@@ -98,6 +99,7 @@ return_accessibles (DBusMessage *message)
+   dbus_message_unref (message);
+   return ret;
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ /**
+  * atspi_collection_get_matches:
+@@ -122,6 +124,7 @@ atspi_collection_get_matches (AtspiCollection *collection,
+                               gboolean traverse,
+                               GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   DBusMessage *message = new_message (collection, "GetMatches");
+   DBusMessage *reply;
+   dbus_int32_t d_sortby = sortby;
+@@ -141,6 +144,9 @@ atspi_collection_get_matches (AtspiCollection *collection,
+   if (!reply)
+     return NULL;
+   return return_accessibles (reply);
++#else
++  return NULL;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -177,6 +183,7 @@ atspi_collection_get_matches_to (AtspiCollection *collection,
+                               gboolean traverse,
+                               GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   DBusMessage *message = new_message (collection, "GetMatchesTo");
+   DBusMessage *reply;
+   dbus_int32_t d_sortby = sortby;
+@@ -202,6 +209,9 @@ atspi_collection_get_matches_to (AtspiCollection *collection,
+   if (!reply)
+     return NULL;
+   return return_accessibles (reply);
++#else
++  return NULL;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -233,6 +243,7 @@ atspi_collection_get_matches_from (AtspiCollection *collection,
+                               gboolean traverse,
+                               GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   DBusMessage *message = new_message (collection, "GetMatchesFrom");
+   DBusMessage *reply;
+   dbus_int32_t d_sortby = sortby;
+@@ -256,6 +267,9 @@ atspi_collection_get_matches_from (AtspiCollection *collection,
+   if (!reply)
+     return NULL;
+   return return_accessibles (reply);
++#else
++  return NULL;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -267,7 +281,9 @@ atspi_collection_get_matches_from (AtspiCollection *collection,
+ AtspiAccessible *
+ atspi_collection_get_active_descendant (AtspiCollection *collection, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   g_warning ("AT-SPI: TODO: Implement get_active_descendants");
++#endif // #if defined(ENABLE_DBUS)
+   return NULL;
+ }
+ 
+diff --git a/atspi/atspi-component.c b/atspi/atspi-component.c
+index 59879bb..98d4b29 100644
+--- a/atspi/atspi-component.c
++++ b/atspi/atspi-component.c
+@@ -79,6 +79,7 @@ atspi_component_contains (AtspiComponent *obj,
+                               gint y,
+                               AtspiCoordType ctype, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_bool_t retval = FALSE;
+   dbus_int32_t d_x = x, d_y = y;
+   dbus_uint32_t d_ctype = ctype;
+@@ -88,6 +89,9 @@ atspi_component_contains (AtspiComponent *obj,
+   _atspi_dbus_call (obj, atspi_interface_component, "Contains", error, "iiu=>b", d_x, d_y, d_ctype, &retval);
+ 
+   return retval;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -111,6 +115,7 @@ atspi_component_get_accessible_at_point (AtspiComponent *obj,
+                                           gint y,
+                                           AtspiCoordType ctype, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_x = x, d_y = y;
+   dbus_uint32_t d_ctype = ctype;
+   DBusMessage *reply;
+@@ -120,6 +125,9 @@ atspi_component_get_accessible_at_point (AtspiComponent *obj,
+   reply = _atspi_dbus_call_partial (obj, atspi_interface_component, "GetAccessibleAtPoint", error, "iiu", d_x, d_y, d_ctype);
+ 
+   return _atspi_dbus_return_accessible_from_message (reply);
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -138,7 +146,9 @@ AtspiRect *
+ atspi_component_get_extents (AtspiComponent *obj,
+                                 AtspiCoordType ctype, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_uint32_t d_ctype = ctype;
++#endif // #if defined(ENABLE_DBUS)
+   AtspiRect bbox;
+   AtspiAccessible *accessible;
+ 
+@@ -155,7 +165,9 @@ atspi_component_get_extents (AtspiComponent *obj,
+     }
+   }
+ 
++#if defined(ENABLE_DBUS)
+   _atspi_dbus_call (obj, atspi_interface_component, "GetExtents", error, "u=>(iiii)", d_ctype, &bbox);
++#endif // #if defined(ENABLE_DBUS)
+   return atspi_rect_copy (&bbox);
+ }
+ 
+@@ -175,12 +187,15 @@ AtspiPoint *
+ atspi_component_get_position (AtspiComponent *obj,
+                                  AtspiCoordType ctype, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_x, d_y;
+   dbus_uint32_t d_ctype = ctype;
++#endif // #if defined(ENABLE_DBUS)
+   AtspiPoint ret;
+ 
+   ret.x = ret.y = -1;
+ 
++#if defined(ENABLE_DBUS)
+   if (!obj)
+     return atspi_point_copy (&ret);
+ 
+@@ -188,6 +203,7 @@ atspi_component_get_position (AtspiComponent *obj,
+ 
+   ret.x = d_x;
+   ret.y = d_y;
++#endif // #if defined(ENABLE_DBUS)
+   return atspi_point_copy (&ret);
+ }
+ 
+@@ -204,16 +220,20 @@ atspi_component_get_position (AtspiComponent *obj,
+ AtspiPoint *
+ atspi_component_get_size (AtspiComponent *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_w, d_h;
++#endif // #if defined(ENABLE_DBUS)
+   AtspiPoint ret;
+ 
+   ret.x = ret.y = -1;
++#if defined(ENABLE_DBUS)
+   if (!obj)
+     return atspi_point_copy (&ret);
+ 
+   _atspi_dbus_call (obj, atspi_interface_component, "GetSize", error, "=>ii", &d_w, &d_h);
+   ret.x = d_w;
+   ret.y = d_h;
++#endif // #if defined(ENABLE_DBUS)
+   return atspi_point_copy (&ret);
+ }
+ 
+@@ -229,11 +249,15 @@ atspi_component_get_size (AtspiComponent *obj, GError **error)
+ AtspiComponentLayer
+ atspi_component_get_layer (AtspiComponent *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_uint32_t zlayer = -1;
+ 
+   _atspi_dbus_call (obj, atspi_interface_component, "GetLayer", error, "=>u", &zlayer);
+ 
+   return zlayer;
++#else
++  return -1;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -249,11 +273,15 @@ atspi_component_get_layer (AtspiComponent *obj, GError **error)
+ gshort
+ atspi_component_get_mdi_z_order (AtspiComponent *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_uint16_t retval = -1;
+ 
+   _atspi_dbus_call (obj, atspi_interface_component, "GetMDIZOrder", error, "=>n", &retval);
+ 
+   return retval;
++#else
++  return -1;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -269,11 +297,15 @@ atspi_component_get_mdi_z_order (AtspiComponent *obj, GError **error)
+ gboolean
+ atspi_component_grab_focus (AtspiComponent *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_bool_t retval = FALSE;
+ 
+   _atspi_dbus_call (obj, atspi_interface_component, "GrabFocus", error, "=>b", &retval);
+ 
+   return retval;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -289,7 +321,9 @@ atspi_component_get_alpha    (AtspiComponent *obj, GError **error)
+ {
+   double retval = 1;
+ 
++#if defined(ENABLE_DBUS)
+   _atspi_dbus_call (obj, atspi_interface_component, "GetAlpha", error, "=>d", &retval);
++#endif // #if defined(ENABLE_DBUS)
+ 
+   return retval;
+ }
+@@ -317,6 +351,7 @@ atspi_component_set_extents (AtspiComponent *obj,
+                              AtspiCoordType ctype,
+                              GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_x = x, d_y = y, d_width = width, d_height = height;
+   dbus_uint32_t d_ctype = ctype;
+   DBusMessageIter iter, iter_struct;
+@@ -358,6 +393,9 @@ atspi_component_set_extents (AtspiComponent *obj,
+                               DBUS_TYPE_INVALID);
+   dbus_message_unref (reply);
+   return retval;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -379,6 +417,7 @@ atspi_component_set_position (AtspiComponent *obj,
+                               AtspiCoordType ctype,
+                               GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_x = x, d_y = y;
+   dbus_uint32_t d_ctype = ctype;
+   dbus_bool_t ret = FALSE;
+@@ -389,6 +428,9 @@ atspi_component_set_position (AtspiComponent *obj,
+                     "iiu=>b", d_x, d_y, d_ctype, &ret);
+ 
+   return ret;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -407,6 +449,7 @@ atspi_component_set_size (AtspiComponent *obj,
+                           gint height,
+                           GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_width = width, d_height = height;
+   dbus_bool_t ret = FALSE;
+ 
+@@ -416,6 +459,9 @@ atspi_component_set_size (AtspiComponent *obj,
+                     d_width, d_height, &ret);
+ 
+   return ret;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -434,6 +480,7 @@ atspi_component_scroll_to (AtspiComponent *obj,
+                            AtspiScrollType type,
+                            GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_bool_t retval = FALSE;
+ 
+   g_return_val_if_fail (obj != NULL, FALSE);
+@@ -442,6 +489,9 @@ atspi_component_scroll_to (AtspiComponent *obj,
+                     "ScrollTo", error, "u=>b", type, &retval);
+ 
+   return retval;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -465,6 +515,7 @@ atspi_component_scroll_to_point (AtspiComponent *obj,
+                                  gint y,
+                                  GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_bool_t retval = FALSE;
+ 
+   g_return_val_if_fail (obj != NULL, FALSE);
+@@ -473,6 +524,9 @@ atspi_component_scroll_to_point (AtspiComponent *obj,
+                     "ScrollToPoint", error, "uii=>b", coords, x, y, &retval);
+ 
+   return retval;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ static void
+diff --git a/atspi/atspi-device-listener-private.h b/atspi/atspi-device-listener-private.h
+index bd54232..eaec2f8 100644
+--- a/atspi/atspi-device-listener-private.h
++++ b/atspi/atspi-device-listener-private.h
+@@ -27,11 +27,15 @@
+ 
+ #include "atspi-device-listener.h"
+ 
++#if defined(ENABLE_DBUS)
+ #include "dbus/dbus.h"
++#endif // #if defined(ENABLE_DBUS)
+ 
+ G_BEGIN_DECLS
+ 
++#if defined(ENABLE_DBUS)
+ DBusHandlerResult _atspi_dbus_handle_DeviceEvent (DBusConnection *bus, DBusMessage *message);
++#endif // #if defined(ENABLE_DBUS)
+ 
+ gchar *_atspi_device_listener_get_path (AtspiDeviceListener *listener);
+ 
+diff --git a/atspi/atspi-device-listener.c b/atspi/atspi-device-listener.c
+index e23b58d..5874ef1 100644
+--- a/atspi/atspi-device-listener.c
++++ b/atspi/atspi-device-listener.c
+@@ -297,6 +297,7 @@ atspi_device_listener_remove_callback (AtspiDeviceListener  *listener,
+   listener->callbacks = event_list_remove_by_cb (listener->callbacks, (void *) callback);
+ }
+ 
++#if defined(ENABLE_DBUS)
+ static void
+ read_device_event_from_iter (DBusMessageIter *iter, AtspiDeviceEvent *event)
+ {
+@@ -395,6 +396,7 @@ done:
+   }
+   return DBUS_HANDLER_RESULT_HANDLED;
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ gchar *
+ _atspi_device_listener_get_path (AtspiDeviceListener *listener)
+diff --git a/atspi/atspi-document.c b/atspi/atspi-document.c
+index a92c0e2..d6e699b 100644
+--- a/atspi/atspi-document.c
++++ b/atspi/atspi-document.c
+@@ -35,6 +35,7 @@
+ gchar *
+ atspi_document_get_locale (AtspiDocument *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   gchar *retval = NULL;
+ 
+   g_return_val_if_fail (obj != NULL, g_strdup ("C"));
+@@ -42,6 +43,9 @@ atspi_document_get_locale (AtspiDocument *obj, GError **error)
+   _atspi_dbus_call (obj, atspi_interface_document, "GetLocale", error, "=>s", &retval);
+ 
+   return retval;
++#else
++  return g_strdup ("C");
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -79,6 +83,7 @@ atspi_document_get_document_attribute_value (AtspiDocument *obj,
+ 				             gchar *attribute,
+ 				             GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   gchar *retval = NULL;
+ 
+   g_return_val_if_fail (obj != NULL, NULL);
+@@ -89,6 +94,9 @@ atspi_document_get_document_attribute_value (AtspiDocument *obj,
+     retval = g_strdup ("");
+ 
+   return retval;
++#else
++  return g_strdup ("");
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 				      
+ 
+@@ -123,12 +131,16 @@ atspi_document_get_attributes (AtspiDocument *obj, GError **error)
+ GHashTable *
+ atspi_document_get_document_attributes (AtspiDocument *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   DBusMessage *message;
+ 
+     g_return_val_if_fail (obj != NULL, NULL);
+ 
+   message = _atspi_dbus_call_partial (obj, atspi_interface_document, "GetAttributes", error, "");
+   return _atspi_dbus_return_hash_from_message (message);
++#else
++  return NULL;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -143,6 +155,7 @@ atspi_document_get_document_attributes (AtspiDocument *obj, GError **error)
+ gint
+ atspi_document_get_page_count (AtspiDocument *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t retval = 0;
+ 
+   g_return_val_if_fail (obj != NULL, -1);
+@@ -150,6 +163,9 @@ atspi_document_get_page_count (AtspiDocument *obj, GError **error)
+   _atspi_dbus_get_property (obj, atspi_interface_document, "PageCount", error, "i", &retval);
+ 
+   return retval;
++#else
++  return -1;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -164,6 +180,7 @@ atspi_document_get_page_count (AtspiDocument *obj, GError **error)
+ gint
+ atspi_document_get_current_page_number (AtspiDocument *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t retval = 0;
+ 
+   g_return_val_if_fail (obj != NULL, -1);
+@@ -171,6 +188,9 @@ atspi_document_get_current_page_number (AtspiDocument *obj, GError **error)
+   _atspi_dbus_get_property (obj, atspi_interface_document, "CurrentPageNumber", error, "i", &retval);
+ 
+   return retval;
++#else
++  return -1;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ static void
+diff --git a/atspi/atspi-editabletext.c b/atspi/atspi-editabletext.c
+index 350617e..b30f00d 100644
+--- a/atspi/atspi-editabletext.c
++++ b/atspi/atspi-editabletext.c
+@@ -71,6 +71,7 @@ atspi_editable_text_set_text_contents (AtspiEditableText *obj,
+                                        const gchar *new_contents,
+                                        GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_bool_t retval = FALSE;
+ 
+   g_return_val_if_fail (obj != NULL, FALSE);
+@@ -78,6 +79,8 @@ atspi_editable_text_set_text_contents (AtspiEditableText *obj,
+   _atspi_dbus_call (obj, atspi_interface_editable_text, "SetTextContents", error, "s=>b", new_contents, &retval);
+ 
+   return retval;
++#endif // #if defined(ENABLE_DBUS)
++  return TRUE;
+ }
+ 
+ /**
+@@ -104,6 +107,7 @@ atspi_editable_text_insert_text (AtspiEditableText *obj,
+                                  gint length,
+                                  GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_position = position, d_length = length;
+   dbus_bool_t retval = FALSE;
+ 
+@@ -112,6 +116,8 @@ atspi_editable_text_insert_text (AtspiEditableText *obj,
+   _atspi_dbus_call (obj, atspi_interface_editable_text, "InsertText", error, "isi=>b", d_position, text, d_length, &retval);
+ 
+   return retval;
++#endif // #if defined(ENABLE_DBUS)
++  return TRUE;
+ }
+ 
+ /**
+@@ -134,12 +140,15 @@ atspi_editable_text_copy_text (AtspiEditableText *obj,
+                                gint end_pos,
+                                GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_start_pos = start_pos, d_end_pos = end_pos;
+ 
+   g_return_val_if_fail (obj != NULL, FALSE);
+ 
+   _atspi_dbus_call (obj, atspi_interface_editable_text, "CopyText", error, "ii", d_start_pos, d_end_pos);
+ 
++  return TRUE;
++#endif // #if defined(ENABLE_DBUS)
+   return TRUE;
+ }
+ 
+@@ -164,6 +173,7 @@ atspi_editable_text_cut_text (AtspiEditableText *obj,
+                               gint end_pos,
+                               GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_start_pos = start_pos, d_end_pos = end_pos;
+   dbus_bool_t retval = FALSE;
+ 
+@@ -172,6 +182,8 @@ atspi_editable_text_cut_text (AtspiEditableText *obj,
+   _atspi_dbus_call (obj, atspi_interface_editable_text, "CutText", error, "ii=>b", d_start_pos, d_end_pos, &retval);
+ 
+   return retval;
++#endif // #if defined(ENABLE_DBUS)
++  return TRUE;
+ }
+ 
+ /**
+@@ -195,6 +207,7 @@ atspi_editable_text_delete_text (AtspiEditableText *obj,
+                                  gint end_pos,
+                                  GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_start_pos = start_pos, d_end_pos = end_pos;
+   dbus_bool_t retval = FALSE;
+ 
+@@ -203,6 +216,8 @@ atspi_editable_text_delete_text (AtspiEditableText *obj,
+   _atspi_dbus_call (obj, atspi_interface_editable_text, "DeleteText", error, "ii=>b", d_start_pos, d_end_pos, &retval);
+ 
+   return retval;
++#endif // #if defined(ENABLE_DBUS)
++  return TRUE;
+ }
+ 
+ /**
+@@ -223,6 +238,7 @@ atspi_editable_text_paste_text (AtspiEditableText *obj,
+                                 gint position,
+                                 GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_position = position;
+   dbus_bool_t retval = FALSE;
+ 
+@@ -231,6 +247,8 @@ atspi_editable_text_paste_text (AtspiEditableText *obj,
+   _atspi_dbus_call (obj, atspi_interface_editable_text, "PasteText", error, "i=>b", d_position, &retval);
+ 
+   return retval;
++#endif // #if defined(ENABLE_DBUS)
++  return TRUE;
+ }
+ 
+ static void
+diff --git a/atspi/atspi-event-listener-private.h b/atspi/atspi-event-listener-private.h
+index 054aa49..fbfc306 100644
+--- a/atspi/atspi-event-listener-private.h
++++ b/atspi/atspi-event-listener-private.h
+@@ -28,13 +28,17 @@
+ 
+ #include "atspi-event-listener.h"
+ 
++#if defined(ENABLE_DBUS)
+ #include "dbus/dbus.h"
++#endif // #if defined(ENABLE_DBUS)
+ 
+ G_BEGIN_DECLS
+ 
+ void _atspi_send_event (AtspiEvent *e);
+ 
++#if defined(ENABLE_DBUS)
+ DBusHandlerResult _atspi_dbus_handle_event (DBusConnection *bus, DBusMessage *message);
++#endif // #if defined(ENABLE_DBUS)
+ void
+ _atspi_reregister_event_listeners ();
+ 
+diff --git a/atspi/atspi-event-listener.c b/atspi/atspi-event-listener.c
+index 8b17243..fccc7a1 100644
+--- a/atspi/atspi-event-listener.c
++++ b/atspi/atspi-event-listener.c
+@@ -171,6 +171,7 @@ static GList *pending_removals = NULL;
+ static int in_send = 0;
+ 
+ 
++#if defined(ENABLE_DBUS)
+ static gchar *
+ convert_name_from_dbus (const char *name, gboolean path_hack)
+ {
+@@ -310,7 +311,9 @@ cache_process_state_changed (AtspiEvent *event)
+     atspi_state_set_set_by_name (event->source->states, event->type + 21,
+                                  event->detail1);
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
++#if defined(ENABLE_DBUS)
+ static dbus_bool_t
+ demarshal_rect (DBusMessageIter *iter, AtspiRect *rect)
+ {
+@@ -335,6 +338,7 @@ demarshal_rect (DBusMessageIter *iter, AtspiRect *rect)
+   rect->height = height;
+   return TRUE;
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ static gboolean
+ convert_event_type_to_dbus (const char *eventType, char **categoryp, char **namep, char **detailp, AtspiAccessible *app, GPtrArray **matchrule_array)
+@@ -592,6 +596,7 @@ atspi_event_listener_register_with_app (AtspiEventListener *listener,
+ static gboolean
+ notify_event_registered (EventListenerEntry *e)
+ {
++#if defined(ENABLE_DBUS)
+   const char *app_path = (e->app? e->app->parent.app->bus_name: "");
+ 
+   dbind_method_call_reentrant (_atspi_bus (), atspi_bus_registry,
+@@ -602,6 +607,9 @@ notify_event_registered (EventListenerEntry *e)
+                                e->properties, app_path);
+ 
+   return TRUE;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -633,6 +641,7 @@ atspi_event_listener_register_from_callback (AtspiEventListenerCB callback,
+                                                                NULL, error);
+ }
+ 
++#if defined(ENABLE_DBUS)
+ static GArray *
+ copy_event_properties (GArray *src)
+ {
+@@ -649,6 +658,7 @@ copy_event_properties (GArray *src)
+     }
+   return dst;
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ /**
+  * atspi_event_listener_register_from_callback_full:
+@@ -699,6 +709,7 @@ atspi_event_listener_register_from_callback_with_app (AtspiEventListenerCB callb
+ 				                      AtspiAccessible *app,
+ 				                      GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   EventListenerEntry *e;
+   DBusError d_error;
+   GPtrArray *matchrule_array;
+@@ -750,6 +761,9 @@ atspi_event_listener_register_from_callback_with_app (AtspiEventListenerCB callb
+ 
+   notify_event_registered (e);
+   return TRUE;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ void
+@@ -794,6 +808,7 @@ atspi_event_listener_register_no_data (AtspiEventListenerSimpleCB callback,
+                                                       event_type, error);
+ }
+ 
++#if defined(ENABLE_DBUS)
+ static gboolean
+ is_superset (const gchar *super, const gchar *sub)
+ {
+@@ -801,6 +816,7 @@ is_superset (const gchar *super, const gchar *sub)
+     return TRUE;
+   return (strcmp (super, sub) == 0);
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ /**
+  * atspi_event_listener_deregister:
+@@ -842,6 +858,7 @@ atspi_event_listener_deregister_from_callback (AtspiEventListenerCB callback,
+ 				               const gchar              *event_type,
+ 				               GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   char *category, *name, *detail;
+   GPtrArray *matchrule_array;
+   gint i;
+@@ -903,6 +920,9 @@ atspi_event_listener_deregister_from_callback (AtspiEventListenerCB callback,
+     g_free (g_ptr_array_index (matchrule_array, i));
+   g_ptr_array_free (matchrule_array, TRUE);
+   return TRUE;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -1037,6 +1057,7 @@ _atspi_send_event (AtspiEvent *e)
+   pending_removals = NULL;
+ }
+ 
++#if defined(ENABLE_DBUS)
+ DBusHandlerResult
+ _atspi_dbus_handle_event (DBusConnection *bus, DBusMessage *message)
+ {
+@@ -1209,5 +1230,6 @@ _atspi_dbus_handle_event (DBusConnection *bus, DBusMessage *message)
+   g_value_unset (&e.any_data);
+   return DBUS_HANDLER_RESULT_HANDLED;
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ G_DEFINE_BOXED_TYPE (AtspiEvent, atspi_event, atspi_event_copy, atspi_event_free)
+diff --git a/atspi/atspi-gmain.c b/atspi/atspi-gmain.c
+index 588a60d..9496063 100644
+--- a/atspi/atspi-gmain.c
++++ b/atspi/atspi-gmain.c
+@@ -25,7 +25,9 @@
+  */
+ 
+ #include <config.h>
++#if defined(ENABLE_DBUS)
+ #include <dbus/dbus.h>
++#endif
+ #include "glib.h"
+ #include <string.h>
+ 
+@@ -39,12 +41,15 @@
+  * We need this on top of the IO handlers, because sometimes
+  * there are messages to dispatch queued up but no IO pending.
+  */
++#if defined(ENABLE_DBUS)
+ typedef struct
+ {
+   GSource source; /* the parent GSource */
+   DBusConnection *connection; /* the connection to dispatch */
+ } DBusGMessageQueue;
++#endif // #if defined(ENABLE_DBUS)
+ 
++#if defined(ENABLE_DBUS)
+ static gboolean message_queue_prepare  (GSource     *source,
+                                         gint        *timeout);
+ static gboolean message_queue_check    (GSource     *source);
+@@ -92,7 +97,9 @@ message_queue_dispatch (GSource     *source,
+ 
+   return TRUE;
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
++#if defined(ENABLE_DBUS)
+ typedef struct
+ {
+   GMainContext *context;      /* the main context */
+@@ -663,3 +670,4 @@ atspi_dbus_server_setup_with_g_main (DBusServer   *server,
+  nomem:
+   g_error ("Not enough memory to set up DBusServer for use with GLib");
+ }
++#endif // #if defined(ENABLE_DBUS)
+diff --git a/atspi/atspi-gmain.h b/atspi/atspi-gmain.h
+index 9efbe5e..1fd74e1 100644
+--- a/atspi/atspi-gmain.h
++++ b/atspi/atspi-gmain.h
+@@ -26,6 +26,7 @@
+ 
+ G_BEGIN_DECLS
+ 
++#if defined(ENABLE_DBUS)
+ void
+ atspi_dbus_connection_setup_with_g_main (DBusConnection *connection,
+ 				   GMainContext   *context);
+@@ -33,6 +34,7 @@ atspi_dbus_connection_setup_with_g_main (DBusConnection *connection,
+ void
+ atspi_dbus_server_setup_with_g_main (DBusServer   *server,
+                                GMainContext *context);
++#endif
+ 
+ G_END_DECLS
+ 
+diff --git a/atspi/atspi-hyperlink.c b/atspi/atspi-hyperlink.c
+index c01f547..646c7cf 100644
+--- a/atspi/atspi-hyperlink.c
++++ b/atspi/atspi-hyperlink.c
+@@ -64,6 +64,7 @@ _atspi_hyperlink_new (AtspiApplication *app, const gchar *path)
+ gint
+ atspi_hyperlink_get_n_anchors (AtspiHyperlink *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t retval = -1;
+ 
+   g_return_val_if_fail (obj != NULL, -1);
+@@ -71,6 +72,9 @@ atspi_hyperlink_get_n_anchors (AtspiHyperlink *obj, GError **error)
+   _atspi_dbus_get_property (obj, atspi_interface_hyperlink, "NAnchors", error, "i", &retval);
+ 
+   return retval;
++#else
++  return -1;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -85,15 +89,19 @@ atspi_hyperlink_get_n_anchors (AtspiHyperlink *obj, GError **error)
+ gchar *
+ atspi_hyperlink_get_uri (AtspiHyperlink *obj, int i, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_i = i;
++#endif // #if defined(ENABLE_DBUS)
+   char *retval = NULL;
+ 
++#if defined(ENABLE_DBUS)
+   g_return_val_if_fail (obj != NULL, NULL);
+ 
+   _atspi_dbus_call (obj, atspi_interface_hyperlink, "GetURI", error, "i=>s", d_i, &retval);
+ 
+   if (!retval)
+     retval = g_strdup ("");
++#endif // #if defined(ENABLE_DBUS)
+ 
+   return retval;
+ }
+@@ -112,6 +120,7 @@ atspi_hyperlink_get_uri (AtspiHyperlink *obj, int i, GError **error)
+ AtspiAccessible*
+ atspi_hyperlink_get_object (AtspiHyperlink *obj, gint i, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_i = i;
+   DBusMessage *reply;
+ 
+@@ -120,6 +129,9 @@ atspi_hyperlink_get_object (AtspiHyperlink *obj, gint i, GError **error)
+   reply = _atspi_dbus_call_partial (obj, atspi_interface_hyperlink, "GetObject", error, "i", d_i);
+ 
+   return _atspi_dbus_return_accessible_from_message (reply);
++#else
++  return NULL;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -133,12 +145,15 @@ atspi_hyperlink_get_object (AtspiHyperlink *obj, gint i, GError **error)
+ AtspiRange *
+ atspi_hyperlink_get_index_range (AtspiHyperlink *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_start_offset = -1;
+   dbus_int32_t d_end_offset = -1;
++#endif // #if defined(ENABLE_DBUS)
+   AtspiRange *ret = g_new (AtspiRange, 1);
+ 
+   ret->start_offset = ret->end_offset = -1;
+ 
++#if defined(ENABLE_DBUS)
+   if (!obj)
+     return ret;
+ 
+@@ -146,6 +161,7 @@ atspi_hyperlink_get_index_range (AtspiHyperlink *obj, GError **error)
+ 
+   ret->start_offset = d_start_offset;
+   ret->end_offset = d_end_offset;
++#endif // #if defined(ENABLE_DBUS)
+   return ret;
+ }
+ 
+@@ -160,6 +176,7 @@ atspi_hyperlink_get_index_range (AtspiHyperlink *obj, GError **error)
+ gint
+ atspi_hyperlink_get_start_index (AtspiHyperlink *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_start_offset = -1;
+ 
+   if (!obj)
+@@ -169,6 +186,9 @@ atspi_hyperlink_get_start_index (AtspiHyperlink *obj, GError **error)
+                             error, "i", &d_start_offset);
+ 
+   return d_start_offset;
++#else
++  return -1;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ /**
+  * atspi_hyperlink_get_end_index:
+@@ -181,6 +201,7 @@ atspi_hyperlink_get_start_index (AtspiHyperlink *obj, GError **error)
+ gint
+ atspi_hyperlink_get_end_index (AtspiHyperlink *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_end_offset = -1;
+ 
+   if (!obj)
+@@ -190,6 +211,9 @@ atspi_hyperlink_get_end_index (AtspiHyperlink *obj, GError **error)
+                             "i", &d_end_offset);
+ 
+   return d_end_offset;
++#else
++  return -1;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ 
+@@ -206,6 +230,7 @@ atspi_hyperlink_get_end_index (AtspiHyperlink *obj, GError **error)
+ gboolean
+ atspi_hyperlink_is_valid (AtspiHyperlink *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_bool_t retval = FALSE;
+ 
+   g_return_val_if_fail (obj != NULL, FALSE);
+@@ -213,4 +238,7 @@ atspi_hyperlink_is_valid (AtspiHyperlink *obj, GError **error)
+   _atspi_dbus_call (obj, atspi_interface_hyperlink, "IsValid", error, "=>b", &retval);
+ 
+   return retval;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+diff --git a/atspi/atspi-hypertext.c b/atspi/atspi-hypertext.c
+index 7ddaab6..bfb623b 100644
+--- a/atspi/atspi-hypertext.c
++++ b/atspi/atspi-hypertext.c
+@@ -40,6 +40,7 @@
+ gint
+ atspi_hypertext_get_n_links (AtspiHypertext *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t retval = 0;
+ 
+   g_return_val_if_fail (obj != NULL, FALSE);
+@@ -47,6 +48,9 @@ atspi_hypertext_get_n_links (AtspiHypertext *obj, GError **error)
+   _atspi_dbus_call (obj, atspi_interface_hypertext, "GetNLinks", error, "=>i", &retval);
+ 
+   return retval;
++#else
++  return -1;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -62,6 +66,7 @@ atspi_hypertext_get_n_links (AtspiHypertext *obj, GError **error)
+ AtspiHyperlink *
+ atspi_hypertext_get_link (AtspiHypertext *obj, gint link_index, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_link_index = link_index;
+   DBusMessage *reply;
+ 	
+@@ -70,6 +75,9 @@ atspi_hypertext_get_link (AtspiHypertext *obj, gint link_index, GError **error)
+   reply = _atspi_dbus_call_partial (obj, atspi_interface_hypertext, "GetLink", error, "i", d_link_index);
+ 
+   return _atspi_dbus_return_hyperlink_from_message (reply);
++#else
++  return NULL;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -89,6 +97,7 @@ atspi_hypertext_get_link_index (AtspiHypertext *obj,
+                                 gint             character_offset,
+                                 GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_character_offset = character_offset;
+   dbus_int32_t retval = -1;
+ 
+@@ -97,6 +106,9 @@ atspi_hypertext_get_link_index (AtspiHypertext *obj,
+   _atspi_dbus_call (obj, atspi_interface_hypertext, "GetLinkIndex", error, "i=>i", d_character_offset, &retval);
+ 
+   return retval;
++#else
++  return -1;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ static void
+diff --git a/atspi/atspi-image.c b/atspi/atspi-image.c
+index 4fd5ae7..6031149 100644
+--- a/atspi/atspi-image.c
++++ b/atspi/atspi-image.c
+@@ -37,9 +37,11 @@ atspi_image_get_image_description (AtspiImage *obj, GError **error)
+ {
+   char *retval = NULL;
+ 
++#if defined(ENABLE_DBUS)
+   g_return_val_if_fail (obj != NULL, NULL);
+ 
+   _atspi_dbus_get_property (obj, atspi_interface_image, "ImageDescription", error, "s", &retval);
++#endif // #if defined(ENABLE_DBUS)
+ 
+   return retval;
+ }
+@@ -59,16 +61,20 @@ atspi_image_get_image_description (AtspiImage *obj, GError **error)
+ AtspiPoint *
+ atspi_image_get_image_size (AtspiImage *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_w, d_h;
++#endif // #if defined(ENABLE_DBUS)
+   AtspiPoint ret;
+ 
+   ret.x = ret.y = -1;
++#if defined(ENABLE_DBUS)
+   if (!obj)
+     return atspi_point_copy (&ret);
+ 
+   _atspi_dbus_call (obj, atspi_interface_image, "GetImageSize", error, "=>ii", &d_w, &d_h);
+   ret.x = d_w;
+   ret.y = d_h;
++#endif // #if defined(ENABLE_DBUS)
+   return atspi_point_copy (&ret);
+ }
+ 
+@@ -92,12 +98,15 @@ atspi_image_get_image_position (AtspiImage *obj,
+                                 AtspiCoordType ctype,
+                                 GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_x, d_y;
+   dbus_uint32_t d_ctype = ctype;
++#endif // #if defined(ENABLE_DBUS)
+   AtspiPoint ret;
+ 
+   ret.x = ret.y = 0;
+ 
++#if defined(ENABLE_DBUS)
+   if (!obj)
+     return atspi_point_copy (&ret);
+ 
+@@ -105,6 +114,7 @@ atspi_image_get_image_position (AtspiImage *obj,
+ 
+   ret.x = d_x;
+   ret.y = d_y;
++#endif // #if defined(ENABLE_DBUS)
+   return atspi_point_copy (&ret);
+ }
+ 
+@@ -127,13 +137,17 @@ atspi_image_get_image_extents (AtspiImage *obj,
+ 			       AtspiCoordType ctype,
+ 			       GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_uint32_t d_ctype = ctype;
++#endif // #if defined(ENABLE_DBUS)
+   AtspiRect bbox;
+ 
+   bbox.x = bbox.y = bbox.width = bbox.height = -1;
++#if defined(ENABLE_DBUS)
+   g_return_val_if_fail (obj != NULL, atspi_rect_copy (&bbox));
+ 
+   _atspi_dbus_call (obj, atspi_interface_image, "GetImageExtents", error, "u=>(iiii)", d_ctype, &bbox);
++#endif // #if defined(ENABLE_DBUS)
+ 
+   return atspi_rect_copy (&bbox);
+ }
+@@ -149,6 +163,7 @@ atspi_image_get_image_extents (AtspiImage *obj,
+ gchar *
+ atspi_image_get_image_locale  (AtspiImage *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   gchar *retval = NULL;
+ 
+   g_return_val_if_fail (obj != NULL, g_strdup ("C"));
+@@ -156,6 +171,9 @@ atspi_image_get_image_locale  (AtspiImage *obj, GError **error)
+   _atspi_dbus_get_property (obj, atspi_interface_image, "ImageLocale", error, "s", &retval);
+ 
+   return retval;
++#else
++  return g_strdup ("C");
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ static void
+diff --git a/atspi/atspi-matchrule-private.h b/atspi/atspi-matchrule-private.h
+index a8b579a..e715d48 100644
+--- a/atspi/atspi-matchrule-private.h
++++ b/atspi/atspi-matchrule-private.h
+@@ -29,12 +29,16 @@
+ #include "glib-object.h"
+ 
+ #include "atspi-matchrule.h"
++#if defined(ENABLE_DBUS)
+ #include "dbus/dbus.h"
++#endif // #if defined(ENABLE_DBUS)
+ 
+ G_BEGIN_DECLS
+ 
++#if defined(ENABLE_DBUS)
+ gboolean
+ _atspi_match_rule_marshal (AtspiMatchRule *rule, DBusMessageIter *iter);
++#endif // #if defined(ENABLE_DBUS)
+ 
+ G_END_DECLS
+ 
+diff --git a/atspi/atspi-matchrule.c b/atspi/atspi-matchrule.c
+index 6fb4210..58048f5 100644
+--- a/atspi/atspi-matchrule.c
++++ b/atspi/atspi-matchrule.c
+@@ -176,6 +176,7 @@ atspi_match_rule_new (AtspiStateSet *states,
+   return rule;
+ }
+ 
++#if defined(ENABLE_DBUS)
+ static void
+ append_entry (gpointer key, gpointer val, gpointer data)
+ {
+@@ -267,3 +268,4 @@ _atspi_match_rule_marshal (AtspiMatchRule *rule, DBusMessageIter *iter)
+   dbus_message_iter_close_container (iter, &iter_struct);
+   return TRUE;
+ }
++#endif // #if defined(ENABLE_DBUS)
+diff --git a/atspi/atspi-misc-private.h b/atspi/atspi-misc-private.h
+index b3040d5..8546eac 100644
+--- a/atspi/atspi-misc-private.h
++++ b/atspi/atspi-misc-private.h
+@@ -32,7 +32,9 @@
+ 
+ #include "atspi.h"
+ 
++#if defined(ENABLE_DBUS)
+ #include "dbus/dbus.h"
++#endif // #if defined(ENABLE_DBUS)
+ 
+ #include "dbind/dbind.h"
+ 
+@@ -73,10 +75,13 @@ extern const char *atspi_interface_value;
+ /* function prototypes */
+ gint _atspi_get_iface_num (const char *iface);
+ 
++#if defined(ENABLE_DBUS)
+ DBusConnection * _atspi_bus ();
++#endif // #if defined(ENABLE_DBUS)
+ 
+ AtspiAccessible * _atspi_ref_accessible (const char *app, const char *path);
+ 
++#if defined(ENABLE_DBUS)
+ AtspiAccessible *
+ _atspi_dbus_return_accessible_from_message (DBusMessage *message);
+ 
+@@ -129,6 +134,7 @@ void _atspi_dbus_set_state (AtspiAccessible *accessible, DBusMessageIter *iter);
+     dbus_message_unref (message); \
+     return (ret); \
+   }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ 
+ /**
+@@ -158,7 +164,9 @@ GHashTable *_atspi_get_live_refs ();
+ 
+ gchar *_atspi_name_compat (gchar *in);
+ 
++#if defined(ENABLE_DBUS)
+ GHashTable *_atspi_dbus_update_cache_from_dict (AtspiAccessible *accessible, DBusMessageIter *iter);
++#endif // #if defined(ENABLE_DBUS)
+ 
+ gboolean _atspi_prepare_screen_reader_interface ();
+ 
+diff --git a/atspi/atspi-misc.c b/atspi/atspi-misc.c
+index cc7e54d..a1e6284 100644
+--- a/atspi/atspi-misc.c
++++ b/atspi/atspi-misc.c
+@@ -37,9 +37,11 @@
+ #include <string.h>
+ #include <ctype.h>
+ 
++#if defined(ENABLE_DBUS)
+ static void handle_get_items (DBusPendingCall *pending, void *user_data);
+ 
+ static DBusConnection *bus = NULL;
++#endif // #if defined(ENABLE_DBUS)
+ static GHashTable *live_refs = NULL;
+ static gint method_call_timeout = 800;
+ static gint app_startup_time = 15000;
+@@ -118,6 +120,7 @@ _atspi_get_live_refs (void)
+ }
+ 
+ /* TODO: Add an application parameter */
++#if defined(ENABLE_DBUS)
+ DBusConnection *
+ _atspi_bus ()
+ {
+@@ -127,12 +130,15 @@ _atspi_bus ()
+     g_error ("AT-SPI: Couldn't connect to accessibility bus. Is at-spi-bus-launcher running?");
+   return bus;
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ #define APP_IS_REGISTRY(app) (!strcmp (app->bus_name, atspi_bus_registry))
+ 
+ static AtspiAccessible *desktop;
+ 
++#if defined(ENABLE_DBUS)
+ static void cleanup_deferred_message (void);
++#endif // #if defined(ENABLE_DBUS)
+ 
+ static void
+ cleanup ()
+@@ -164,6 +170,7 @@ cleanup ()
+   desktop = NULL;
+ 
+ end:
++#if defined(ENABLE_DBUS)
+   if (bus)
+     {
+       dbus_connection_close (bus);
+@@ -172,12 +179,14 @@ end:
+     }
+ 
+     cleanup_deferred_message ();
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ static gboolean atspi_inited = FALSE;
+ 
+ static GHashTable *app_hash = NULL;
+ 
++#if defined(ENABLE_DBUS)
+ static void
+ handle_get_bus_address (DBusPendingCall *pending, void *user_data)
+ {
+@@ -230,14 +239,17 @@ handle_get_bus_address (DBusPendingCall *pending, void *user_data)
+     return;
+   dbus_pending_call_set_notify (new_pending, handle_get_items, app, NULL);
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ static AtspiApplication *
+ get_application (const char *bus_name)
+ {
+   AtspiApplication *app = NULL;
+   char *bus_name_dup;
++#if defined(ENABLE_DBUS)
+   DBusMessage *message;
+   DBusPendingCall *pending = NULL;
++#endif // #if defined(ENABLE_DBUS)
+ 
+   if (!app_hash)
+   {
+@@ -251,10 +263,13 @@ get_application (const char *bus_name)
+   // TODO: change below to something that will send state-change:defunct notification if necessary */
+   app = _atspi_application_new (bus_name);
+   app->hash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_object_unref);
++#if defined(ENABLE_DBUS)
+   app->bus = dbus_connection_ref (_atspi_bus ());
++#endif // #if defined(ENABLE_DBUS)
+   gettimeofday (&app->time_added, NULL);
+   app->cache = ATSPI_CACHE_UNDEFINED;
+   g_hash_table_insert (app_hash, bus_name_dup, app);
++#if defined(ENABLE_DBUS)
+   message = dbus_message_new_method_call (bus_name, atspi_path_root,
+                                           atspi_interface_application, "GetApplicationBusAddress");
+ 
+@@ -266,6 +281,7 @@ get_application (const char *bus_name)
+     return NULL;
+   }
+   dbus_pending_call_set_notify (pending, handle_get_bus_address, app, NULL);
++#endif // #if defined(ENABLE_DBUS)
+   return app;
+ }
+ 
+@@ -303,6 +319,7 @@ ref_accessible (const char *app_name, const char *path)
+   return a;
+ }
+ 
++#if defined(ENABLE_DBUS)
+ static AtspiHyperlink *
+ ref_hyperlink (const char *app_name, const char *path)
+ {
+@@ -323,6 +340,7 @@ ref_hyperlink (const char *app_name, const char *path)
+   g_object_ref (hyperlink);	/* for the hash */
+   return hyperlink;
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ typedef struct
+ {
+@@ -331,11 +349,14 @@ typedef struct
+   GArray *children;
+   GArray *interfaces;
+   char *name;
++#if defined(ENABLE_DBUS)
+   dbus_uint32_t role;
++#endif // #if defined(ENABLE_DBUS)
+   char *description;
+   GArray *state_bitflags;
+ } CACHE_ADDITION;
+ 
++#if defined(ENABLE_DBUS)
+ static DBusHandlerResult
+ handle_remove_accessible (DBusConnection *bus, DBusMessage *message)
+ {
+@@ -366,7 +387,9 @@ handle_remove_accessible (DBusConnection *bus, DBusMessage *message)
+   g_object_unref (a);	/* unref our own ref */
+   return DBUS_HANDLER_RESULT_HANDLED;
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
++#if defined(ENABLE_DBUS)
+ static DBusHandlerResult
+ handle_name_owner_changed (DBusConnection *bus, DBusMessage *message)
+ {
+@@ -401,7 +424,9 @@ handle_name_owner_changed (DBusConnection *bus, DBusMessage *message)
+   }
+   return DBUS_HANDLER_RESULT_HANDLED;
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
++#if defined(ENABLE_DBUS)
+ static gboolean
+ add_app_to_desktop (AtspiAccessible *a, const char *bus_name)
+ {
+@@ -411,7 +436,9 @@ add_app_to_desktop (AtspiAccessible *a, const char *bus_name)
+   g_object_unref (obj);
+   return (obj != NULL);
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
++#if defined(ENABLE_DBUS)
+ static void
+ get_reference_from_iter (DBusMessageIter *iter, const char **app_name, const char **path)
+ {
+@@ -423,7 +450,9 @@ get_reference_from_iter (DBusMessageIter *iter, const char **app_name, const cha
+   dbus_message_iter_get_basic (&iter_struct, path);
+   dbus_message_iter_next (iter);
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
++#if defined(ENABLE_DBUS)
+ static void
+ add_accessible_from_iter (DBusMessageIter *iter)
+ {
+@@ -533,7 +562,9 @@ add_accessible_from_iter (DBusMessageIter *iter)
+    * the one provided for us anymore */
+   g_object_unref (accessible);
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
++#if defined(ENABLE_DBUS)
+ static void
+ handle_get_items (DBusPendingCall *pending, void *user_data)
+ {
+@@ -570,15 +601,18 @@ handle_get_items (DBusPendingCall *pending, void *user_data)
+   dbus_message_unref (reply);
+   dbus_pending_call_unref (pending);
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ /* TODO: Do we stil need this function? */
+ static AtspiAccessible *
+ ref_accessible_desktop (AtspiApplication *app)
+ {
++#if defined(ENABLE_DBUS)
+   GError *error;
+   DBusMessage *message, *reply;
+   DBusMessageIter iter, iter_array;
+   gchar *bus_name_dup;
++#endif // #if defined(ENABLE_DBUS)
+ 
+   if (desktop)
+   {
+@@ -594,6 +628,7 @@ ref_accessible_desktop (AtspiApplication *app)
+                        g_object_ref (desktop));
+   app->root = g_object_ref (desktop);
+   desktop->name = g_strdup ("main");
++#if defined(ENABLE_DBUS)
+   message = dbus_message_new_method_call (atspi_bus_registry,
+ 	atspi_path_root,
+ 	atspi_interface_accessible,
+@@ -628,6 +663,7 @@ ref_accessible_desktop (AtspiApplication *app)
+     g_hash_table_insert (app_hash, bus_name_dup, app);
+ 
+   dbus_message_unref (reply);
++#endif // #if defined(ENABLE_DBUS)
+ 
+   return g_object_ref (desktop);
+ }
+@@ -647,6 +683,7 @@ _atspi_ref_accessible (const char *app, const char *path)
+   return ref_accessible (app, path);
+ }
+ 
++#if defined(ENABLE_DBUS)
+ AtspiAccessible *
+ _atspi_dbus_return_accessible_from_message (DBusMessage *message)
+ {
+@@ -876,6 +913,7 @@ atspi_dbus_filter (DBusConnection *bus, DBusMessage *message, void *data)
+   }
+   return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ /**
+  * atspi_init:
+@@ -887,8 +925,10 @@ atspi_dbus_filter (DBusConnection *bus, DBusMessage *message, void *data)
+ int
+ atspi_init (void)
+ {
++#if defined(ENABLE_DBUS)
+   char *match;
+   const gchar *no_cache;
++#endif // #if defined(ENABLE_DBUS)
+ 
+   if (atspi_inited)
+     {
+@@ -897,6 +937,7 @@ atspi_init (void)
+ 
+   atspi_inited = TRUE;
+ 
++#if defined(ENABLE_DBUS)
+   _atspi_get_live_refs();
+ 
+   bus = atspi_get_a11y_bus ();
+@@ -930,6 +971,7 @@ atspi_init (void)
+     atspi_no_cache = TRUE;
+ 
+   deferred_messages = g_queue_new ();
++#endif // #if defined(ENABLE_DBUS)
+ 
+   return 0;
+ }
+@@ -1010,8 +1052,11 @@ atspi_exit (void)
+   return leaked;
+ }
+ 
++#if defined(ENABLE_DBUS)
+ static GSList *hung_processes;
++#endif // #if defined(ENABLE_DBUS)
+ 
++#if defined(ENABLE_DBUS)
+ static void
+ remove_hung_process (DBusPendingCall *pending, void *data)
+ {
+@@ -1047,7 +1092,9 @@ check_for_hang (DBusMessage *message, DBusError *error, DBusConnection *bus, con
+     dbus_pending_call_set_notify (pending, remove_hung_process, bus_name_dup, NULL);
+   }
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
++#if defined(ENABLE_DBUS)
+ static gboolean
+ connection_is_hung (const char *bus_name)
+ {
+@@ -1058,10 +1105,13 @@ connection_is_hung (const char *bus_name)
+       return TRUE;
+   return FALSE;
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
++#if defined(ENABLE_DBUS)
+ static gboolean
+ check_app (AtspiApplication *app, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   if (!app || !app->bus)
+   {
+     g_set_error_literal (error, ATSPI_ERROR, ATSPI_ERROR_APPLICATION_GONE,
+@@ -1077,8 +1127,13 @@ check_app (AtspiApplication *app, GError **error)
+   }
+ 
+   return TRUE;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
++#if defined(ENABLE_DBUS)
+ static void
+ set_timeout (AtspiApplication *app)
+ {
+@@ -1382,6 +1437,7 @@ _atspi_dbus_attribute_array_from_iter (DBusMessageIter *iter)
+   }
+   return array;
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ typedef enum {
+   DEMARSHAL_STATUS_SUCCESS,
+@@ -1394,6 +1450,7 @@ typedef struct {
+   GPtrArray *names;
+ } InterfaceNames;
+ 
++#if defined(ENABLE_DBUS)
+ static DemarshalStatus
+ interface_names_demarshal (DBusMessageIter *iter, InterfaceNames **out_interfaces)
+ {
+@@ -1425,8 +1482,10 @@ interface_names_demarshal (DBusMessageIter *iter, InterfaceNames **out_interface
+   *out_interfaces = ifaces;
+   return DEMARSHAL_STATUS_SUCCESS;
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ /* Converts an array of interface names to a value suitable for AtspiAccessible.interfaces */
++#if defined(ENABLE_DBUS)
+ static gint
+ interface_names_to_bitmask (const InterfaceNames *ifaces)
+ {
+@@ -1451,14 +1510,18 @@ interface_names_to_bitmask (const InterfaceNames *ifaces)
+ 
+   return val;
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
++#if defined(ENABLE_DBUS)
+ static void
+ interface_names_free (InterfaceNames *ifaces)
+ {
+   g_ptr_array_free (ifaces->names, TRUE);
+   g_free (ifaces);
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
++#if defined(ENABLE_DBUS)
+ void
+ _atspi_dbus_set_interfaces (AtspiAccessible *accessible, DBusMessageIter *iter)
+ {
+@@ -1504,6 +1567,7 @@ _atspi_dbus_set_state (AtspiAccessible *accessible, DBusMessageIter *iter)
+   }
+   _atspi_accessible_add_cache (accessible, ATSPI_CACHE_STATES);
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ GQuark
+ _atspi_error_quark (void)
+@@ -1593,9 +1657,11 @@ get_accessibility_bus_address_x11 (void)
+ }
+ #endif
+ 
++#if defined(ENABLE_DBUS)
+ static char *
+ get_accessibility_bus_address_dbus (void)
+ {
++#if defined(ENABLE_DBUS)
+   DBusConnection *session_bus = NULL;
+   DBusMessage *message;
+   DBusMessage *reply;
+@@ -1644,11 +1710,18 @@ get_accessibility_bus_address_dbus (void)
+ out:
+   dbus_connection_unref (session_bus);
+   return address;
++#else
++  return NULL;
++#endif // #if defined(ENABLE_DBUS)
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
++#if defined(ENABLE_DBUS)
+ static DBusConnection *a11y_bus;
+ static dbus_int32_t a11y_dbus_slot = -1;
++#endif // #if defined(ENABLE_DBUS)
+ 
++#if defined(ENABLE_DBUS)
+ static void
+ a11y_bus_free (void *data)
+ {
+@@ -1658,10 +1731,12 @@ a11y_bus_free (void *data)
+       dbus_connection_free_data_slot (&a11y_dbus_slot);
+     }
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ /**
+  * atspi_get_a11y_bus: (skip)
+  */
++#if defined(ENABLE_DBUS)
+ DBusConnection *
+ atspi_get_a11y_bus (void)
+ {
+@@ -1718,6 +1793,7 @@ atspi_get_a11y_bus (void)
+ 
+   return a11y_bus;
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ /**
+  * atspi_set_timeout:
+@@ -1763,6 +1839,7 @@ atspi_set_main_context (GMainContext *cnx)
+ {
+   if (atspi_main_context == cnx)
+     return;
++#if defined(ENABLE_DBUS)
+   if (process_deferred_messages_source != NULL)
+   {
+     g_source_destroy (process_deferred_messages_source);
+@@ -1772,7 +1849,9 @@ atspi_set_main_context (GMainContext *cnx)
+     g_source_attach (process_deferred_messages_source, cnx);
+     g_source_unref (process_deferred_messages_source);
+   }
++#endif // #if defined(ENABLE_DBUS)
+   atspi_main_context = cnx;
++#if defined(ENABLE_DBUS)
+   atspi_dbus_connection_setup_with_g_main (atspi_get_a11y_bus (), cnx);
+ 
+   if (desktop)
+@@ -1785,6 +1864,7 @@ atspi_set_main_context (GMainContext *cnx)
+         atspi_dbus_connection_setup_with_g_main (child->parent.app->bus, cnx);
+     }
+   }
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ #ifdef DEBUG_REF_COUNTS
+@@ -1852,6 +1932,7 @@ atspi_role_get_name (AtspiRole role)
+   return NULL;
+ }
+ 
++#if defined(ENABLE_DBUS)
+ GHashTable *
+ _atspi_dbus_update_cache_from_dict (AtspiAccessible *accessible, DBusMessageIter *iter)
+ {
+@@ -1918,7 +1999,9 @@ _atspi_dbus_update_cache_from_dict (AtspiAccessible *accessible, DBusMessageIter
+ 
+   return cache;
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
++#if defined(ENABLE_DBUS)
+ static const char *sr_introspection = "<!DOCTYPE node PUBLIC \"-//freedesktop//DTD D-BUS Object Introspection 1.0//EN\"\n"
+ "\"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd\">\n"
+ "<node name=\"/org/a11y/atspi/screenreader\">\n"
+@@ -1929,7 +2012,9 @@ static const char *sr_introspection = "<!DOCTYPE node PUBLIC \"-//freedesktop//D
+ "    </signal>\n"
+ "  </interface>\n"
+ "</node>";
++#endif // #if defined(ENABLE_DBUS)
+ 
++#if defined(ENABLE_DBUS)
+ static DBusHandlerResult
+ screen_reader_filter (DBusConnection *bus, DBusMessage *message, void *user_data)
+ {
+@@ -1945,24 +2030,31 @@ screen_reader_filter (DBusConnection *bus, DBusMessage *message, void *user_data
+   }
+   return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ gboolean
+ _atspi_prepare_screen_reader_interface ()
+ {
+   static gint initialized = 0;
++#if defined(ENABLE_DBUS)
+   DBusConnection *a11y_bus = _atspi_bus ();
++#endif // #if defined(ENABLE_DBUS)
+ 
+   if (initialized)
+     return (initialized > 0);
+ 
++#if defined(ENABLE_DBUS)
+   if (dbus_bus_request_name (a11y_bus, "org.a11y.Atspi.ScreenReader", 0, NULL) < 0)
+   {
+     initialized = -1;
+     return FALSE;
+   }
++#endif // #if defined(ENABLE_DBUS)
+ 
+   initialized = 1;
++#if defined(ENABLE_DBUS)
+   dbus_connection_add_filter (a11y_bus, screen_reader_filter, NULL, NULL);
++#endif // #if defined(ENABLE_DBUS)
+   return TRUE;
+ }
+ 
+diff --git a/atspi/atspi-misc.h b/atspi/atspi-misc.h
+index 0461728..f8b437c 100644
+--- a/atspi/atspi-misc.h
++++ b/atspi/atspi-misc.h
+@@ -37,8 +37,10 @@ void atspi_event_quit ();
+ 
+ int atspi_exit ();
+ 
++#if defined(ENABLE_DBUS)
+ DBusConnection *
+ atspi_get_a11y_bus ();
++#endif // #if defined(ENABLE_DBUS)
+ 
+ void
+ atspi_set_timeout (gint val, gint startup_time);
+diff --git a/atspi/atspi-mutter.c b/atspi/atspi-mutter.c
+index 4445c18..2e49965 100644
+--- a/atspi/atspi-mutter.c
++++ b/atspi/atspi-mutter.c
+@@ -35,13 +35,17 @@
+ 
+ typedef struct
+ {
++#if defined(ENABLE_DBUS)
+   DBusConnection *bus;
++#endif // #if defined(ENABLE_DBUS)
+   const char *rd_session_id;
+   const char *rd_session_path;
+   const char *sc_session_id;
+   const char *sc_session_path;
+   const char *sc_stream_path;
++#if defined(ENABLE_DBUS)
+   dbus_uint64_t window_id;
++#endif // #if defined(ENABLE_DBUS)
+   gboolean window_id_is_explicit;
+ } ATSPI_MUTTER_DATA;
+ 
+@@ -58,6 +62,7 @@ static ATSPI_MUTTER_DATA data;
+ 
+ /* TODO: consider porting this to gdbus */
+ 
++#if defined(ENABLE_DBUS)
+ static void
+ ensure_bus ()
+ {
+@@ -386,6 +391,7 @@ _atspi_mutter_generate_mouse_event (glong x, glong y, const gchar *name, GError
+   }
+   return TRUE;
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ void
+ _atspi_mutter_set_reference_window (AtspiAccessible *accessible)
+@@ -393,10 +399,14 @@ _atspi_mutter_set_reference_window (AtspiAccessible *accessible)
+   if (accessible)
+   {
+     AtspiRole role = atspi_accessible_get_role (accessible, NULL);
++#if defined(ENABLE_DBUS)
+     gchar *name;
++#endif // #if defined(ENABLE_DBUS)
+     g_return_if_fail (role != ATSPI_ROLE_APPLICATION);
++#if defined(ENABLE_DBUS)
+     name = atspi_accessible_get_name (accessible, NULL);
+     data.window_id = get_window_id (name);
++#endif // #if defined(ENABLE_DBUS)
+     data.window_id_is_explicit = TRUE;
+   }
+ 
+diff --git a/atspi/atspi-registry.c b/atspi/atspi-registry.c
+index 382308f..811a4c9 100644
+--- a/atspi/atspi-registry.c
++++ b/atspi/atspi-registry.c
+@@ -101,6 +101,7 @@ atspi_get_desktop_list ()
+ static gboolean
+ notify_keystroke_listener (DeviceListenerEntry *e)
+ {
++#if defined(ENABLE_DBUS)
+   gchar *path = _atspi_device_listener_get_path (e->listener);
+   dbus_uint32_t d_modmask = e->modmask;
+   dbus_uint32_t d_event_types = e->event_types;
+@@ -131,6 +132,9 @@ notify_keystroke_listener (DeviceListenerEntry *e)
+   g_free (path);
+ 
+   return retval;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ static void
+@@ -272,9 +276,11 @@ atspi_deregister_keystroke_listener (AtspiDeviceListener *listener,
+   GArray *d_key_set;
+   gchar *path;
+   gint i;
++#if defined(ENABLE_DBUS)
+   dbus_uint32_t d_modmask = modmask;
+   dbus_uint32_t d_event_types = event_types;
+   DBusError d_error;
++#endif // #if defined(ENABLE_DBUS)
+   GList *l;
+ 
+   if (!listener)
+@@ -282,7 +288,9 @@ atspi_deregister_keystroke_listener (AtspiDeviceListener *listener,
+       return FALSE;
+     }
+ 
++#if defined(ENABLE_DBUS)
+   dbus_error_init (&d_error);
++#endif // #if defined(ENABLE_DBUS)
+ 
+   path = _atspi_device_listener_get_path (listener);
+ 
+@@ -312,6 +320,7 @@ atspi_deregister_keystroke_listener (AtspiDeviceListener *listener,
+       d_key_set = g_array_sized_new (FALSE, TRUE, sizeof (AtspiKeyDefinition), 0);
+     }
+ 
++#if defined(ENABLE_DBUS)
+   dbind_method_call_reentrant (_atspi_bus(), atspi_bus_registry,
+                                atspi_path_dec, atspi_interface_dec,
+                                "DeregisterKeystrokeListener", &d_error,
+@@ -322,6 +331,7 @@ atspi_deregister_keystroke_listener (AtspiDeviceListener *listener,
+       g_warning ("DeregisterKeystrokeListener failed: %s", d_error.message);
+       dbus_error_free (&d_error);
+     }
++#endif // #if defined(ENABLE_DBUS)
+ 
+   unregister_listener (listener, NULL);
+   for (l = device_listeners; l;)
+@@ -365,6 +375,7 @@ atspi_register_device_event_listener (AtspiDeviceListener  *listener,
+ 				 void                      *filter, GError **error)
+ {
+   gboolean                          retval = FALSE;
++#if defined(ENABLE_DBUS)
+   dbus_uint32_t d_event_types = event_types;
+   gchar *path;
+   DBusError d_error;
+@@ -386,6 +397,7 @@ atspi_register_device_event_listener (AtspiDeviceListener  *listener,
+       }
+ 
+   g_free (path);
++#endif // #if defined(ENABLE_DBUS)
+   return retval;
+ }
+ 
+@@ -405,6 +417,7 @@ gboolean
+ atspi_deregister_device_event_listener (AtspiDeviceListener *listener,
+ 				   void                     *filter, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_uint32_t event_types = 0;
+   gchar *path;
+   DBusError d_error;
+@@ -429,6 +442,7 @@ atspi_deregister_device_event_listener (AtspiDeviceListener *listener,
+     }
+ 
+   g_free (path);
++#endif // #if defined(ENABLE_DBUS)
+   return TRUE;
+ }
+ 
+@@ -466,6 +480,7 @@ atspi_generate_keyboard_event (glong keyval,
+ 			   const gchar *keystring,
+ 			   AtspiKeySynthType synth_type, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_uint32_t d_synth_type = synth_type;
+   dbus_int32_t d_keyval = keyval;
+   DBusError d_error;
+@@ -485,6 +500,7 @@ atspi_generate_keyboard_event (glong keyval,
+       g_warning ("GenerateKeyboardEvent failed: %s", d_error.message);
+       dbus_error_free (&d_error);
+     }
++#endif // #if defined(ENABLE_DBUS)
+ 
+   return TRUE;
+ }
+@@ -509,6 +525,7 @@ atspi_generate_keyboard_event (glong keyval,
+ gboolean
+ atspi_generate_mouse_event (glong x, glong y, const gchar *name, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_x = x, d_y = y;
+   DBusError d_error;
+ 
+@@ -530,6 +547,7 @@ atspi_generate_mouse_event (glong x, glong y, const gchar *name, GError **error)
+       g_warning ("GenerateMouseEvent failed: %s", d_error.message);
+       dbus_error_free (&d_error);
+     }
++#endif // #if defined(ENABLE_DBUS)
+ 
+   return TRUE;
+ }
+diff --git a/atspi/atspi-relation.c b/atspi/atspi-relation.c
+index 1006343..5847376 100644
+--- a/atspi/atspi-relation.c
++++ b/atspi/atspi-relation.c
+@@ -79,6 +79,7 @@ atspi_relation_get_target (AtspiRelation *obj, gint i)
+   return g_object_ref (g_array_index (obj->targets, AtspiAccessible *, i));
+ }
+ 
++#if defined(ENABLE_DBUS)
+ AtspiRelation *
+ _atspi_relation_new_from_iter (DBusMessageIter *iter)
+ {
+@@ -105,6 +106,7 @@ _atspi_relation_new_from_iter (DBusMessageIter *iter)
+   }
+   return relation;
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ G_DEFINE_TYPE (AtspiRelation, atspi_relation, G_TYPE_OBJECT)
+ 
+diff --git a/atspi/atspi-relation.h b/atspi/atspi-relation.h
+index 0c32d6a..d1f1708 100644
+--- a/atspi/atspi-relation.h
++++ b/atspi/atspi-relation.h
+@@ -60,7 +60,9 @@ gint atspi_relation_get_n_targets (AtspiRelation *obj);
+ AtspiAccessible * atspi_relation_get_target (AtspiRelation *obj, gint i);
+ 
+ /* private */
++#if defined(ENABLE_DBUS)
+ AtspiRelation * _atspi_relation_new_from_iter (DBusMessageIter *iter);
++#endif // #if defined(ENABLE_DBUS)
+ 
+ G_END_DECLS
+ 
+diff --git a/atspi/atspi-selection.c b/atspi/atspi-selection.c
+index 0e72845..03ae986 100644
+--- a/atspi/atspi-selection.c
++++ b/atspi/atspi-selection.c
+@@ -38,6 +38,7 @@
+ gint
+ atspi_selection_get_n_selected_children (AtspiSelection *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t retval = -1;
+ 
+   g_return_val_if_fail (obj != NULL, -1);
+@@ -45,6 +46,9 @@ atspi_selection_get_n_selected_children (AtspiSelection *obj, GError **error)
+   _atspi_dbus_get_property (obj, atspi_interface_selection, "NSelectedChildren", error, "i", &retval);
+ 
+   return retval;
++#else
++  return -1;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -70,6 +74,7 @@ AtspiAccessible *
+ atspi_selection_get_selected_child (AtspiSelection *obj,
+                                       gint selected_child_index, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_selected_child_index = selected_child_index;
+   DBusMessage *reply;
+ 
+@@ -80,6 +85,9 @@ atspi_selection_get_selected_child (AtspiSelection *obj,
+                                     d_selected_child_index);
+ 
+   return _atspi_dbus_return_accessible_from_message (reply);
++#else
++  return NULL;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -100,6 +108,7 @@ atspi_selection_select_child (AtspiSelection *obj,
+                               gint child_index,
+                               GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_child_index = child_index;
+   dbus_bool_t retval = FALSE;
+ 
+@@ -108,6 +117,9 @@ atspi_selection_select_child (AtspiSelection *obj,
+   _atspi_dbus_call (obj, atspi_interface_selection, "SelectChild", error, "i=>b", d_child_index, &retval);
+ 
+   return retval;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -129,6 +141,7 @@ atspi_selection_deselect_selected_child (AtspiSelection *obj,
+                                          gint selected_child_index,
+                                          GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_selected_child_index = selected_child_index;
+   dbus_bool_t retval = FALSE;
+ 
+@@ -137,6 +150,9 @@ atspi_selection_deselect_selected_child (AtspiSelection *obj,
+   _atspi_dbus_call (obj, atspi_interface_selection, "DeselectSelectedChild", error, "i=>b", d_selected_child_index, &retval);
+ 
+   return retval;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -158,6 +174,7 @@ atspi_selection_deselect_child (AtspiSelection *obj,
+ 				gint child_index,
+ 				GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_child_index = child_index;
+   dbus_bool_t retval = FALSE;
+ 
+@@ -166,6 +183,9 @@ atspi_selection_deselect_child (AtspiSelection *obj,
+   _atspi_dbus_call (obj, atspi_interface_selection, "DeselectChild", error, "i=>b", d_child_index, &retval);
+ 
+   return retval;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -185,6 +205,7 @@ atspi_selection_is_child_selected (AtspiSelection *obj,
+                                    gint child_index,
+                                    GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_child_index = child_index;
+   dbus_bool_t retval = FALSE;
+ 
+@@ -193,6 +214,9 @@ atspi_selection_is_child_selected (AtspiSelection *obj,
+   _atspi_dbus_call (obj, atspi_interface_selection, "IsChildSelected", error, "i=>b", d_child_index, &retval);
+ 
+   return retval;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -208,6 +232,7 @@ atspi_selection_is_child_selected (AtspiSelection *obj,
+ gboolean
+ atspi_selection_select_all (AtspiSelection *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_bool_t retval = FALSE;
+   
+   g_return_val_if_fail (obj != NULL, FALSE);
+@@ -215,6 +240,9 @@ atspi_selection_select_all (AtspiSelection *obj, GError **error)
+   _atspi_dbus_call (obj, atspi_interface_selection, "SelectAll", error, "=>b", &retval);
+ 
+   return retval;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -230,6 +258,7 @@ atspi_selection_select_all (AtspiSelection *obj, GError **error)
+ gboolean
+ atspi_selection_clear_selection (AtspiSelection *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_bool_t retval = FALSE;
+   
+   g_return_val_if_fail (obj != NULL, FALSE);
+@@ -237,6 +266,9 @@ atspi_selection_clear_selection (AtspiSelection *obj, GError **error)
+   _atspi_dbus_call (obj, atspi_interface_selection, "ClearSelection", error, "=>b", &retval);
+ 
+   return retval;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ static void
+diff --git a/atspi/atspi-stateset.c b/atspi/atspi-stateset.c
+index dd99d91..59c49f5 100644
+--- a/atspi/atspi-stateset.c
++++ b/atspi/atspi-stateset.c
+@@ -114,6 +114,7 @@ atspi_state_set_set_by_name (AtspiStateSet *set, const gchar *name, gboolean ena
+ static void
+ refresh_states (AtspiStateSet *set)
+ {
++#if defined(ENABLE_DBUS)
+   GArray *state_array;
+   dbus_uint32_t *states;
+ 
+@@ -129,6 +130,7 @@ refresh_states (AtspiStateSet *set)
+   set->states = ((gint64)states [1]) << 32;
+   set->states |= (gint64) states [0];
+   g_array_free (state_array, TRUE);
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+diff --git a/atspi/atspi-table-cell.c b/atspi/atspi-table-cell.c
+index a33e0a8..446c451 100644
+--- a/atspi/atspi-table-cell.c
++++ b/atspi/atspi-table-cell.c
+@@ -25,6 +25,7 @@
+ #include <stdlib.h> /* for malloc */
+ #include "atspi-private.h"
+ 
++#if defined(ENABLE_DBUS)
+ static GPtrArray *
+ get_object_array_and_unref (DBusMessage *reply)
+ {
+@@ -52,6 +53,7 @@ get_object_array_and_unref (DBusMessage *reply)
+   dbus_message_unref (reply);
+   return array;
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ /**
+  * atspi_table_cell_get_column_span:
+@@ -67,6 +69,7 @@ get_object_array_and_unref (DBusMessage *reply)
+ gint
+ atspi_table_cell_get_column_span (AtspiTableCell *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t retval = -1;
+ 
+   g_return_val_if_fail (obj != NULL, -1);
+@@ -75,6 +78,9 @@ atspi_table_cell_get_column_span (AtspiTableCell *obj, GError **error)
+                             error, "i", &retval);
+ 	  
+   return retval;
++#else
++  return -1;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -89,6 +95,7 @@ atspi_table_cell_get_column_span (AtspiTableCell *obj, GError **error)
+ GPtrArray *
+ atspi_table_cell_get_column_header_cells (AtspiTableCell *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   DBusMessage *reply;
+ 
+   g_return_val_if_fail (obj != NULL, NULL);
+@@ -96,6 +103,9 @@ atspi_table_cell_get_column_header_cells (AtspiTableCell *obj, GError **error)
+   reply = _atspi_dbus_call_partial (obj, atspi_interface_table_cell, "GetColumnHeaderCells", error, "");
+ 	  
+   return get_object_array_and_unref (reply);
++#else
++  return NULL;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -112,6 +122,7 @@ atspi_table_cell_get_column_header_cells (AtspiTableCell *obj, GError **error)
+ gint
+ atspi_table_cell_get_row_span (AtspiTableCell *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t retval = -1;
+ 
+   g_return_val_if_fail (obj != NULL, -1);
+@@ -120,6 +131,9 @@ atspi_table_cell_get_row_span (AtspiTableCell *obj, GError **error)
+                             error, "i", &retval);
+ 	  
+   return retval;
++#else
++  return -1;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -134,6 +148,7 @@ atspi_table_cell_get_row_span (AtspiTableCell *obj, GError **error)
+ GPtrArray *
+ atspi_table_cell_get_row_header_cells (AtspiTableCell *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   DBusMessage *reply;
+ 
+   g_return_val_if_fail (obj != NULL, NULL);
+@@ -141,6 +156,9 @@ atspi_table_cell_get_row_header_cells (AtspiTableCell *obj, GError **error)
+   reply = _atspi_dbus_call_partial (obj, atspi_interface_table_cell, "GetRowHeaderCells", error, "");
+ 	  
+   return get_object_array_and_unref (reply);
++#else
++  return NULL;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -159,6 +177,7 @@ atspi_table_cell_get_position (AtspiTableCell *obj,
+                                gint *column,
+                                GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   DBusMessage *reply;
+   DBusMessageIter iter, iter_struct, iter_variant;
+   dbus_int32_t d_row = -1, d_column = -1;
+@@ -199,6 +218,9 @@ atspi_table_cell_get_position (AtspiTableCell *obj,
+     *column = d_column;
+   dbus_message_unref (reply);
+   return TRUE;
++#else
++  return -1;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -221,7 +243,9 @@ atspi_table_cell_get_row_column_span (AtspiTableCell *obj,
+                                        gint *column_span,
+                                        GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_row = 0,  d_column = 0, d_row_span = 0, d_column_span = 0;
++#endif // #if defined(ENABLE_DBUS)
+ 
+   if (row)
+     *row = -1;
+@@ -232,6 +256,7 @@ atspi_table_cell_get_row_column_span (AtspiTableCell *obj,
+   if (column_span)
+     *column_span = -1;
+ 
++#if defined(ENABLE_DBUS)
+   g_return_if_fail (obj != NULL);
+ 
+   _atspi_dbus_call (obj, atspi_interface_table_cell, "GetRowColumnSpan",
+@@ -246,6 +271,9 @@ atspi_table_cell_get_row_column_span (AtspiTableCell *obj,
+     *row_span = d_row_span;
+   if (column_span)
+     *column_span = d_column_span;
++#else
++  return;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -263,8 +291,10 @@ atspi_table_cell_get_table (AtspiTableCell *obj, GError **error)
+ 
+   g_return_val_if_fail (obj != NULL, NULL);
+ 
++#if defined(ENABLE_DBUS)
+   _atspi_dbus_get_property (obj, atspi_interface_table_cell, "Table",
+                             error, "(so)", &retval);
++#endif // #if defined(ENABLE_DBUS)
+ 	  
+   return retval;
+ }
+diff --git a/atspi/atspi-table.c b/atspi/atspi-table.c
+index 08718f4..dde39db 100644
+--- a/atspi/atspi-table.c
++++ b/atspi/atspi-table.c
+@@ -42,7 +42,9 @@ atspi_table_get_caption (AtspiTable *obj, GError **error)
+ 
+   g_return_val_if_fail (obj != NULL, NULL);
+ 
++#if defined(ENABLE_DBUS)
+   _atspi_dbus_get_property (obj, atspi_interface_table, "Caption", error, "(so)", &retval);
++#endif // #if defined(ENABLE_DBUS)
+   return retval;
+ }
+ 
+@@ -58,11 +60,13 @@ atspi_table_get_caption (AtspiTable *obj, GError **error)
+ AtspiAccessible *
+ atspi_table_get_summary (AtspiTable *obj, GError **error)
+ {
+-  AtspiAccessible *retval;
++  AtspiAccessible *retval = NULL;
+ 
+   g_return_val_if_fail (obj != NULL, NULL);
+ 
++#if defined(ENABLE_DBUS)
+   _atspi_dbus_get_property (obj, atspi_interface_table, "Summary", error, "(so)", &retval);
++#endif // #if defined(ENABLE_DBUS)
+ 
+  return retval;
+ }
+@@ -80,6 +84,7 @@ atspi_table_get_summary (AtspiTable *obj, GError **error)
+ gint
+ atspi_table_get_n_rows (AtspiTable *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t retval = -1;
+ 
+   g_return_val_if_fail (obj != NULL, -1);
+@@ -87,6 +92,9 @@ atspi_table_get_n_rows (AtspiTable *obj, GError **error)
+   _atspi_dbus_get_property (obj, atspi_interface_table, "NRows", error, "i", &retval);
+ 	  
+   return retval;
++#else
++  return -1;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -102,6 +110,7 @@ atspi_table_get_n_rows (AtspiTable *obj, GError **error)
+ gint
+ atspi_table_get_n_columns (AtspiTable *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t retval = -1;
+ 
+   g_return_val_if_fail (obj != NULL, -1);
+@@ -109,6 +118,9 @@ atspi_table_get_n_columns (AtspiTable *obj, GError **error)
+   _atspi_dbus_get_property (obj, atspi_interface_table, "NColumns", error, "i", &retval);
+ 	  
+   return retval;
++#else
++  return -1;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -130,6 +142,7 @@ atspi_table_get_accessible_at (AtspiTable *obj,
+                                  gint column,
+                                  GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_row = row, d_column = column;
+   DBusMessage *reply;
+ 
+@@ -138,6 +151,9 @@ atspi_table_get_accessible_at (AtspiTable *obj,
+   reply = _atspi_dbus_call_partial (obj, atspi_interface_table, "GetAccessibleAt", error, "ii", d_row, d_column);
+ 
+   return _atspi_dbus_return_accessible_from_message (reply);
++#else
++  return NULL;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -161,6 +177,7 @@ atspi_table_get_index_at (AtspiTable *obj,
+                             gint column,
+                             GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_row = row, d_column = column;
+   dbus_int32_t retval = -1;
+ 
+@@ -169,6 +186,9 @@ atspi_table_get_index_at (AtspiTable *obj,
+   _atspi_dbus_call (obj, atspi_interface_table, "GetIndexAt", error, "ii=>i", d_row, d_column, &retval);
+ 	  
+   return retval;
++#else
++  return -1;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -189,6 +209,7 @@ atspi_table_get_row_at_index (AtspiTable *obj,
+                                gint index,
+                                GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_index = index;
+   dbus_int32_t retval = -1;
+ 
+@@ -197,6 +218,9 @@ atspi_table_get_row_at_index (AtspiTable *obj,
+   _atspi_dbus_call (obj, atspi_interface_table, "GetRowAtIndex", error, "i=>i", d_index, &retval);
+ 	  
+   return retval;
++#else
++  return -1;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -217,6 +241,7 @@ atspi_table_get_column_at_index (AtspiTable *obj,
+                                   gint index,
+                                   GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_index = index;
+   dbus_int32_t retval = -1;
+ 
+@@ -225,6 +250,9 @@ atspi_table_get_column_at_index (AtspiTable *obj,
+   _atspi_dbus_call (obj, atspi_interface_table, "GetColumnAtIndex", error, "i=>i", d_index, &retval);
+ 	  
+   return retval;
++#else
++  return -1;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -242,6 +270,7 @@ atspi_table_get_row_description (AtspiTable *obj,
+ 				   gint  row,
+ 				   GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_row = row;
+   char *retval = NULL;
+ 
+@@ -250,6 +279,9 @@ atspi_table_get_row_description (AtspiTable *obj,
+   _atspi_dbus_call (obj, atspi_interface_table, "GetRowDescription", error, "i=>s", d_row, &retval);
+ 	  
+   return retval;
++#else
++  return NULL;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -266,6 +298,7 @@ gchar *
+ atspi_table_get_column_description (AtspiTable *obj,
+ 				      gint         column, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_column = column;
+   char *retval = NULL;
+ 
+@@ -274,6 +307,9 @@ atspi_table_get_column_description (AtspiTable *obj,
+   _atspi_dbus_call (obj, atspi_interface_table, "GetColumnDescription", error, "i=>s", d_column, &retval);
+ 
+   return retval;
++#else
++  return NULL;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -296,6 +332,7 @@ atspi_table_get_row_extent_at (AtspiTable *obj,
+                                 gint         column,
+                                 GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_row = row, d_column = column;
+   dbus_int32_t retval = -1;
+ 
+@@ -304,6 +341,9 @@ atspi_table_get_row_extent_at (AtspiTable *obj,
+   _atspi_dbus_call (obj, atspi_interface_table, "GetRowExtentAt", error, "ii=>i", d_row, d_column, &retval);
+ 	  
+   return retval;
++#else
++  return -1;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -326,6 +366,7 @@ atspi_table_get_column_extent_at (AtspiTable *obj,
+                                    gint         column,
+                                    GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_row = row, d_column = column;
+   dbus_int32_t retval = -1;
+ 
+@@ -334,6 +375,9 @@ atspi_table_get_column_extent_at (AtspiTable *obj,
+   _atspi_dbus_call (obj, atspi_interface_table, "GetColumnExtentAt", error, "ii=>i", d_row, d_column, &retval);
+ 	  
+   return retval;
++#else
++  return -1;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -352,6 +396,7 @@ atspi_table_get_row_header (AtspiTable *obj,
+ 			      gint         row,
+ 			      GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_row = row;
+   DBusMessage *reply;
+ 
+@@ -360,6 +405,9 @@ atspi_table_get_row_header (AtspiTable *obj,
+   reply = _atspi_dbus_call_partial (obj, atspi_interface_table, "GetRowHeader", error, "i", d_row);
+ 
+   return _atspi_dbus_return_accessible_from_message (reply);
++#else
++  return NULL;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -379,6 +427,7 @@ atspi_table_get_column_header (AtspiTable *obj,
+ 				 gint column,
+ 				 GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_column = column;
+   DBusMessage *reply;
+ 
+@@ -387,6 +436,9 @@ atspi_table_get_column_header (AtspiTable *obj,
+   reply = _atspi_dbus_call_partial (obj, atspi_interface_table, "GetColumnHeader", error, "i", d_column);
+ 
+   return _atspi_dbus_return_accessible_from_message (reply);
++#else
++  return NULL;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -401,6 +453,7 @@ atspi_table_get_column_header (AtspiTable *obj,
+ gint
+ atspi_table_get_n_selected_rows (AtspiTable *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t retval = -1;
+ 
+   g_return_val_if_fail (obj != NULL, -1);
+@@ -408,6 +461,9 @@ atspi_table_get_n_selected_rows (AtspiTable *obj, GError **error)
+   _atspi_dbus_get_property (obj, atspi_interface_table, "NSelectedRows", error, "i", &retval);
+ 	  
+   return retval;
++#else
++  return -1;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -425,9 +481,11 @@ atspi_table_get_selected_rows (AtspiTable *obj,
+ {
+   GArray *rows = NULL;
+ 
++#if defined(ENABLE_DBUS)
+   g_return_val_if_fail (obj != NULL, 0);
+ 
+   _atspi_dbus_call (obj, atspi_interface_table, "GetSelectedRows", error, "=>ai", &rows);
++#endif // #if defined(ENABLE_DBUS)
+ 
+   return rows;
+ }
+@@ -448,9 +506,11 @@ atspi_table_get_selected_columns (AtspiTable *obj,
+ {
+   GArray *columns = NULL;
+ 
++#if defined(ENABLE_DBUS)
+   g_return_val_if_fail (obj != NULL, 0);
+ 
+   _atspi_dbus_call (obj, atspi_interface_table, "GetSelectedColumns", error, "=>ai", &columns);
++#endif // #if defined(ENABLE_DBUS)
+ 
+   return columns;
+ }
+@@ -467,6 +527,7 @@ atspi_table_get_selected_columns (AtspiTable *obj,
+ gint
+ atspi_table_get_n_selected_columns (AtspiTable *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t retval = -1;
+ 
+   g_return_val_if_fail (obj != NULL, -1);
+@@ -474,6 +535,9 @@ atspi_table_get_n_selected_columns (AtspiTable *obj, GError **error)
+   _atspi_dbus_get_property (obj, atspi_interface_table, "NSelectedColumns", error, "i", &retval);
+ 	  
+   return retval;
++#else
++  return -1;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -491,6 +555,7 @@ atspi_table_is_row_selected (AtspiTable *obj,
+                                gint row,
+                                GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_row = row;
+   dbus_bool_t retval = FALSE;
+ 
+@@ -499,6 +564,9 @@ atspi_table_is_row_selected (AtspiTable *obj,
+   _atspi_dbus_call (obj, atspi_interface_table, "IsRowSelected", error, "i=>b", d_row, &retval);
+ 
+   return retval;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -516,6 +584,7 @@ atspi_table_is_column_selected (AtspiTable *obj,
+                                   gint column,
+                                   GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_column = column;
+   dbus_bool_t retval = FALSE;
+ 
+@@ -524,6 +593,9 @@ atspi_table_is_column_selected (AtspiTable *obj,
+   _atspi_dbus_call (obj, atspi_interface_table, "IsColumnSelected", error, "i=>b", d_column, &retval);
+ 	  
+   return retval;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -541,6 +613,7 @@ atspi_table_add_row_selection (AtspiTable *obj,
+ 				 gint row,
+ 				 GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_row = row;
+   dbus_bool_t retval = FALSE;
+ 
+@@ -549,6 +622,9 @@ atspi_table_add_row_selection (AtspiTable *obj,
+   _atspi_dbus_call (obj, atspi_interface_table, "AddRowSelection", error, "i=>b", d_row, &retval);
+ 	  
+   return retval;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -566,6 +642,7 @@ atspi_table_add_column_selection (AtspiTable *obj,
+ 				    gint column,
+ 				    GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_column = column;
+   dbus_bool_t retval = FALSE;
+ 
+@@ -574,6 +651,9 @@ atspi_table_add_column_selection (AtspiTable *obj,
+   _atspi_dbus_call (obj, atspi_interface_table, "AddColumnSelection", error, "i=>b", d_column, &retval);
+ 	  
+   return retval;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -592,6 +672,7 @@ atspi_table_remove_row_selection (AtspiTable *obj,
+ 				    gint row,
+ 				    GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_row = row;
+   dbus_bool_t retval = FALSE;
+ 
+@@ -600,6 +681,9 @@ atspi_table_remove_row_selection (AtspiTable *obj,
+   _atspi_dbus_call (obj, atspi_interface_table, "RemoveRowSelection", error, "i=>b", d_row, &retval);
+ 	  
+   return retval;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -619,6 +703,7 @@ atspi_table_remove_column_selection (AtspiTable *obj,
+ 				       gint column,
+ 				       GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_column = column;
+   dbus_bool_t retval = FALSE;
+ 
+@@ -627,6 +712,9 @@ atspi_table_remove_column_selection (AtspiTable *obj,
+   _atspi_dbus_call (obj, atspi_interface_table, "RemoveColumnSelection", error, "i=>b", d_column, &retval);
+ 	  
+   return retval;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -679,6 +767,7 @@ atspi_table_get_row_column_extents_at_index (AtspiTable *obj,
+ 					    gint *row_extents, gint *col_extents, 
+ 					    gboolean *is_selected, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_index = index;
+   dbus_bool_t retval = FALSE;
+   dbus_int32_t d_row = 0,  d_col = 0, d_row_extents = 0, d_col_extents = 0;
+@@ -697,6 +786,9 @@ atspi_table_get_row_column_extents_at_index (AtspiTable *obj,
+   *is_selected = d_is_selected;;
+   
+   return retval;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ 
+@@ -716,6 +808,7 @@ atspi_table_is_selected (AtspiTable *obj,
+                             gint column,
+                             GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_row = row, d_column = column;
+   dbus_bool_t retval = FALSE;
+ 
+@@ -724,6 +817,9 @@ atspi_table_is_selected (AtspiTable *obj,
+   _atspi_dbus_call (obj, atspi_interface_table, "IsSelected", error, "ii=>b", d_row, d_column, &retval);
+ 	  
+   return retval;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ static void
+diff --git a/atspi/atspi-text.c b/atspi/atspi-text.c
+index de99773..0e7fd7a 100644
+--- a/atspi/atspi-text.c
++++ b/atspi/atspi-text.c
+@@ -76,6 +76,7 @@ G_DEFINE_BOXED_TYPE (AtspiTextRange, atspi_text_range, atspi_text_range_copy,
+ gint
+ atspi_text_get_character_count (AtspiText *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t retval = 0;
+ 
+   g_return_val_if_fail (obj != NULL, -1);
+@@ -83,6 +84,9 @@ atspi_text_get_character_count (AtspiText *obj, GError **error)
+   _atspi_dbus_get_property (obj, atspi_interface_text, "CharacterCount", error, "i", &retval);
+ 
+   return retval;
++#else
++  return -1;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -104,6 +108,7 @@ atspi_text_get_text (AtspiText *obj,
+                         gint end_offset,
+                         GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   gchar *retval = NULL;
+   dbus_int32_t d_start_offset = start_offset, d_end_offset = end_offset;
+ 
+@@ -115,6 +120,9 @@ atspi_text_get_text (AtspiText *obj,
+     retval = g_strdup ("");
+ 
+   return retval;
++#else
++  return g_strdup ("");
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -128,6 +136,7 @@ atspi_text_get_text (AtspiText *obj,
+ gint
+ atspi_text_get_caret_offset (AtspiText *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t retval = -1;
+ 
+   g_return_val_if_fail (obj != NULL, -1);
+@@ -135,6 +144,9 @@ atspi_text_get_caret_offset (AtspiText *obj, GError **error)
+   _atspi_dbus_get_property (obj, atspi_interface_text, "CaretOffset", error, "i", &retval);
+ 
+   return retval;
++#else
++  return -1;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -192,6 +204,7 @@ atspi_text_get_text_attributes (AtspiText *obj,
+ 			   gint *end_offset,
+ 			   GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_offset = offset;
+   dbus_int32_t d_start_offset, d_end_offset;
+   DBusMessage *reply;
+@@ -218,6 +231,9 @@ atspi_text_get_text_attributes (AtspiText *obj,
+ 
+   dbus_message_unref (reply);
+   return ret;
++#else
++  return NULL;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -248,6 +264,7 @@ atspi_text_get_attribute_run (AtspiText *obj,
+ 			      gint *end_offset,
+ 			      GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_offset = offset;
+   dbus_int32_t d_start_offset, d_end_offset;
+   DBusMessage *reply;
+@@ -276,6 +293,9 @@ atspi_text_get_attribute_run (AtspiText *obj,
+ 
+   dbus_message_unref (reply);
+   return ret;
++#else
++  return NULL;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -318,6 +338,7 @@ atspi_text_get_text_attribute_value (AtspiText *obj,
+                                      gchar *attribute_value,
+                                      GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   gchar *retval = NULL;
+   dbus_int32_t d_i = offset;
+ 
+@@ -329,6 +350,9 @@ atspi_text_get_text_attribute_value (AtspiText *obj,
+     retval = g_strdup ("");
+ 
+   return retval;
++#else
++  return NULL;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -348,12 +372,16 @@ atspi_text_get_text_attribute_value (AtspiText *obj,
+ GHashTable *
+ atspi_text_get_default_attributes (AtspiText *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   DBusMessage *reply;
+ 
+     g_return_val_if_fail (obj != NULL, NULL);
+ 
+   reply = _atspi_dbus_call_partial (obj, atspi_interface_text, "GetDefaultAttributes", error, "");
+   return _atspi_dbus_return_hash_from_message (reply);
++#else
++  return NULL;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ 
+@@ -371,6 +399,7 @@ atspi_text_set_caret_offset (AtspiText *obj,
+                                gint new_offset,
+                                GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_new_offset = new_offset;
+   dbus_bool_t retval = FALSE;
+ 
+@@ -379,6 +408,9 @@ atspi_text_set_caret_offset (AtspiText *obj,
+   _atspi_dbus_call (obj, atspi_interface_text, "SetCaretOffset", error, "i=>b", d_new_offset, &retval);
+ 
+   return retval;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -402,12 +434,15 @@ atspi_text_get_text_before_offset (AtspiText *obj,
+                                     AtspiTextBoundaryType type,
+                                     GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_offset = offset;
+   dbus_uint32_t d_type = type;
+   dbus_int32_t d_start_offset = -1, d_end_offset = -1;
++#endif // #if defined(ENABLE_DBUS)
+   AtspiTextRange *range = g_new0 (AtspiTextRange, 1);
+ 
+   range->start_offset = range->end_offset = -1;
++#if defined(ENABLE_DBUS)
+   if (!obj)
+     return range;
+ 
+@@ -419,6 +454,7 @@ atspi_text_get_text_before_offset (AtspiText *obj,
+   range->end_offset = d_end_offset;
+   if (!range->content)
+     range->content = g_strdup ("");
++#endif // #if defined(ENABLE_DBUS)
+ 
+   return range;
+ }
+@@ -472,12 +508,15 @@ atspi_text_get_string_at_offset (AtspiText *obj,
+                                  AtspiTextGranularity granularity,
+                                  GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_offset = offset;
+   dbus_uint32_t d_granularity = granularity;
+   dbus_int32_t d_start_offset = -1, d_end_offset = -1;
++#endif // #if defined(ENABLE_DBUS)
+   AtspiTextRange *range = g_new0 (AtspiTextRange, 1);
+ 
+   range->start_offset = range->end_offset = -1;
++#if defined(ENABLE_DBUS)
+   if (!obj)
+     return range;
+ 
+@@ -489,6 +528,7 @@ atspi_text_get_string_at_offset (AtspiText *obj,
+   range->end_offset = d_end_offset;
+   if (!range->content)
+     range->content = g_strdup ("");
++#endif // #if defined(ENABLE_DBUS)
+ 
+   return range;
+ }
+@@ -516,12 +556,15 @@ atspi_text_get_text_at_offset (AtspiText *obj,
+                                     AtspiTextBoundaryType type,
+                                     GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_offset = offset;
+   dbus_uint32_t d_type = type;
+   dbus_int32_t d_start_offset = -1, d_end_offset = -1;
++#endif // #if defined(ENABLE_DBUS)
+   AtspiTextRange *range = g_new0 (AtspiTextRange, 1);
+ 
+   range->start_offset = range->end_offset = -1;
++#if defined(ENABLE_DBUS)
+   if (!obj)
+     return range;
+ 
+@@ -533,6 +576,7 @@ atspi_text_get_text_at_offset (AtspiText *obj,
+   range->end_offset = d_end_offset;
+   if (!range->content)
+     range->content = g_strdup ("");
++#endif // #if defined(ENABLE_DBUS)
+ 
+   return range;
+ }
+@@ -559,12 +603,15 @@ atspi_text_get_text_after_offset (AtspiText *obj,
+                                     AtspiTextBoundaryType type,
+                                     GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_offset = offset;
+   dbus_uint32_t d_type = type;
+   dbus_int32_t d_start_offset = -1, d_end_offset = -1;
++#endif // #if defined(ENABLE_DBUS)
+   AtspiTextRange *range = g_new0 (AtspiTextRange, 1);
+ 
+   range->start_offset = range->end_offset = -1;
++#if defined(ENABLE_DBUS)
+   if (!obj)
+     return range;
+ 
+@@ -576,6 +623,7 @@ atspi_text_get_text_after_offset (AtspiText *obj,
+   range->end_offset = d_end_offset;
+   if (!range->content)
+     range->content = g_strdup ("");
++#endif // #if defined(ENABLE_DBUS)
+ 
+   return range;
+ }
+@@ -598,6 +646,7 @@ atspi_text_get_character_at_offset (AtspiText *obj,
+                                      gint offset,
+                                      GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_offset = offset;
+   dbus_int32_t retval = -1;
+ 
+@@ -606,6 +655,9 @@ atspi_text_get_character_at_offset (AtspiText *obj,
+   _atspi_dbus_call (obj, atspi_interface_text, "GetCharacterAtOffset", error, "i=>i", d_offset, &retval);
+ 
+   return retval;
++#else
++  return -1;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -630,13 +682,16 @@ atspi_text_get_character_extents (AtspiText *obj,
+ 				    AtspiCoordType type,
+ 				    GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_offset = offset;
+   dbus_uint32_t d_type = type;
+   dbus_int32_t d_x, d_y, d_width, d_height;
++#endif // #if defined(ENABLE_DBUS)
+   AtspiRect ret;
+ 
+   ret.x = ret.y = ret.width = ret.height = -1;
+ 
++#if defined(ENABLE_DBUS)
+   if (obj == NULL)
+     return atspi_rect_copy (&ret);
+ 
+@@ -646,6 +701,7 @@ atspi_text_get_character_extents (AtspiText *obj,
+   ret.y = d_y;
+   ret.width = d_width;
+   ret.height = d_height;
++#endif // #if defined(ENABLE_DBUS)
+   return atspi_rect_copy (&ret);
+ }
+ 
+@@ -670,6 +726,7 @@ atspi_text_get_offset_at_point (AtspiText *obj,
+ 				 AtspiCoordType type,
+ 				 GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_x = x, d_y = y;
+   dbus_uint32_t d_type = type;
+   dbus_int32_t retval = -1;
+@@ -679,6 +736,9 @@ atspi_text_get_offset_at_point (AtspiText *obj,
+   _atspi_dbus_call (obj, atspi_interface_text, "GetOffsetAtPoint", error, "iiu=>i", d_x, d_y, d_type, &retval);
+ 
+   return retval;
++#else
++  return -1;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -706,13 +766,16 @@ atspi_text_get_range_extents (AtspiText *obj,
+ 				AtspiCoordType type,
+ 				GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_start_offset = start_offset, d_end_offset = end_offset;
+   dbus_uint32_t d_type = type;
+   dbus_int32_t d_x, d_y, d_width, d_height;
++#endif // #if defined(ENABLE_DBUS)
+   AtspiRect ret;
+ 
+   ret.x = ret.y = ret.width = ret.height = -1;
+ 
++#if defined(ENABLE_DBUS)
+   if (obj == NULL)
+     return atspi_rect_copy (&ret);
+ 
+@@ -722,6 +785,7 @@ atspi_text_get_range_extents (AtspiText *obj,
+   ret.y = d_y;
+   ret.width = d_width;
+   ret.height = d_height;
++#endif // #if defined(ENABLE_DBUS)
+   return atspi_rect_copy (&ret);
+ }
+ 
+@@ -756,6 +820,7 @@ atspi_text_get_bounded_ranges (AtspiText *obj,
+ 				 AtspiTextClipType clipTypeY,
+ 				 GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_x = x, d_y = y, d_width = width, d_height = height;
+   dbus_uint32_t d_type = type;
+   dbus_uint32_t d_clipTypeX = clipTypeX, d_clipTypeY = clipTypeY;
+@@ -766,6 +831,9 @@ atspi_text_get_bounded_ranges (AtspiText *obj,
+   _atspi_dbus_call (obj, atspi_interface_text, "GetBoundedRanges", error, "iiiiuuu=>a(iisv)", d_x, d_y, d_width, d_height, d_type, d_clipTypeX, d_clipTypeY, &range_seq);
+ 
+   return range_seq;
++#else
++  return NULL;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -782,6 +850,7 @@ atspi_text_get_bounded_ranges (AtspiText *obj,
+ gint
+ atspi_text_get_n_selections (AtspiText *obj, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t retval = 0;
+ 
+   g_return_val_if_fail (obj != NULL, -1);
+@@ -789,6 +858,9 @@ atspi_text_get_n_selections (AtspiText *obj, GError **error)
+   _atspi_dbus_call (obj, atspi_interface_text, "GetNSelections", error, "=>i", &retval);
+ 
+   return retval;
++#else
++  return -1;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -804,12 +876,15 @@ atspi_text_get_selection (AtspiText *obj,
+ 			     gint selection_num,
+ 			     GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_selection_num = selection_num;
+   dbus_int32_t d_start_offset, d_end_offset;
++#endif // #if defined(ENABLE_DBUS)
+   AtspiRange *ret = g_new (AtspiRange, 1);
+ 
+   ret->start_offset = ret->end_offset = -1;
+ 
++#if defined(ENABLE_DBUS)
+   if (!obj)
+     return ret;
+ 
+@@ -817,6 +892,7 @@ atspi_text_get_selection (AtspiText *obj,
+ 
+   ret->start_offset = d_start_offset;
+   ret->end_offset = d_end_offset;
++#endif // #if defined(ENABLE_DBUS)
+   return ret;
+ }
+ 
+@@ -835,12 +911,16 @@ atspi_text_add_selection (AtspiText *obj,
+ 			     gint start_offset, gint end_offset,
+ 			     GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_start_offset = start_offset, d_end_offset = end_offset;
+   dbus_bool_t retval = FALSE;
+ 
+   _atspi_dbus_call (obj, atspi_interface_text, "AddSelection", error, "ii=>b", d_start_offset, d_end_offset, &retval);
+ 
+   return retval;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -857,6 +937,7 @@ atspi_text_remove_selection (AtspiText *obj,
+ 				gint selection_num,
+ 				GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_selection_num = selection_num;
+   dbus_bool_t retval = FALSE;
+ 
+@@ -865,6 +946,9 @@ atspi_text_remove_selection (AtspiText *obj,
+   _atspi_dbus_call (obj, atspi_interface_text, "RemoveSelection", error, "i=>b", d_selection_num, &retval);
+ 
+   return retval;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -886,6 +970,7 @@ atspi_text_set_selection (AtspiText *obj,
+ 			     gint end_offset,
+ 			     GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_int32_t d_selection_num = selection_num, d_start_offset = start_offset, d_end_offset = end_offset;
+   dbus_bool_t retval = FALSE;
+ 
+@@ -894,6 +979,9 @@ atspi_text_set_selection (AtspiText *obj,
+   _atspi_dbus_call (obj, atspi_interface_text, "SetSelection", error, "iii=>b", d_selection_num, d_start_offset, d_end_offset, &retval);
+ 
+   return retval;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -916,6 +1004,7 @@ atspi_text_scroll_substring_to (AtspiText *obj,
+                                AtspiScrollType type,
+                                GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_bool_t retval = FALSE;
+ 
+   g_return_val_if_fail (obj != NULL, FALSE);
+@@ -925,6 +1014,9 @@ atspi_text_scroll_substring_to (AtspiText *obj,
+                     start_offset, end_offset, type, &retval);
+ 
+   return retval;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -951,6 +1043,7 @@ atspi_text_scroll_substring_to_point (AtspiText *obj,
+                                      gint y,
+                                      GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   dbus_bool_t retval = FALSE;
+ 
+   g_return_val_if_fail (obj != NULL, FALSE);
+@@ -960,6 +1053,9 @@ atspi_text_scroll_substring_to_point (AtspiText *obj,
+                     start_offset, end_offset, coords, x, y, &retval);
+ 
+   return retval;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ static void
+diff --git a/atspi/atspi-value.c b/atspi/atspi-value.c
+index 714fdb6..8eb3c27 100644
+--- a/atspi/atspi-value.c
++++ b/atspi/atspi-value.c
+@@ -36,10 +36,12 @@
+ gdouble
+ atspi_value_get_minimum_value (AtspiValue *obj, GError **error)
+ {
+-  double retval;
++  double retval = 0.0;
+ 
+   g_return_val_if_fail (obj != NULL, 0.0);
++#if defined(ENABLE_DBUS)
+   _atspi_dbus_get_property (obj, atspi_interface_value, "MinimumValue", error, "d", &retval);
++#endif // #if defined(ENABLE_DBUS)
+   
+   return retval;
+ }
+@@ -55,11 +57,13 @@ atspi_value_get_minimum_value (AtspiValue *obj, GError **error)
+ gdouble
+ atspi_value_get_current_value (AtspiValue *obj, GError **error)
+ {
+-  double retval;
++  double retval = 0.0;
+ 
+   g_return_val_if_fail (obj != NULL, 0.0);
+ 
++#if defined(ENABLE_DBUS)
+   _atspi_dbus_get_property (obj, atspi_interface_value, "CurrentValue", error, "d", &retval);
++#endif // #if defined(ENABLE_DBUS)
+ 
+   return retval;
+ }
+@@ -75,11 +79,13 @@ atspi_value_get_current_value (AtspiValue *obj, GError **error)
+ gdouble
+ atspi_value_get_maximum_value (AtspiValue *obj, GError **error)
+ {
+-  double retval;	
++  double retval = 0.0;	
+ 
+   g_return_val_if_fail (obj != NULL, 0.0);
+ 
++#if defined(ENABLE_DBUS)
+   _atspi_dbus_get_property (obj, atspi_interface_value, "MaximumValue", error, "d", &retval);
++#endif // #if defined(ENABLE_DBUS)
+ 
+   return retval;
+ }
+@@ -97,6 +103,7 @@ atspi_value_get_maximum_value (AtspiValue *obj, GError **error)
+ gboolean
+ atspi_value_set_current_value (AtspiValue *obj, gdouble new_value, GError **error)
+ {
++#if defined(ENABLE_DBUS)
+   double d_new_value = new_value;
+   DBusMessage *message, *reply;
+   DBusMessageIter iter, iter_variant;
+@@ -128,6 +135,9 @@ atspi_value_set_current_value (AtspiValue *obj, gdouble new_value, GError **erro
+   dbus_message_unref (reply);
+ 
+   return TRUE;
++#else
++  return FALSE;
++#endif // #if defined(ENABLE_DBUS)
+ }
+ 
+ /**
+@@ -143,11 +153,13 @@ atspi_value_set_current_value (AtspiValue *obj, gdouble new_value, GError **erro
+ gdouble
+ atspi_value_get_minimum_increment (AtspiValue *obj, GError **error)
+ {
+-  double retval;
++  double retval = 0.0;
+ 
+   g_return_val_if_fail (obj != NULL, 0.0);
+ 
++#if defined(ENABLE_DBUS)
+   _atspi_dbus_get_property (obj, atspi_interface_value, "MinimumIncrement", error, "d", &retval);
++#endif // #if defined(ENABLE_DBUS)
+   
+   return retval;
+ }
+@@ -169,7 +181,9 @@ atspi_value_get_text (AtspiValue *obj, GError **error)
+ 
+   g_return_val_if_fail (obj != NULL, NULL);
+ 
++#if defined(ENABLE_DBUS)
+   _atspi_dbus_get_property (obj, atspi_interface_value, "Text", error, "s", &retval);
++#endif // #if defined(ENABLE_DBUS)
+   
+   return retval;
+ }
+diff --git a/atspi/meson.build b/atspi/meson.build
+index bd8dbb1..2b891d6 100644
+--- a/atspi/meson.build
++++ b/atspi/meson.build
+@@ -68,6 +68,8 @@ if x11_option != 'no'
+   endif
+ endif
+ 
++dbus_option = get_option('dbus')
++
+ atspi_includedir = join_paths(get_option('prefix'), get_option('includedir'), 'at-spi-2.0', 'atspi')
+ 
+ install_headers(atspi_headers, install_dir: atspi_includedir)
+@@ -102,11 +104,18 @@ atspi_dep = declare_dependency(link_with: atspi,
+ if have_gir
+   gir_sources = atspi_sources + atspi_enums + atspi_headers
+ 
+-  gir_incs = [
+-    'DBus-1.0',
+-    'GLib-2.0',
+-    'GObject-2.0'
+-  ]
++  if dbus_option != 'no'
++    gir_incs = [
++      'DBus-1.0',
++      'GLib-2.0',
++      'GObject-2.0'
++    ]
++  else
++    gir_incs = [
++      'GLib-2.0',
++      'GObject-2.0'
++    ]
++  endif
+ 
+   gir_extra_args = [
+     '--c-include=atspi/atspi.h',
+@@ -134,12 +143,24 @@ if have_gir
+ endif
+ 
+ pkgconfig = import('pkgconfig')
+-pkgconfig.generate(
+-  atspi,
+-  name: 'atspi',
+-  description: 'Accessibility Technology software library',
+-  version: meson.project_version(),
+-  requires: ['dbus-1', 'glib-2.0'],
+-  subdirs: 'at-spi-2.0',
+-  filebase: 'atspi-2',
+-)
++if dbus_option != 'no'
++  pkgconfig.generate(
++    atspi,
++    name: 'atspi',
++    description: 'Accessibility Technology software library',
++    version: meson.project_version(),
++    requires: ['dbus-1', 'glib-2.0'],
++    subdirs: 'at-spi-2.0',
++    filebase: 'atspi-2',
++  )
++else
++  pkgconfig.generate(
++    atspi,
++    name: 'atspi',
++    description: 'Accessibility Technology software library',
++    version: meson.project_version(),
++    requires: ['glib-2.0'],
++    subdirs: 'at-spi-2.0',
++    filebase: 'atspi-2',
++  )
++endif
+diff --git a/dbind/dbind-any.c b/dbind/dbind-any.c
+index 512c1b3..3fd7dbc 100644
+--- a/dbind/dbind-any.c
++++ b/dbind/dbind-any.c
+@@ -26,6 +26,7 @@
+ 
+ #undef DEBUG
+ 
++#if defined(ENABLE_DBUS)
+ /*  Align a value upward to a boundary, expressed as a number of bytes.
+  *  E.g. align to an 8-byte boundary with argument of 8.
+  *
+@@ -773,5 +774,6 @@ dbind_find_c_alignment (const char *type)
+ {
+     return dbind_find_c_alignment_r (&type);
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ /*END------------------------------------------------------------------------*/
+diff --git a/dbind/dbind-any.h b/dbind/dbind-any.h
+index 859c895..90f9fae 100644
+--- a/dbind/dbind-any.h
++++ b/dbind/dbind-any.h
+@@ -21,8 +21,11 @@
+ #define _DBIND_ANY_H_
+ 
+ #define DBUS_API_SUBJECT_TO_CHANGE
++#if defined(ENABLE_DBUS)
+ #include <dbus/dbus.h>
++#endif
+ 
++#if defined(ENABLE_DBUS)
+ unsigned int dbind_find_c_alignment (const char *type);
+ 
+ void   dbind_any_marshal       (DBusMessageIter *iter,
+@@ -40,6 +43,7 @@ void   dbind_any_demarshal     (DBusMessageIter *iter,
+ void   dbind_any_demarshal_va  (DBusMessageIter *iter,
+                                 const char           **arg_types,
+                                 va_list          args);
++#endif
+ 
+ void   dbind_any_free          (const char      *type,
+                                 void            *ptr_to_ptr);
+diff --git a/dbind/dbind.c b/dbind/dbind.c
+index e154f85..84aab5c 100644
+--- a/dbind/dbind.c
++++ b/dbind/dbind.c
+@@ -27,7 +27,9 @@
+ #include "dbind/dbind.h"
+ #include "atspi/atspi-gmain.h"
+ 
++#if defined(ENABLE_DBUS)
+ static int dbind_timeout = -1;
++#endif // #if defined(ENABLE_DBUS)
+ 
+ /*
+  * FIXME: compare types - to ensure they match &
+@@ -36,6 +38,7 @@ static int dbind_timeout = -1;
+ 
+ /*---------------------------------------------------------------------------*/
+ 
++#if defined(ENABLE_DBUS)
+ typedef struct _SpiReentrantCallClosure 
+ {
+   DBusMessage *reply;
+@@ -311,11 +314,13 @@ dbind_emit_signal (DBusConnection *cnx,
+ 
+     return success;
+ }
++
+ void
+ dbind_set_timeout (int timeout)
+ {
+   dbind_timeout = timeout;
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ 
+ /*END------------------------------------------------------------------------*/
+diff --git a/dbind/dbind.h b/dbind/dbind.h
+index 0c10c7d..9fa5272 100644
+--- a/dbind/dbind.h
++++ b/dbind/dbind.h
+@@ -21,9 +21,12 @@
+ #define _DBIND_H_
+ 
+ #define DBUS_API_SUBJECT_TO_CHANGE
++#if defined(ENABLE_DBUS)
+ #include <dbus/dbus.h>
++#endif
+ #include <dbind/dbind-any.h>
+ 
++#if defined(ENABLE_DBUS)
+ DBusMessage *
+ dbind_send_and_allow_reentry (DBusConnection *bus, DBusMessage *message, DBusError *error);
+ 
+@@ -64,6 +67,7 @@ dbind_emit_signal (DBusConnection *cnx,
+                    DBusError      *opt_error,
+                    const char     *arg_types,
+                    ...);
++#endif
+ 
+ void dbind_set_timeout (int timeout);
+ #endif /* _DBIND_H_ */
+diff --git a/dbind/dbtest.c b/dbind/dbtest.c
+index 22ea216..39af97a 100644
+--- a/dbind/dbtest.c
++++ b/dbind/dbtest.c
+@@ -22,6 +22,7 @@
+ #include <string.h>
+ #include <dbind/dbind.h>
+ 
++#if defined(ENABLE_DBUS)
+ void marshal (DBusMessage *msg, const char *type, void *ptr)
+ {
+     DBusMessageIter iter;
+@@ -364,14 +365,17 @@ void test_helpers ()
+     dbind_find_c_alignment ("a{ss}");
+     printf ("helpers passed\n");
+ }
++#endif // #if defined(ENABLE_DBUS)
+ 
+ int main (int argc, char **argv)
+ {
++#if defined(ENABLE_DBUS)
+     DBusConnection *bus = dbus_bus_get (DBUS_BUS_SESSION, NULL);
+     g_assert (bus != NULL);
+ 
+     test_helpers ();
+     test_marshalling ();
++#endif // #if defined(ENABLE_DBUS)
+ 
+     return 0;
+ }
+diff --git a/droute/droute-variant.h b/droute/droute-variant.h
+index 4fa0719..db1bc06 100644
+--- a/droute/droute-variant.h
++++ b/droute/droute-variant.h
+@@ -22,6 +22,7 @@
+ #ifndef _DROUTE_VARIANT_H
+ #define _DROUTE_VARIANT_H
+ 
++#if defined(ENABLE_DBUS)
+ #include <dbus/dbus.h>
+ 
+ dbus_bool_t  droute_return_v_int32  (DBusMessageIter *iter, dbus_int32_t val);
+@@ -31,5 +32,6 @@ dbus_bool_t  droute_return_v_object (DBusMessageIter *iter, const char *path);
+ 
+ dbus_int32_t droute_get_v_int32     (DBusMessageIter *iter);
+ const char  *droute_get_v_string    (DBusMessageIter *iter);
++#endif // #if defined(ENABLE_DBUS)
+ 
+ #endif	/* _DROUTE_VARIANT_H */
+diff --git a/droute/droute.h b/droute/droute.h
+index 506fef1..ab51df6 100644
+--- a/droute/droute.h
++++ b/droute/droute.h
+@@ -23,14 +23,18 @@
+ #ifndef _DROUTE_H
+ #define _DROUTE_H
+ 
++#if defined(ENABLE_DBUS)
+ #include <dbus/dbus.h>
++#endif // #if defined(ENABLE_DBUS)
+ #include <glib.h>
+ 
+ #include <droute/droute-variant.h>
+ 
+ 
++#if defined(ENABLE_DBUS)
+ typedef DBusMessage *(*DRouteFunction)         (DBusConnection *, DBusMessage *, void *);
+ typedef dbus_bool_t  (*DRoutePropertyFunction) (DBusMessageIter *, void *);
++#endif // #if defined(ENABLE_DBUS)
+ typedef gchar *(*DRouteIntrospectChildrenFunction) (const char *, void *);
+ 
+ typedef void        *(*DRouteGetDatumFunction) (const char *, void *);
+@@ -39,15 +43,19 @@ typedef gboolean    (*DRouteQueryInterfaceFunction) (void *, const char *);
+ typedef struct _DRouteMethod DRouteMethod;
+ struct _DRouteMethod
+ {
++#if defined(ENABLE_DBUS)
+     DRouteFunction func;
++#endif // #if defined(ENABLE_DBUS)
+     const char *name;
+ };
+ 
+ typedef struct _DRouteProperty DRouteProperty;
+ struct _DRouteProperty
+ {
++#if defined(ENABLE_DBUS)
+     DRoutePropertyFunction get;
+     DRoutePropertyFunction set;
++#endif // #if defined(ENABLE_DBUS)
+     const char *name;
+ };
+ 
+@@ -86,6 +94,7 @@ droute_path_add_interface (DRoutePath *path,
+                            const DRouteMethod   *methods,
+                            const DRouteProperty *properties);
+ 
++#if defined(ENABLE_DBUS)
+ DBusMessage *
+ droute_not_yet_handled_error   (DBusMessage *message);
+ 
+@@ -112,4 +121,5 @@ droute_intercept_dbus (DBusConnection *connection);
+ 
+ void
+ droute_unintercept_dbus (DBusConnection *connection);
++#endif // #if defined(ENABLE_DBUS)
+ #endif /* _DROUTE_H */
+diff --git a/meson.build b/meson.build
+index 6dd6e8c..f384d26 100644
+--- a/meson.build
++++ b/meson.build
+@@ -126,7 +126,20 @@ gio_req_version = '>= 2.28.0'
+ gir_req_version = '>= 0.6.7'
+ libxml_req_version = '>= 2.9.1'
+ 
+-libdbus_dep = dependency('dbus-1', version: libdbus_req_version)
++dbus_option = get_option('dbus')
++# ensure libdbus_dep is defined for use elsewhere, such as bus/meson.build
++libdbus_dep = dependency('', required: false)
++if dbus_option != 'no'
++  libdbus_dep = dependency('dbus-1', version: libdbus_req_version, required: false)
++  if libdbus_dep.found()
++    at_spi_conf.set('HAVE_DBUS', true)
++  else
++    at_spi_conf.set('HAVE_DBUS', false)
++  endif
++else
++  at_spi_conf.set('HAVE_DBUS', false)
++endif
++
+ glib_dep = dependency('glib-2.0', version: glib_req_version)
+ gobject_dep = dependency('gobject-2.0', version: gobject_req_version)
+ gio_dep = dependency('gio-2.0', version: gio_req_version)
+@@ -166,17 +179,19 @@ endif
+ at_spi_conf.set('ALIGNOF_CHAR', cc.alignment('char'))
+ at_spi_conf.set('ALIGNOF_DOUBLE', cc.alignment('double'))
+ 
+-dbus_alignments = [
+-  'dbus_bool_t',
+-  'dbus_int16_t',
+-  'dbus_int32_t',
+-  'dbus_int64_t',
+-]
+-
+-foreach a: dbus_alignments
+-  at_spi_conf.set('ALIGNOF_' + a.underscorify().to_upper(),
+-                  cc.alignment(a, prefix: '#include <dbus/dbus.h>', dependencies: libdbus_dep))
+-endforeach
++if dbus_option != 'no'
++  dbus_alignments = [
++    'dbus_bool_t',
++    'dbus_int16_t',
++    'dbus_int32_t',
++    'dbus_int64_t',
++  ]
++
++  foreach a: dbus_alignments
++    at_spi_conf.set('ALIGNOF_' + a.underscorify().to_upper(),
++                    cc.alignment(a, prefix: '#include <dbus/dbus.h>', dependencies: libdbus_dep))
++  endforeach
++endif
+ 
+ at_spi_conf.set('ALIGNOF_DBIND_POINTER', cc.alignment('dbind_pointer', prefix: 'typedef void *dbind_pointer;'))
+ at_spi_conf.set('ALIGNOF_DBIND_STRUCT', cc.alignment('dbind_struct', prefix: 'typedef struct { char s1; } dbind_struct;'))
+@@ -206,16 +221,24 @@ else
+   p2p_cflags = []
+ endif
+ 
+-install_data('at-spi2-atk.desktop',
+-             install_dir: join_paths(get_option('libdir'), 'gnome-settings-daemon-3.0', 'gtk-modules'))
++if dbus_option != 'no'
++  install_data('at-spi2-atk.desktop',
++               install_dir: join_paths(get_option('libdir'), 'gnome-settings-daemon-3.0', 'gtk-modules'))
++endif
+ 
+ subdir('xml')
+ subdir('dbind')
+ subdir('atspi')
+-subdir('bus')
+-subdir('registryd')
++if dbus_option != 'no'
++  subdir('bus')
++  subdir('registryd')
++endif
+ subdir('atk')
+-subdir('droute')
++if dbus_option != 'no'
++  subdir('droute')
++else
++  libdroute_dep = dependency('', required: false)
++endif
+ subdir('atk-adaptor')
+ subdir('tests')
+ 
+diff --git a/meson_options.txt b/meson_options.txt
+index 7b647ba..e697d44 100644
+--- a/meson_options.txt
++++ b/meson_options.txt
+@@ -1,3 +1,8 @@
++option('dbus',
++       description: 'Enable DBus support',
++       type: 'combo',
++       choices: ['yes', 'no', 'auto'],
++       value: 'auto')
+ option('dbus_services_dir',
+        description: 'Location of the DBus services',
+        type: 'string',
+diff --git a/tests/atspi/test-application.c b/tests/atspi/test-application.c
+index 621d1de..b093a11 100644
+--- a/tests/atspi/test-application.c
++++ b/tests/atspi/test-application.c
+@@ -27,7 +27,9 @@
+ 
+ #include <stdio.h>
+ #include <glib.h>
++#if defined(ENABLE_DBUS)
+ #include <dbus/dbus.h>
++#endif // #if defined(ENABLE_DBUS)
+ #include <atspi/atspi.h>
+ 
+ static GMainLoop *mainloop;
+@@ -35,6 +37,7 @@ static GMainLoop *mainloop;
+ int
+ register_app ()
+ {
++#if defined(ENABLE_DBUS)
+   DBusConnection *connection = NULL;
+   DBusMessage *message;
+   DBusMessageIter iter;
+@@ -85,6 +88,7 @@ register_app ()
+   dbus_message_unref (message);
+   dbus_message_unref (reply);
+   dbus_error_free (&error);
++#endif // #if defined(ENABLE_DBUS)
+   return 0;
+ }
+ 

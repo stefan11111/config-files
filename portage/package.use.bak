@@ -1,5 +1,3 @@
-games-util/steam-client-meta steamruntime
-games-util/steam-launcher steamruntime
 app-alternatives/awk gawk
 app-alternatives/bc gnu
 app-alternatives/bzip2 reference
@@ -9,22 +7,20 @@ app-alternatives/lex flex
 app-alternatives/sh bash
 app-alternatives/tar gnu
 app-alternatives/yacc bison
-#sys-apps/openrc tools sysv-utils
-sys-apps/openrc unicode
 sys-fs/e2fsprogs tools
 dev-vcs/git blksha1 curl gpg safe-directory webdav
 sys-apps/net-tools hostname
 sys-apps/grep egrep-fgrep
-sys-apps/less unicode
 sys-process/procps kill ncurses
 app-arch/zip crypt
 sys-devel/clang-runtime compiler-rt openmp sanitize
 sys-libs/compiler-rt-sanitizers asan cfi clang dfsan gwp-asan hwasan libfuzzer lsan memprof msan orc profile safestack scudo tsan ubsan verify-sig xray
 sys-libs/compiler-rt clang
+dev-libs/libxml2 -python_targets_python3_10
 app-shells/bash net
 dev-libs/libgcrypt asm getentropy
 media-sound/alsa-utils libsamplerate ncurses
-media-video/mpv lua cli drm egl iconv libmpv libplacebo uchardet xv zlib
+media-video/mpv cli drm egl iconv libmpv libplacebo uchardet xv zlib
 media-libs/libvpx highbitdepth
 media-libs/dav1d 8bit 10bit asm
 media-libs/libass fontconfig
@@ -53,7 +49,7 @@ app-arch/p7zip rar
 games-util/game-device-udev-rules -acl
 x11-base/xorg-server xorg suid -udev
 sys-apps/util-linux -udev -cramfs -hardlink -logger -ncurses
-#sys-apps/systemd-utils -acl udev -kmod
+sys-apps/systemd-utils -acl udev -kmod
 net-fs/samba client system-mitkrb5 -gpg
 net-misc/openssh ssl pie
 x11-drivers/nvidia-drivers driver static-libs
@@ -77,11 +73,12 @@ sys-kernel/genkernel -firmware
 media-video/mkvtoolnix gui
 net-misc/curl adns ftp http2 imap ipv6 openssl pop3 progress-meter samba smtp ssl tftp
 dev-lang/python ensurepip gdbm lto ncurses pgo sqlite ssl
+=dev-lang/python-3.10.9-r1 xml
 media-video/ffmpeg encode zlib gpl bzip2 dav1d encode iconv network postproc threads
 x11-libs/cairo glib
 media-libs/imlib2 bzip2 jpeg png shm tiff webp zlib
-media-libs/harfbuzz glib graphite truetype
-media-libs/freetype png
+=media-libs/harfbuzz-6.0.0 glib graphite truetype
+=media-libs/freetype-2.13.0 png
 dev-libs/libpcre2 bzip2 jit pcre16 zlib
 dev-libs/libxml2 python
 media-libs/imlib2 gif

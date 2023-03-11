@@ -1,0 +1,3 @@
+#! /bin/sh
+
+su stefan -c qbittorrent-nox &
