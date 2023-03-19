@@ -5,3 +5,4 @@ app-accessibility/at-spi2-core-2.46.0
 x11-base/xorg-drivers-21.1-r2
 # purge systemd
 virtual/tmpfiles-0-r3
+#sys-fs/udev-init-scripts-35

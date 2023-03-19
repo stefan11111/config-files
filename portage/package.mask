@@ -23,3 +23,5 @@ x11-libs/gtk+::gentoo
 # other bloat
 sys-libs/pam
 sys-auth/pambase
+# stable imlib
+>=media-libs/imlib2-1.11.0

@@ -1,5 +1,6 @@
 games-util/steam-client-meta steamruntime
 games-util/steam-launcher steamruntime
+games-util/steam-meta steamruntime
 app-alternatives/awk gawk
 app-alternatives/bc gnu
 app-alternatives/bzip2 reference
@@ -33,12 +34,12 @@ net-libs/libtorrent-rasterbar dht ssl
 sys-libs/ldb lmdb
 app-emulation/wine-vanilla -samba truetype fontconfig gecko mingw mono opengl sdl ssl unwind vulkan xcomposite
 media-video/vlc -upnp -ssl -libnotify -xml -gcrypt libass dvbpsi gui ncurses libsamplerate dav1d
+media-libs/libplacebo opengl
 media-libs/mesa gles2 llvm proprietary-codecs zstd
 www-client/librewolf eme-free gmp-autoupdate
 net-irc/hexchat -dbus -gtk
 net-misc/youtube-viewer -gtk
 net-fs/cifs-utils creds
-media-libs/freetype -harfbuzz
 app-crypt/mit-krb5 -pkinit keyutils
 dev-lang/tcl threads
 virtual/perl-libnet ssl
@@ -64,7 +65,7 @@ media-sound/apulse sdk
 app-crypt/gnupg tofu ssl
 sys-devel/clang-toolchain-symlinks native-symlinks
 sys-devel/clang extra static-analyzer
-sys-devel/gcc nptl openmp sanitize ssp
+sys-devel/gcc jit nptl openmp sanitize ssp
 dev-libs/elfutils utils
 dev-python/pydantic native-extensions
 dev-python/lxml threads
@@ -80,9 +81,9 @@ dev-lang/python ensurepip gdbm lto ncurses pgo sqlite ssl
 media-video/ffmpeg encode zlib gpl bzip2 dav1d encode iconv network postproc threads
 x11-libs/cairo glib
 media-libs/imlib2 bzip2 jpeg png shm tiff webp zlib
-media-libs/harfbuzz glib graphite truetype
+media-libs/harfbuzz glib truetype
 media-libs/freetype png
-dev-libs/libpcre2 bzip2 jit pcre16 zlib
+dev-libs/libpcre2 jit pcre16 unicode
 dev-libs/libxml2 python
 media-libs/imlib2 gif
 dev-lang/ruby ssl
