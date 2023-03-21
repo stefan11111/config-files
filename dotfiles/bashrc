@@ -25,5 +25,10 @@ alias kirc="cd /home/stefan/HDD1/irc && kirc -s irc.rizon.net -c subsplease -n h
 alias doas="rdo"
 alias mpv="mpv --fullscreen"
 #alias nano="nano -l"
+alias ls='ls --color=auto'
+alias grep='grep --color=auto'
+alias fgrep='fgrep --color=auto'
+alias egrep='egrep --color=auto'
+alias ro="setxkbmap ro std"
+alias en="setxkbmap ro"
 flashfetch
-#neofetch
