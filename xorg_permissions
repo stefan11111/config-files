@@ -1,0 +1,2 @@
+chmod 660 /dev/input/mice
+chown root:input /dev/input/mice
