@@ -1,0 +1,4 @@
+post_pkg_postinst() {
+	chown root:xorg /usr/bin/Xorg
+	chmod 2711 /usr/bin/Xorg
+}

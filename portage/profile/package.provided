@@ -3,6 +3,7 @@ app-accessibility/at-spi2-core-2.46.0
 #dev-util/gdbus-codegen-2.74.6
 # go back to a static /dev
 x11-base/xorg-drivers-21.1-r2
+#virtual/dev-manager-0-r2
 # purge systemd
 virtual/tmpfiles-0-r3
 #sys-fs/udev-init-scripts-35
