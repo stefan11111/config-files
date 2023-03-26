@@ -1,1 +1,7 @@
 sys-apps/opentmpfiles
+#dev-libs/libevent::libressl
+#dev-lang/python::libressl
+#dev-lang/ruby::libressl
+#dev-lang/rust::libressl
+#dev-perl/Net-SSLeay::libressl
+#dev-libs/openssl::libressl

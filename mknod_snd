@@ -1,4 +1,4 @@
-mkdir -m 777 /dev/snd
+mkdir -m 755 /dev/snd
 mknod -m 660 /dev/snd/controlC0 c 116 0
 mknod -m 660 /dev/snd/pcmC0D0p c 116 16
 mknod -m 660 /dev/snd/timer c 116 33
@@ -12,6 +12,7 @@ mknod -m 660 /dev/snd/pcmC1D0c c 116 56
 mknod -m 660 /dev/snd/pcmC1D0p c 116 48
 mknod -m 660 /dev/snd/pcmC1D1p c 116 49
 mknod -m 660 /dev/snd/pcmC1D2c c 116 58
+mknod -m 660 /dev/snd/pcmC2D0c c 116 88
 mknod -m 660 /dev/snd/pcmC2D0p c 116 80
 mknod -m 660 /dev/snd/pcmC2D3p c 116 83
 chown root:audio /dev/snd/*

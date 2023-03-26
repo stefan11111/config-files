@@ -52,7 +52,7 @@ net-libs/nodejs -ssl -system-ssl -npm
 www-client/torbrowser hardened
 app-arch/p7zip rar
 games-util/game-device-udev-rules -acl
-x11-base/xorg-server xorg suid -udev
+x11-base/xorg-server xorg xvfb
 sys-apps/util-linux -udev -cramfs -hardlink -logger -ncurses
 #sys-apps/systemd-utils -acl udev -kmod
 net-fs/samba client system-mitkrb5 -gpg
@@ -80,7 +80,7 @@ net-misc/curl adns ftp http2 imap ipv6 openssl pop3 progress-meter samba smtp ss
 dev-lang/python ensurepip gdbm lto ncurses pgo sqlite ssl
 media-video/ffmpeg encode zlib gpl bzip2 dav1d encode iconv network postproc threads
 x11-libs/cairo glib
-media-libs/imlib2 bzip2 jpeg png shm tiff webp zlib
+media-libs/imlib2 bzip2 jpeg png shm tiff webp zlib text
 media-libs/harfbuzz glib truetype
 media-libs/freetype png
 dev-libs/libpcre2 jit pcre16 unicode
@@ -91,6 +91,3 @@ sys-libs/glibc multiarch multilib ssp stack-realign static-libs
 dev-libs/gmp cpudetection
 sys-apps/util-linux suid
 app-portage/gemato gpg
-# required by www-client/librewolf-108.0.1_p1::librewolf[X,pgo]
-# required by librewolf (argument)
->=x11-base/xorg-server-21.1.5 xvfb

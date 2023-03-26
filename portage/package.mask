@@ -3,8 +3,16 @@ dev-libs/libevent::gentoo
 dev-lang/python::gentoo
 dev-lang/ruby::gentoo
 dev-lang/rust::gentoo
+dev-lang/rust-bin
 dev-perl/Net-SSLeay::gentoo
 dev-libs/openssl::gentoo
+#dev-libs/libevent
+#dev-lang/python
+#dev-lang/ruby
+#dev-lang/rust
+#dev-lang/rust-bin
+#dev-perl/Net-SSLeay
+#dev-libs/openssl
 # go back to a static /dev
 sys-fs/eudev
 sys-fs/udev
@@ -24,4 +32,4 @@ x11-libs/gtk+::gentoo
 sys-libs/pam
 sys-auth/pambase
 # stable imlib
->=media-libs/imlib2-1.11.0
+#>=media-libs/imlib2-1.11.0
