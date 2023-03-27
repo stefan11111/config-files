@@ -3,7 +3,5 @@
 slstatus &
 xcompmgr &
 /usr/bin/feh --bg-fill '/home/stefan/images/wallpapers/2.jpg' &
-xset -dpms &
-xset s off &
 #curl https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts > /etc/hosts &
 exec dwm

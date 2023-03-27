@@ -1,2 +1,4 @@
 chmod 660 /dev/input/mice
-chown root:input /dev/input/mice
+chown root:xorg /dev/input/mice
+chmod 2711 /usr/bin/Xorg
+chown root:xorg /usr/bin/Xorg
