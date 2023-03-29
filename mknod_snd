@@ -1,19 +1,16 @@
 mkdir -m 755 /dev/snd
 mknod -m 660 /dev/snd/controlC0 c 116 0
-mknod -m 660 /dev/snd/pcmC0D0p c 116 16
-mknod -m 660 /dev/snd/timer c 116 33
-mknod -m 660 /dev/snd/seq c 166 1
-mknod -m 660 /dev/snd/controlC2 c 116 64
 mknod -m 660 /dev/snd/controlC1 c 116 32
-mknod -m 660 /dev/snd/pcmC0D0c c 116 24
+mknod -m 660 /dev/snd/controlC2 c 116 64
+mknod -m 660 /dev/snd/hwC0D0 c 116 4
 mknod -m 660 /dev/snd/hwC1D0 c 116 36
-mknod -m 660 /dev/snd/hwC2D0 c 116 68
-mknod -m 660 /dev/snd/pcmC1D0c c 116 56
-mknod -m 660 /dev/snd/pcmC1D0p c 116 48
-mknod -m 660 /dev/snd/pcmC1D1p c 116 49
-mknod -m 660 /dev/snd/pcmC1D2c c 116 58
+mknod -m 660 /dev/snd/pcmC0D0c c 116 24
+mknod -m 660 /dev/snd/pcmC0D0p c 116 16
+mknod -m 660 /dev/snd/pcmC0D1p c 116 17
+mknod -m 660 /dev/snd/pcmC0D2c c 116 26
+mknod -m 660 /dev/snd/pcmC1D3p c 116 51
 mknod -m 660 /dev/snd/pcmC2D0c c 116 88
 mknod -m 660 /dev/snd/pcmC2D0p c 116 80
-mknod -m 660 /dev/snd/pcmC2D3p c 116 83
+mknod -m 660 /dev/snd/seq c 116 1
+mknod -m 660 /dev/snd/timer c 116 33
 chown root:audio /dev/snd/*
-chown root:audio /dev/snd
