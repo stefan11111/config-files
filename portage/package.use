@@ -10,10 +10,11 @@ app-alternatives/lex flex
 app-alternatives/sh bash
 app-alternatives/tar gnu
 app-alternatives/yacc bison
+app-admin/sysklogd logrotate
 #sys-apps/openrc tools sysv-utils
 sys-apps/openrc unicode
 sys-fs/e2fsprogs tools
-dev-vcs/git blksha1 curl gpg safe-directory webdav
+dev-vcs/git blksha1 curl gpg safe-directory webdav perl
 sys-apps/net-tools hostname
 sys-apps/grep egrep-fgrep
 sys-apps/less unicode
@@ -29,14 +30,16 @@ media-video/mpv lua cli drm egl iconv libmpv libplacebo uchardet xv zlib
 media-libs/libvpx highbitdepth
 media-libs/dav1d 8bit 10bit asm
 media-libs/libass fontconfig
+media-libs/libpng apng
+media-libs/libepoxy egl
 net-p2p/qbittorrent webui -dbus -gui
 net-libs/libtorrent-rasterbar dht ssl
 sys-libs/ldb lmdb
+#sys-libs/gdbm berkdb
 app-emulation/wine-vanilla -samba truetype fontconfig gecko mingw mono opengl sdl ssl unwind vulkan xcomposite
 media-video/vlc -upnp -ssl -libnotify -xml -gcrypt libass dvbpsi gui ncurses libsamplerate dav1d
 media-libs/libplacebo opengl
-media-libs/mesa gles2 llvm proprietary-codecs zstd
-www-client/librewolf eme-free gmp-autoupdate
+media-libs/mesa gles2 proprietary-codecs zstd abi_x86_32
 net-irc/hexchat -dbus -gtk
 net-misc/youtube-viewer -gtk
 net-fs/cifs-utils creds
@@ -57,16 +60,18 @@ sys-apps/util-linux -udev -cramfs -hardlink -logger -ncurses
 #sys-apps/systemd-utils -acl udev -kmod
 net-fs/samba client system-mitkrb5 -gpg
 net-misc/openssh ssl pie
-x11-drivers/nvidia-drivers driver static-libs
+x11-drivers/nvidia-drivers driver static-libs abi_x86_32
 sys-apps/util-linux -su
 x11-drivers/nvidia-drivers -tools
-www-client/librewolf -kernel_linux pulseaudio system-av1 system-harfbuzz system-icu system-jpeg system-libevent system-libvpx system-webp system-webp hardened openh264
-media-sound/apulse sdk
+www-client/librewolf -kernel_linux pulseaudio system-av1 system-harfbuzz system-icu system-jpeg system-libevent system-libvpx system-webp system-webp system-png hardened openh264 eme-free gmp-autoupdate clang
+www-client/firefox -kernel_linux pulseaudio system-av1 system-harfbuzz system-icu system-jpeg system-libevent system-libvpx system-webp system-webp system-png hardened openh264 eme-free gmp-autoupdate
+media-sound/apulse sdk abi_x86_32
 app-crypt/gnupg tofu ssl
 sys-devel/clang-toolchain-symlinks native-symlinks
 sys-devel/clang extra static-analyzer
 sys-devel/gcc jit nptl openmp sanitize ssp
 dev-libs/elfutils utils
+dev-libs/nettle gmp
 dev-python/pydantic native-extensions
 dev-python/lxml threads
 dev-lang/ruby gdbm
@@ -76,11 +81,11 @@ dev-qt/qtsql sqlite
 sys-apps/debianutils -installkernel
 sys-kernel/genkernel -firmware
 media-video/mkvtoolnix gui
-net-misc/curl adns ftp http2 imap ipv6 openssl pop3 progress-meter samba smtp ssl tftp
+net-misc/curl ftp http2 imap ipv6 openssl pop3 progress-meter samba smtp ssl tftp
 dev-lang/python ensurepip gdbm lto ncurses pgo sqlite ssl
 media-video/ffmpeg encode zlib gpl bzip2 dav1d encode iconv network postproc threads
 x11-libs/cairo glib
-media-libs/imlib2 bzip2 jpeg png shm tiff webp zlib text
+media-libs/imlib2 bzip2 jpeg png shm tiff webp zlib text filters
 media-libs/harfbuzz glib truetype
 media-libs/freetype png
 dev-libs/libpcre2 jit pcre16 unicode
@@ -91,3 +96,27 @@ sys-libs/glibc multiarch multilib ssp stack-realign static-libs
 dev-libs/gmp cpudetection
 sys-apps/util-linux suid
 app-portage/gemato gpg
+x11-libs/libXau abi_x86_32
+x11-libs/libXdmcp abi_x86_32
+x11-libs/libX11 abi_x86_32
+x11-libs/libXrender abi_x86_32
+x11-libs/libXrandr abi_x86_32
+app-arch/zstd abi_x86_32
+x11-libs/libXfixes abi_x86_32
+x11-libs/libxshmfence abi_x86_32
+x11-libs/libdrm abi_x86_32
+sys-libs/zlib abi_x86_32
+media-libs/libglvnd abi_x86_32
+dev-libs/expat abi_x86_32
+x11-libs/libXext abi_x86_32
+media-libs/fontconfig abi_x86_32
+virtual/libiconv abi_x86_32
+dev-libs/libffi abi_x86_32
+dev-libs/libpcre2 abi_x86_32
+media-libs/alsa-lib abi_x86_32
+dev-libs/glib abi_x86_32
+virtual/libintl abi_x86_32
+media-libs/libpng abi_x86_32
+sys-apps/util-linux abi_x86_32
+media-libs/freetype abi_x86_32
+

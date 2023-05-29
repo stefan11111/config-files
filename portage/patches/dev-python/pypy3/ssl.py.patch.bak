@@ -1,0 +1,16 @@
+--- a/lib_pypy/_cffi_ssl/_cffi_src/openssl/ssl.py  2023-05-15 17:14:34.028728703 +0300
++++ b/lib_pypy/_cffi_ssl/_cffi_src/openssl/ssl.py      2023-05-15 17:16:53.823338502 +0300
+@@ -154,10 +154,10 @@
+ static const long SSL3_RT_HANDSHAKE;
+ static const long SSL3_RT_APPLICATION_DATA;
+
+-static const long SSL3_RT_HEADER;
+-static const long SSL3_RT_INNER_CONTENT_TYPE;
++static const long SSL3_RT_HEADER = 0x100;
++static const long SSL3_RT_INNER_CONTENT_TYPE = 0x101;
+
+-static const long SSL3_MT_CHANGE_CIPHER_SPEC;
++static const long SSL3_MT_CHANGE_CIPHER_SPEC = 0x0101;
+
+ typedef ... SSL_METHOD;
+ typedef ... SSL_CTX;

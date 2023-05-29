@@ -1,0 +1,13 @@
+--- a/lib_pypy/_pypy_openssl.c     2023-05-15 10:55:35.120389694 +0300
++++ b/lib_pypy/_pypy_openssl.c 2023-05-15 10:54:47.211094607 +0300
+@@ -1413,6 +1413,12 @@
+ static const int ERR_LIB_OSSL_ENCODER = -42;
+ static const int ERR_LIB_PROP = -42;
+ static const int ERR_LIB_PROV = -42;
++static const int ERR_LIB_OSSL_STORE      44;
++static const int ERR_LIB_ASYNC           51;
++static const int ERR_LIB_SM2             53;
++static const int SSL3_MT_CHANGE_CIPHER_SPEC              0x0101;
++static const int SSL3_RT_HEADER                  0x100;
++static const int SSL3_RT_INNER_CONTENT_TYPE      0x101;
+ #endif

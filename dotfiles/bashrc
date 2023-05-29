@@ -18,12 +18,14 @@ fi
 # Put your fun stuff here.
 
 alias emergeall="rdo emerge --deep --update --newuse --verbose --ask --keep-going --autounmask-write --with-bdeps=y"
-alias startx="startx -- vt$(tty | sed -e 's|/dev/tty||')"
+alias startx="xinit -- vt$(tty | sed -e 's|/dev/tty||')"
+#alias startx="startx -- vt$(tty | sed -e 's|/dev/tty||')"
 #alias startx="startx -- vt$(tty | sed -e 's|/dev/pts/||')"
-alias kirc-gentoo="cd /home/stefan/HDD1/irc && /usr/local/bin/kirc -c gentoo -n stefan11111"
+alias kirc-gentoo="cd /home/stefan/HDD1/irc && /usr/bin/kirc -c gentoo -n stefan11111"
 alias kirc="cd /home/stefan/HDD1/irc && kirc -s irc.rizon.net -c subsplease -n hentai_god"
 alias doas="rdo"
 alias mpv="mpv --fullscreen"
+alias leafpad="l3afpad"
 #alias nano="nano -l"
 alias ls='ls --color=auto'
 alias grep='grep --color=auto'

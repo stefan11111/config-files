@@ -1,0 +1,29 @@
+--- a/lib_pypy/_cffi_ssl/_stdssl/errorcodes.py   2023-05-15 17:26:57.074462573 +0300
++++ b/lib_pypy/_cffi_ssl/_stdssl/errorcodes.py       2023-05-15 17:28:44.432882955 +0300
+@@ -4,7 +4,7 @@
+ from _pypy_openssl import ffi, lib
+ _lib_codes = [
+     ("ASN1", lib.ERR_LIB_ASN1),
+-    ("ASYNC", lib.ERR_LIB_ASYNC),
++    ("ASYNC", 51),
+     ("BIO", lib.ERR_LIB_BIO),
+     ("BN", lib.ERR_LIB_BN),
+     ("BUF", lib.ERR_LIB_BUF),
+@@ -35,7 +35,7 @@
+     ("OFFSET", lib.ERR_LIB_OFFSET),
+     ("OSSL_DECODER", lib.ERR_LIB_OSSL_DECODER),
+     ("OSSL_ENCODER", lib.ERR_LIB_OSSL_ENCODER),
+-    ("OSSL_STORE", lib.ERR_LIB_OSSL_STORE),
++    ("OSSL_STORE", 44),
+     ("PEM", lib.ERR_LIB_PEM),
+     ("PKCS12", lib.ERR_LIB_PKCS12),
+     ("PKCS7", lib.ERR_LIB_PKCS7),
+@@ -43,7 +43,7 @@
+     ("PROV", lib.ERR_LIB_PROV),
+     ("RAND", lib.ERR_LIB_RAND),
+     ("RSA", lib.ERR_LIB_RSA),
+-    ("SM2", lib.ERR_LIB_SM2),
++    ("SM2", 53),
+     ("SSL", lib.ERR_LIB_SSL),
+     ("SYS", lib.ERR_LIB_SYS),
+     ("TS", lib.ERR_LIB_TS),

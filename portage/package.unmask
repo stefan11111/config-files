@@ -1,4 +1,6 @@
 sys-apps/opentmpfiles
+x11-misc/sprop
+#app-portage/layman
 #dev-libs/libevent::libressl
 #dev-lang/python::libressl
 #dev-lang/ruby::libressl

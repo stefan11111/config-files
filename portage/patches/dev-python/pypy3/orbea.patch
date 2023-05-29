@@ -1,0 +1,20 @@
+--- a/lib_pypy/_cffi_ssl/_cffi_src/openssl/ssl.py
++++ b/lib_pypy/_cffi_ssl/_cffi_src/openssl/ssl.py
+@@ -606,7 +606,7 @@ void SSL_set_msg_callback(SSL *ssl,
+ """
+ 
+ CUSTOMIZATIONS = """
+-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102
++#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 && !CRYPTOGRAPHY_IS_LIBRESSL
+ #error Python 3.7 requires OpenSSL >= 1.0.2
+ #endif
+ 
+@@ -768,7 +768,7 @@ int (*SSL_CTX_get_max_proto_version)(SSL_CTX *ctx) = NULL;
+ int (*SSL_get_min_proto_version)(SSL *ssl) = NULL;
+ int (*SSL_get_max_proto_version)(SSL *ssl) = NULL;
+ #endif
+-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
++#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 && !CRYPTOGRAPHY_IS_LIBRESSL
+ int (*SSL_CTX_set_min_proto_version)(SSL_CTX *ctx, int version) = NULL;
+ int (*SSL_CTX_set_max_proto_version)(SSL_CTX *ctx, int version) = NULL;
+ int (*SSL_set_min_proto_version)(SSL *ssl, int version) = NULL;
