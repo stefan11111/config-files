@@ -60,7 +60,7 @@ sys-apps/util-linux -udev -cramfs -hardlink -logger -ncurses
 #sys-apps/systemd-utils -acl udev -kmod
 net-fs/samba client system-mitkrb5 -gpg
 net-misc/openssh ssl pie
-x11-drivers/nvidia-drivers driver static-libs abi_x86_32
+x11-drivers/nvidia-drivers modules driver static-libs strip abi_x86_32
 sys-apps/util-linux -su
 x11-drivers/nvidia-drivers -tools
 www-client/librewolf -kernel_linux pulseaudio system-av1 system-harfbuzz system-icu system-jpeg system-libevent system-libvpx system-webp system-webp system-png hardened openh264 eme-free gmp-autoupdate clang
@@ -119,4 +119,4 @@ virtual/libintl abi_x86_32
 media-libs/libpng abi_x86_32
 sys-apps/util-linux abi_x86_32
 media-libs/freetype abi_x86_32
-
+x11-libs/libxcb abi_x86_32

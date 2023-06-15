@@ -13,3 +13,10 @@ virtual/tmpfiles-0-r3
 # steam without bloat
 #gnome-extra/zenity-3.92.0
 #sys-libs/pam-1.5.2-r3
+# romeve icon themes
+virtual/freedesktop-icon-theme-0-r4
+x11-themes/hicolor-icon-theme-0.17
+dev-util/gtk-update-icon-cache-3.24.31
+# remove Xorg bloat
+x11-apps/rgb-1.0.3
+#x11-misc/compose-tables-1.8.4
