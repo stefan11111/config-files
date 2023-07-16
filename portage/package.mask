@@ -1,8 +1,10 @@
 # use libressl
 #dev-libs/libevent::gentoo
 dev-lang/python::gentoo
+dev-lang/python::pg_overlay
 dev-lang/ruby::gentoo
 dev-lang/rust::gentoo
+dev-lang/rust::pg_overlay
 dev-lang/rust-bin
 dev-perl/Net-SSLeay::gentoo
 dev-libs/openssl::gentoo
@@ -15,8 +17,8 @@ dev-libs/openssl::gentoo
 #dev-libs/openssl
 # go back to a static /dev
 sys-fs/eudev
-#sys-fs/udev
-#virtual/udev
+sys-fs/udev
+virtual/udev
 sys-auth/polkit
 sys-auth/consolekit
 sys-auth/rtkit
@@ -24,13 +26,18 @@ media-sound/pulseaudio
 sys-apps/systemd
 # purge systemd
 #sys-apps/openrc::gentoo
-#sys-apps/systemd-utils
+sys-apps/systemd-utils
 # librewolf without dbus
-app-accessibility/at-spi2-core
+#app-accessibility/at-spi2-core
 #>=dev-libs/atk-2.46
-dev-libs/atk::gentoo
-x11-libs/gtk+::gentoo
+#dev-libs/atk::gentoo
 #x11-libs/gtk+::mv
 # other bloat
 sys-libs/pam
 sys-auth/pambase
+
+## firefox debug mask
+
+#www-client/firefox::pg_overlay
+#www-client/librewolf::librewolf
+#dev-libs/atk

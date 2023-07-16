@@ -1,0 +1,2 @@
+app-shells/bash -readline
+sys-devel/gettext -xattr

@@ -1,6 +1,7 @@
 sys-apps/opentmpfiles
 x11-misc/sprop
-dev-libs/nss
+#dev-libs/nss
+#virtual/rust:0/llvm-16
 #app-portage/layman
 #dev-libs/libevent::libressl
 #dev-lang/python::libressl

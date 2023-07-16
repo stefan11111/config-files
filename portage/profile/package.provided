@@ -9,14 +9,20 @@ x11-base/xorg-drivers-21.1-r2
 #virtual/dev-manager-0-r2
 # purge systemd
 virtual/tmpfiles-0-r3
+#virtual/udev-217-r6
 #sys-fs/udev-init-scripts-35
+virtual/libudev-232-r8
 # steam without bloat
 #gnome-extra/zenity-3.92.0
 #sys-libs/pam-1.5.2-r3
-# romeve icon themes
+# remove icon themes
 virtual/freedesktop-icon-theme-0-r4
 x11-themes/hicolor-icon-theme-0.17
 dev-util/gtk-update-icon-cache-3.24.31
 # remove Xorg bloat
-x11-apps/rgb-1.0.3
-#x11-misc/compose-tables-1.8.4
+#x11-apps/rgb-1.0.3
+#x11-apps/iceauth-1.0.9
+# remove xinit bloat
+#x11-apps/xrdb-1.2.2
+# remove gnupg bloat
+app-crypt/pinentry-1.2.1-r3
