@@ -1,3 +1,5 @@
+#app-crypt/gcr gtk
+
 www-client/palemoon optimize jemalloc gtk3
 games-util/steam-client-meta steamruntime
 games-util/steam-launcher steamruntime
@@ -42,6 +44,7 @@ app-emulation/wine-vanilla -samba truetype fontconfig gecko mingw mono opengl sd
 media-video/vlc -upnp -ssl -libnotify -xml -gcrypt libass dvbpsi gui ncurses libsamplerate dav1d
 media-libs/libplacebo opengl
 media-libs/mesa gles2 proprietary-codecs zstd abi_x86_32
+media-libs/openh264 plugin
 net-irc/hexchat -dbus -gtk
 net-misc/youtube-viewer -gtk
 net-fs/cifs-utils creds
@@ -57,7 +60,7 @@ net-libs/nodejs -ssl -system-ssl -npm
 www-client/torbrowser hardened
 #app-arch/p7zip rar
 games-util/game-device-udev-rules -acl
-x11-base/xorg-server xorg xvfb minimal glx
+x11-base/xorg-server xorg minimal
 sys-apps/util-linux -udev -cramfs -hardlink -logger -ncurses
 #sys-apps/systemd-utils -acl udev -kmod
 net-fs/samba client system-mitkrb5 -gpg
@@ -85,7 +88,7 @@ sys-kernel/genkernel -firmware
 media-video/mkvtoolnix gui
 net-misc/curl ftp http2 imap ipv6 openssl pop3 progress-meter samba smtp ssl tftp
 dev-lang/python ensurepip gdbm lto ncurses pgo sqlite ssl
-media-video/ffmpeg encode zlib gpl bzip2 dav1d encode iconv network postproc threads
+media-video/ffmpeg encode zlib gpl bzip2 dav1d encode iconv network postproc threads x264
 x11-libs/cairo glib
 media-libs/imlib2 bzip2 jpeg png shm tiff webp zlib text filters
 media-libs/harfbuzz glib truetype
@@ -127,6 +130,3 @@ x11-libs/libxcb abi_x86_32
 # required by @system
 # required by @world (argument)
 >=app-shells/bash-5.2_p15-r6 readline
-# required by www-client/palemoon-32.2.1::palemoon
-# required by palemoon (argument)
->=media-video/ffmpeg-6.0-r1 x264

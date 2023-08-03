@@ -1,0 +1,34 @@
+--- /dev/null	2023-03-29 23:29:11.796523582 +0300
++++ b/atk/atk-bridge.h	2023-07-23 13:15:19.980450874 +0300
+@@ -0,0 +1 @@
++void atk_bridge_adaptor_init();
+
+--- /dev/null	2023-03-29 23:29:11.796523582 +0300
++++ b/atk/atk-bridge.c	2023-07-23 13:15:59.986538267 +0300
+@@ -0,0 +1,5 @@
++#include <atk-bridge.h>
++
++void atk_bridge_adaptor_init()
++{
++}
+
+diff --git a/atk/meson.build b/atk/meson.build
+index d19bbba..8f7b390 100644
+--- a/atk/meson.build
++++ b/atk/meson.build
+@@ -31,6 +31,7 @@ atk_sources = [
+   'atkvalue.c',
+   'atkversion.c',
+   'atkwindow.c',
++  'atk-bridge.c',
+ ]
+ 
+ atk_headers = [
+@@ -66,6 +67,7 @@ atk_headers = [
+   'atkvalue.h',
+   'atkwindow.h',
+   'atk-autocleanups.h',
++  'atk-bridge.h',
+ ]
+ 
+ install_headers(atk_headers + ['atk.h'], subdir: atk_api_path)

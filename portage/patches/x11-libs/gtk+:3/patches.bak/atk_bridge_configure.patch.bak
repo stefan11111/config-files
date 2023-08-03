@@ -1,0 +1,55 @@
+diff --git a/configure b/configure
+index 97d2910..e941936 100755
+--- a/configure
++++ b/configure
+@@ -27255,12 +27255,7 @@ fi
+ # Check for Accessibility Toolkit flags
+ ########################################
+ 
+-if test x$enable_x11_backend = xyes; then
+-   ATK_PACKAGES="atk atk-bridge-2.0"
+-else
+-   ATK_PACKAGES="atk"
+-fi
+-
++ATK_PACKAGES="atk"
+ 
+ pkg_failed=no
+ { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for ATK" >&5
+diff --git a/configure.ac b/configure.ac
+index d99e944..b6cbb8f 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -1349,13 +1349,7 @@ AC_SUBST(GDK_DEP_CFLAGS)
+ # Check for Accessibility Toolkit flags
+ ########################################
+ 
+-if test x$enable_x11_backend = xyes; then
+-   ATK_PACKAGES="atk atk-bridge-2.0"
+-else
+-   ATK_PACKAGES="atk"
+-fi
+-
+-PKG_CHECK_MODULES(ATK, $ATK_PACKAGES)
++ATK_PACKAGES=""
+ 
+ GTK_PACKAGES="atk >= atk_required_version cairo >= cairo_required_version cairo-gobject >= cairo_required_version gdk-pixbuf-2.0 >= gdk_pixbuf_required_version gio-2.0 >= glib_required_version"
+ GTK_PRIVATE_PACKAGES="$ATK_PACKAGES"
+diff --git a/configure~ b/configure~
+index fa3357c..2ddfe81 100755
+--- a/configure~
++++ b/configure~
+@@ -24602,12 +24602,7 @@ fi
+ # Check for Accessibility Toolkit flags
+ ########################################
+ 
+-if test x$enable_x11_backend = xyes; then
+-   ATK_PACKAGES="atk atk-bridge-2.0"
+-else
+-   ATK_PACKAGES="atk"
+-fi
+-
++ATK_PACKAGES="atk"
+ 
+ pkg_failed=no
+ { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ATK" >&5

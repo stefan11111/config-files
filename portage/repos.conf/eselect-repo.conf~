@@ -32,7 +32,9 @@ location = /var/db/repos/pg_overlay
 sync-type = git
 sync-uri = https://github.com/gentoo-mirror/pg_overlay.git
 
-[src_prepare-overlay]
-location = /var/db/repos/src_prepare-overlay
+
+[palemoon]
+location = /var/db/repos/palemoon
 sync-type = git
-sync-uri = https://github.com/gentoo-mirror/src_prepare-overlay.git
+sync-uri = https://github.com/gentoo-mirror/palemoon.git
+

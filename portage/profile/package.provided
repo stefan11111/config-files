@@ -1,9 +1,7 @@
 # librewolf without dbus
-app-accessibility/at-spi2-core-2.46.0
 #sys-apps/dbus-1.15.4-r1
 #dev-util/patchelf-0.18.0
 #dev-libs/dbus-glib-0.112
-dev-util/gdbus-codegen-2.74.6
 # go back to a static /dev
 x11-base/xorg-drivers-21.1-r2
 #virtual/dev-manager-0-r2
@@ -20,9 +18,14 @@ virtual/freedesktop-icon-theme-0-r4
 x11-themes/hicolor-icon-theme-0.17
 dev-util/gtk-update-icon-cache-3.24.31
 # remove Xorg bloat
-#x11-apps/rgb-1.0.3
-#x11-apps/iceauth-1.0.9
+x11-apps/rgb-1.0.3
+x11-apps/iceauth-1.0.9
 # remove xinit bloat
 #x11-apps/xrdb-1.2.2
 # remove gnupg bloat
 app-crypt/pinentry-1.2.1-r3
+# gtk+:3::gentoo without bloat
+app-accessibility/at-spi2-core-2.46.0
+dev-util/gdbus-codegen-2.74.6
+gnome-base/librsvg-2.56.2
+x11-themes/adwaita-icon-theme-44.0

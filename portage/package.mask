@@ -23,15 +23,21 @@ sys-auth/polkit
 sys-auth/consolekit
 sys-auth/rtkit
 media-sound/pulseaudio
+media-sound/pulseaudio-daemon
+media-libs/libpulse
 sys-apps/systemd
 # purge systemd
 #sys-apps/openrc::gentoo
 sys-apps/systemd-utils
-# librewolf without dbus
+# gtk3 without dbus
+
 #app-accessibility/at-spi2-core
-#>=dev-libs/atk-2.46
+>=dev-libs/atk-2.46
+#>x11-libs/gtk+-3.14.13
 #dev-libs/atk::gentoo
+#dev-libs/atk::stefan_overlay
 #x11-libs/gtk+::mv
+x11-libs/gtk+::stefan_overlay
 # other bloat
 sys-libs/pam
 sys-auth/pambase

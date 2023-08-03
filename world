@@ -1,3 +1,4 @@
+app-admin/hddtemp
 app-admin/rdoedit
 app-admin/rootdo
 app-admin/su
@@ -11,6 +12,7 @@ app-misc/vrms-gentoo
 app-portage/eix
 app-portage/gentoolkit
 app-portage/portage-utils
+dev-libs/atk
 dev-libs/libressl
 dev-util/codeblocks
 dev-util/strace
@@ -36,7 +38,6 @@ sys-devel/gdb
 sys-fs/fake-libudev
 sys-kernel/installkernel-gentoo
 sys-process/htop
-www-client/librewolf
 www-client/palemoon
 x11-apps/mesa-progs
 x11-apps/setxkbmap
@@ -46,6 +47,7 @@ x11-drivers/nvidia-drivers
 x11-drivers/xf86-input-keyboard
 x11-drivers/xf86-input-mouse
 x11-libs/fake-gtk2
+x11-libs/gtk3-classic-patches
 x11-misc/dmenu
 x11-misc/xcompmgr
 x11-misc/xfe

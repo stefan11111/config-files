@@ -1,1 +1,2 @@
 CFLAGS="${CFLAGS} -Wno-incompatible-pointer-types -Wno-implicit-function-declaration"
+MYMESONARGS="-Dprint_backends=file -Dbuiltin_immodules=none"

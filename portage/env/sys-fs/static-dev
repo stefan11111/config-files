@@ -1,0 +1,6 @@
+post_pkg_postinst() {
+	chown root:xorg /dev/input/mice
+	chmod 660 /dev/input/mice
+	chown root:audio /dev/snd/*
+	chmod 660 /dev/snd/*
+}

@@ -1,0 +1,13 @@
+diff --git a/interfacer/src/browsh/firefox_unix.go b/interfacer/src/browsh/firefox_unix.go
+index 57f6ea6..25a6d51 100644
+--- a/src/browsh/firefox_unix.go
++++ b/src/browsh/firefox_unix.go
+@@ -9,7 +9,7 @@ import (
+ )
+ 
+ func getFirefoxPath() string {
+-	return Shell("which firefox")
++	return Shell("which firefox-bin")
+ }
+ 
+ func ensureFirefoxVersion(path string) {
