@@ -1,0 +1,20 @@
+--- a/dbus/examples/Makefile.am	2024-02-08 00:14:46.229636693 +0200
++++ b/dbus/examples/Makefile.am	2024-02-08 00:16:20.951597273 +0200
+@@ -23,7 +23,7 @@
+ BUILT_SOURCES = example-service-glue.h
+ 
+ example-service-glue.h: example-service.xml
+-	$(LIBTOOL) --mode=execute $(DBUS_BINDING_TOOL) --prefix=some_object --mode=glib-server --output=example-service-glue.h $(srcdir)/example-service.xml
++	touch example-service-glue.h
+ 
+ 
+ ## Makefile.am bits for another client/server pair
+@@ -37,7 +37,7 @@
+ BUILT_SOURCES += example-signal-emitter-glue.h
+ 
+ example-signal-emitter-glue.h: example-signal-emitter.xml
+-	$(LIBTOOL) --mode=execute $(DBUS_BINDING_TOOL) --prefix=test_object --mode=glib-server --output=example-signal-emitter-glue.h $(srcdir)/example-signal-emitter.xml
++	touch example-signal-emitter-glue.h
+ 
+ CLEANFILES = $(BUILT_SOURCES)
+ 

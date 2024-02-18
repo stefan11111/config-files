@@ -1,0 +1,12 @@
+diff -Naru meson.build.bak meson.build
+--- a/meson.build 2023-12-29 16:12:54.360208725 +0200
++++ b/meson.build 2023-12-29 16:15:11.268143202 +0200
+@@ -89,7 +89,7 @@
+ gioinc = include_directories('gio')
+
+ glib_prefix = get_option('prefix')
+-glib_bindir = join_paths(glib_prefix, get_option('bindir'))
++glib_bindir = '/dev/null'
+ glib_libdir = join_paths(glib_prefix, get_option('libdir'))
+ glib_libexecdir = join_paths(glib_prefix, get_option('libexecdir'))
+ glib_datadir = join_paths(glib_prefix, get_option('datadir'))

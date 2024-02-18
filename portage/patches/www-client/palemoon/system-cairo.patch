@@ -1,0 +1,35 @@
+From 9279b014334310855e680102cdb66c01d4b87baa Mon Sep 17 00:00:00 2001
+From: Moonchild <moonchild@palemoon.org>
+Date: Thu, 1 Feb 2024 11:20:25 +0100
+Subject: [PATCH] Issue #2465 - Do not use our in-tree metrics hints if using
+ system-cairo
+
+Use a somewhat equivalent font-options instance when using the
+system-supplied cairo lib, instead of our in-tree extension.
+
+Resolves #2465
+---
+ gfx/thebes/gfxFont.cpp | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/gfx/thebes/gfxFont.cpp b/gfx/thebes/gfxFont.cpp
+index 9eea084fd9..776f3a9e1b 100644
+--- a/platform/gfx/thebes/gfxFont.cpp
++++ b/platform/gfx/thebes/gfxFont.cpp
+@@ -591,8 +591,16 @@ gfxFontShaper::GetRoundOffsetsToPixels(DrawTarget* aDrawTarget,
+     }
+ 
+     // Sometimes hint metrics gets set for us, most notably for printing.
++#ifdef MOZ_TREE_CAIRO
+     cairo_hint_metrics_t hint_metrics =
+         cairo_scaled_font_get_hint_metrics(scaled_font);
++#else
++    cairo_font_options_t* font_options = cairo_font_options_create();
++    cairo_scaled_font_get_font_options(scaled_font, font_options);
++    cairo_hint_metrics_t hint_metrics =
++        cairo_font_options_get_hint_metrics(font_options);
++    cairo_font_options_destroy(font_options);
++#endif
+ 
+     switch (hint_metrics) {
+     case CAIRO_HINT_METRICS_OFF:

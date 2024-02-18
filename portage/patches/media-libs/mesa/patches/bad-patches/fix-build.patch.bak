@@ -1,0 +1,39 @@
+--- a/src/gbm/main/backend.c    2024-02-02 14:37:06.080756170 +0200
++++ b/src/gbm/main/backend.c    2024-02-02 14:37:19.570558236 +0200
+@@ -34,7 +34,6 @@
+ #include <limits.h>
+ #include <assert.h>
+ #include <dlfcn.h>
+-#include <xf86drm.h>
+
+ #include "loader.h"
+ #include "backend.h"
+
+--- a/src/gbm/main/backend.c    2024-02-02 14:40:29.064444489 +0200
++++ b/src/gbm/main/backend.c    2024-02-02 14:41:57.126485700 +0200
+@@ -194,24 +194,8 @@
+ static struct gbm_device *
+ backend_from_driver_name(int fd)
+ {
+-   struct gbm_device *dev = NULL;
+-   drmVersionPtr v = drmGetVersion(fd);
+-   void *lib;
+
+-   if (!v)
+-      return NULL;
+-
+-   lib = loader_open_driver_lib(v->name, BACKEND_LIB_SUFFIX,
+-                                backend_search_path_vars,
+-                                DEFAULT_BACKENDS_PATH,
+-                                false);
+-
+-   if (lib)
+-      dev = load_backend(lib, fd, v->name);
+-
+-   drmFreeVersion(v);
+-
+-   return dev;
++   return NULL;
+ }
+
+ struct gbm_device *

@@ -1,2 +1,3 @@
-app-shells/bash -readline
+#app-shells/bash -readline
 sys-devel/gettext -xattr
+media-libs/mesa -opengl

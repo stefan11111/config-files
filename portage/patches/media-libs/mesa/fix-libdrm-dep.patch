@@ -1,0 +1,18 @@
+--- a/src/gbm/meson.build	2024-02-11 22:34:05.558639573 +0200
++++ b/src/gbm/meson.build	2024-02-11 22:35:49.283780943 +0200
+@@ -31,14 +31,13 @@
+ args_gbm = [
+   '-DDEFAULT_BACKENDS_PATH="@0@"'.format(gbm_backends_path),
+ ]
+-deps_gbm = []
++deps_gbm = [dep_libdrm]
+ incs_gbm = [
+   include_directories('main'), inc_include, inc_src, inc_loader,
+ ]
+ 
+ if with_dri2
+   files_gbm += files('backends/dri/gbm_dri.c', 'backends/dri/gbm_driint.h')
+-  deps_gbm += dep_libdrm # TODO: pthread-stubs
+ endif
+ if with_platform_wayland
+   deps_gbm += dep_wayland_server

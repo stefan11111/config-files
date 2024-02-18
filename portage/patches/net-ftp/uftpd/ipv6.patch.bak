@@ -1,0 +1,204 @@
+diff --git a/src/ftpcmd.c b/src/ftpcmd.c
+index ea69cba..9e728c2 100644
+--- a/src/ftpcmd.c
++++ b/src/ftpcmd.c
+@@ -166,24 +166,24 @@ static int recv_msg(int sd, char *msg, size_t len, char **cmd, char **argument)
+ static int open_data_connection(ctrl_t *ctrl)
+ {
+ 	socklen_t len = sizeof(struct sockaddr);
+-	struct sockaddr_in sin = { 0 };
++	struct sockaddr_in6 sin6 = { 0 };
+ 
+ 	/* Previous PORT command from client */
+ 	if (ctrl->data_address[0]) {
+ 		int rc;
+ 
+-		ctrl->data_sd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
++		ctrl->data_sd = socket(AF_INET6, SOCK_STREAM | SOCK_NONBLOCK, 0);
+ 		if (-1 == ctrl->data_sd) {
+ 			ERR(errno, "Failed creating data socket");
+ 			return -1;
+ 		}
+ 
+-		memset(&sin, 0, sizeof(sin));
+-		sin.sin_family = AF_INET;
+-		sin.sin_port = htons(ctrl->data_port);
+-		inet_aton(ctrl->data_address, &(sin.sin_addr));
++		memset(&sin6, 0, sizeof(sin6));
++		sin6.sin6_family = AF_INET6;
++		sin6.sin6_port = htons(ctrl->data_port);
++		inet_pton(AF_INET6, ctrl->data_address, &(sin6.sin6_addr));
+ 
+-		rc = connect(ctrl->data_sd, (struct sockaddr *)&sin, len);
++		rc = connect(ctrl->data_sd, (struct sockaddr *)&sin6, len);
+ 		if (rc == -1 && EINPROGRESS != errno) {
+ 			ERR(errno, "Failed connecting data socket to client");
+ 			close(ctrl->data_sd);
+@@ -204,7 +204,7 @@ static int open_data_connection(ctrl_t *ctrl)
+ 		int retries = 3;
+ 
+ 	retry:
+-		ctrl->data_sd = accept(ctrl->data_listen_sd, (struct sockaddr *)&sin, &len);
++		ctrl->data_sd = accept(ctrl->data_listen_sd, (struct sockaddr *)&sin6, &len);
+ 		if (-1 == ctrl->data_sd) {
+ 			if (EAGAIN == errno && --retries) {
+ 				sleep(1);
+@@ -218,8 +218,8 @@ static int open_data_connection(ctrl_t *ctrl)
+ 		setsockopt(ctrl->data_sd, SOL_SOCKET, SO_KEEPALIVE, &const_int_1, sizeof(const_int_1));
+ 		set_nonblock(ctrl->data_sd);
+ 
+-		inet_ntop(AF_INET, &(sin.sin_addr), client_ip, INET_ADDRSTRLEN);
+-		DBG("Client PASV data connection from %s:%d", client_ip, ntohs(sin.sin_port));
++		inet_ntop(AF_INET6, &(sin6.sin6_addr), client_ip, INET6_ADDRSTRLEN);
++		DBG("Client PASV data connection from %s:%d", client_ip, ntohs(sin6.sin6_port));
+ 
+ 		close(ctrl->data_listen_sd);
+ 		ctrl->data_listen_sd = -1;
+@@ -439,8 +439,8 @@ static void handle_CDUP(ctrl_t *ctrl, char *path)
+ static void handle_PORT(ctrl_t *ctrl, char *str)
+ {
+ 	int a, b, c, d, e, f;
+-	char addr[INET_ADDRSTRLEN];
+-	struct sockaddr_in sin;
++	char addr[INET6_ADDRSTRLEN];
++	struct sockaddr_in6 sin6;
+ 
+ 	if (ctrl->data_sd > 0) {
+ 		uev_io_stop(&ctrl->data_watcher);
+@@ -458,7 +458,7 @@ static void handle_PORT(ctrl_t *ctrl, char *str)
+ 	snprintf(addr, sizeof(addr), "%d.%d.%d.%d", a, b, c, d);
+ 
+ 	/* Check IPv4 address using inet_aton(), throw away converted result */
+-	if (!inet_aton(addr, &(sin.sin_addr))) {
++	if (!inet_pton(AF_INET6, addr, &(sin6.sin6_addr))) {
+ 		ERR(0, "Invalid address '%s' given to PORT command", addr);
+ 		send_msg(ctrl->sd, "500 Illegal PORT command.\r\n");
+ 		return;
+@@ -916,7 +916,7 @@ static void do_pasv_connection(uev_t *w, void *arg, int events)
+ 
+ static int do_PASV(ctrl_t *ctrl, char *arg, struct sockaddr *data, socklen_t *len)
+ {
+-	struct sockaddr_in server;
++	struct sockaddr_in6 server;
+ 
+ 	if (ctrl->data_sd > 0) {
+ 		close(ctrl->data_sd);
+@@ -926,7 +926,7 @@ static int do_PASV(ctrl_t *ctrl, char *arg, struct sockaddr *data, socklen_t *le
+ 	if (ctrl->data_listen_sd > 0)
+ 		close(ctrl->data_listen_sd);
+ 
+-	ctrl->data_listen_sd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
++	ctrl->data_listen_sd = socket(AF_INET6, SOCK_STREAM | SOCK_NONBLOCK, 0);
+ 	if (ctrl->data_listen_sd < 0) {
+ 		ERR(errno, "Failed opening data server socket");
+ 		send_msg(ctrl->sd, "426 Internal server error.\r\n");
+@@ -934,9 +934,10 @@ static int do_PASV(ctrl_t *ctrl, char *arg, struct sockaddr *data, socklen_t *le
+ 	}
+ 
+ 	memset(&server, 0, sizeof(server));
+-	server.sin_family      = AF_INET;
+-	server.sin_addr.s_addr = inet_addr(ctrl->serveraddr);
+-	server.sin_port        = htons(0);
++	server.sin6_family      = AF_INET6;
++	inet_pton(AF_INET6, ctrl->serveraddr, server.sin6_addr.s6_addr);
++//	server.sin6_addr.s6_addr = ctrl->serveraddr;
++	server.sin6_port        = htons(0);
+ 	if (bind(ctrl->data_listen_sd, (struct sockaddr *)&server, sizeof(server)) < 0) {
+ 		ERR(errno, "Failed binding to client socket");
+ 		send_msg(ctrl->sd, "426 Internal server error.\r\n");
+@@ -969,7 +970,7 @@ static int do_PASV(ctrl_t *ctrl, char *arg, struct sockaddr *data, socklen_t *le
+ 
+ static void handle_PASV(ctrl_t *ctrl, char *arg)
+ {
+-	struct sockaddr_in data;
++	struct sockaddr_in6 data;
+ 	socklen_t len = sizeof(data);
+ 	char *msg, *p, buf[200];
+ 	int port;
+@@ -978,6 +979,7 @@ static void handle_PASV(ctrl_t *ctrl, char *arg)
+ 		return;
+ 
+ 	/* Convert server IP address and port to comma separated list */
++
+ 	if (pasv_addr)
+ 		msg = strdup(pasv_addr);
+ 	else
+@@ -990,7 +992,7 @@ static void handle_PASV(ctrl_t *ctrl, char *arg)
+ 	while ((p = strchr(p, '.')))
+ 		*p++ = ',';
+ 
+-	port = ntohs(data.sin_port);
++	port = ntohs(data.sin6_port);
+ 	snprintf(buf, sizeof(buf), "227 Entering Passive Mode (%s,%d,%d)\r\n",
+ 		 msg, port / 256, port % 256);
+ 	send_msg(ctrl->sd, buf);
+@@ -1000,7 +1002,7 @@ static void handle_PASV(ctrl_t *ctrl, char *arg)
+ 
+ static void handle_EPSV(ctrl_t *ctrl, char *arg)
+ {
+-	struct sockaddr_in data;
++	struct sockaddr_in6 data;
+ 	socklen_t len = sizeof(data);
+ 	char buf[200];
+ 
+@@ -1012,7 +1014,7 @@ static void handle_EPSV(ctrl_t *ctrl, char *arg)
+ 	if (do_PASV(ctrl, arg, (struct sockaddr *)&data, &len))
+ 		return;
+ 
+-	snprintf(buf, sizeof(buf), "229 Entering Extended Passive Mode (|||%d|)\r\n", ntohs(data.sin_port));
++	snprintf(buf, sizeof(buf), "229 Entering Extended Passive Mode (|||%d|)\r\n", ntohs(data.sin6_port));
+ 	send_msg(ctrl->sd, buf);
+ }
+ 
+diff --git a/src/uftpd.c b/src/uftpd.c
+index f3a41dd..f8670e8 100644
+--- a/src/uftpd.c
++++ b/src/uftpd.c
+@@ -286,7 +286,7 @@ int main(int argc, char **argv)
+ 		NULL
+ 	};
+ 	uev_ctx_t ctx;
+-	struct in_addr in_pasv_addr;
++//	struct in_addr in_pasv_addr;
+ 
+ 	pidfn = prognm = progname(argv[0]);
+ 	while ((c = getopt(argc, argv, "hl:no:p:sv")) != EOF) {
+@@ -331,10 +331,10 @@ int main(int argc, char **argv)
+ 						fprintf(stderr, "Missing PASV address argument to -o pasv_addr=ADDR");
+ 						return usage(1);
+ 					}
+-					if (!inet_aton(value,&in_pasv_addr)) {
+-						fprintf(stderr, "Value specified to pasv_addr is not a valid IPv4 address");
+-						return usage(1);
+-					}
++//					if (!inet_aton(value,&in_pasv_addr)) {
++//						fprintf(stderr, "Value specified to pasv_addr is not a valid IPv4 address");
++//						return usage(1);
++//					}
+ 					pasv_addr = strdup(value);
+ 					break;
+ 				case SEC_OPT:
+diff --git a/src/uftpd.h b/src/uftpd.h
+index 2a67bb1..c0d99cf 100644
+--- a/src/uftpd.h
++++ b/src/uftpd.h
+@@ -123,8 +123,8 @@ typedef struct {
+ 	struct sockaddr_storage server_sa;
+ 	struct sockaddr_storage client_sa;
+ 
+-	char serveraddr[INET_ADDRSTRLEN];
+-	char clientaddr[INET_ADDRSTRLEN];
++	char serveraddr[INET6_ADDRSTRLEN];
++	char clientaddr[INET6_ADDRSTRLEN];
+ 
+ 	/* Event loop context and session watchers */
+ 	uev_t      io_watcher, data_watcher, timeout_watcher;
+@@ -160,7 +160,7 @@ typedef struct {
+ 	int data_listen_sd;
+ 
+ 	/* PORT */
+-	char data_address[INET_ADDRSTRLEN];
++	char data_address[INET6_ADDRSTRLEN];
+ 	int  data_port;
+ } ctrl_t;
+ 

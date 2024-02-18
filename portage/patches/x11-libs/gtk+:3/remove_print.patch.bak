@@ -1,0 +1,14 @@
+diff --git a/modules/printbackends/meson.build b/modules/printbackends/meson.build
+index f034963..e3252ba 100644
+--- a/modules/printbackends/meson.build
++++ b/modules/printbackends/meson.build
+@@ -35,9 +35,6 @@ endif
+ print_backends = []
+ 
+ if not enabled_print_backends.contains('file')
+-  if os_unix
+-    error('\'file\' print backed needs to be enabled')
+-  endif
+ else
+   print_backends += ['file']
+ endif

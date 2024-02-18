@@ -1,0 +1,35 @@
+diff -Naru gtkprintunixdialog.c.bak gtkprintunixdialog.c
+--- a/gtk/gtkprintunixdialog.c        2023-12-27 21:14:01.953893388 +0200
++++ b/gtk/gtkprintunixdialog.c        2023-12-27 21:15:58.935470355 +0200
+@@ -1134,6 +1134,7 @@
+                                     GParamSpec   *pspec)
+
+ {
++  return;
+   GtkPrintUnixDialog *dialog = GTK_PRINT_UNIX_DIALOG (object);
+
+   switch (prop_id)
+@@ -1171,6 +1172,7 @@
+                                     GValue     *value,
+                                     GParamSpec *pspec)
+ {
++  return;
+   GtkPrintUnixDialog *dialog = GTK_PRINT_UNIX_DIALOG (object);
+   GtkPrintUnixDialogPrivate *priv = dialog->priv;
+
+@@ -3460,6 +3460,7 @@
+ gtk_print_unix_dialog_set_page_setup (GtkPrintUnixDialog *dialog,
+                                       GtkPageSetup       *page_setup)
+ {
++  return;
+   GtkPrintUnixDialogPrivate *priv;
+
+   g_return_if_fail (GTK_IS_PRINT_UNIX_DIALOG (dialog));
+@@ -3624,6 +3625,7 @@
+ gtk_print_unix_dialog_set_settings (GtkPrintUnixDialog *dialog,
+                                     GtkPrintSettings   *settings)
+ {
++  return;
+   GtkPrintUnixDialogPrivate *priv;
+   const gchar *printer;
+   GtkPageRange *ranges;

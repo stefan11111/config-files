@@ -1,0 +1,10 @@
+--- a/dbus/examples/Makefile.am	2024-02-08 00:21:18.117290612 +0200
++++ b/dbus/examples/Makefile.am	2024-02-08 00:21:43.443590239 +0200
+@@ -39,6 +39,7 @@
+ example-signal-emitter-glue.h: example-signal-emitter.xml
+ 	touch example-signal-emitter-glue.h
+ 	echo 'int dbus_glib_test_object_object_info;' > example-signal-emitter-glue.h
++	echo 'int dbus_glib_some_object_object_info;' >> example-signal-emitter-glue.h
+ 
+ CLEANFILES = $(BUILT_SOURCES)
+ 

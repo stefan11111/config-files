@@ -1,0 +1,490 @@
+x11-libs/wxGTK nodebug gtk3 expat unicode xrc pcre zlib png
+dev-libs/libcrypto-compat patchelf
+www-client/palemoon optimize jemalloc gtk2 system-extension-dirs system-ffi system-pixman
+www-client/basilisk optimize jemalloc gtk3 system-extension-dirs system-ffi system-pixman
+mail-client/claws-mail imap
+virtual/wine abi_x86_64
+#games-util/steam-client-meta steamruntime
+#games-util/steam-launcher steamruntime
+#games-util/steam-meta steamruntime
+app-alternatives/awk gawk
+app-alternatives/bc gnu
+app-alternatives/bzip2 reference
+app-alternatives/cpio gnu
+app-alternatives/gzip reference
+app-alternatives/lex flex
+app-alternatives/sh bash
+app-alternatives/tar gnu
+app-alternatives/yacc bison
+app-alternatives/ninja reference
+app-editors/nano -minimal
+app-admin/sysklogd logrotate
+#sys-apps/openrc tools sysv-utils
+sys-apps/openrc unicode sysvinit
+sys-fs/e2fsprogs tools
+dev-vcs/git blksha1 curl gpg safe-directory webdav perl
+sys-apps/net-tools hostname
+sys-apps/grep egrep-fgrep
+sys-apps/less unicode
+sys-process/procps kill ncurses
+app-arch/zip crypt
+sys-devel/clang-runtime compiler-rt openmp sanitize
+sys-libs/compiler-rt-sanitizers asan cfi clang dfsan gwp-asan hwasan libfuzzer lsan memprof msan orc profile safestack scudo tsan ubsan verify-sig xray
+sys-libs/compiler-rt clang
+app-shells/bash net
+dev-libs/libgcrypt asm getentropy
+dev-libs/xmlsec openssl
+media-sound/alsa-utils libsamplerate ncurses
+media-video/mpv lua cli drm egl iconv libmpv uchardet xv zlib
+media-libs/libplacebo libplacebo opengl
+#media-libs/libvpx highbitdepth
+media-libs/dav1d 8bit 10bit asm
+media-libs/libass fontconfig
+media-libs/libpng apng
+media-libs/libepoxy egl
+net-p2p/qbittorrent webui -dbus -gui
+net-libs/libtorrent-rasterbar dht ssl
+sys-libs/ldb lmdb
+#sys-libs/gdbm berkdb
+app-emulation/wine-vanilla -samba truetype fontconfig gecko mingw mono opengl sdl ssl unwind vulkan xcomposite wow64 kerberos
+media-video/vlc -upnp -ssl -libnotify -xml -gcrypt libass dvbpsi gui ncurses libsamplerate dav1d
+#media-libs/mesa gles2 zstd
+media-libs/openh264 plugin
+mail-mta/postfix berkdb
+net-irc/hexchat -dbus -gtk
+net-misc/youtube-viewer -gtk
+net-fs/cifs-utils creds
+app-crypt/mit-krb5 -pkinit keyutils
+dev-lang/tcl threads
+virtual/perl-libnet ssl
+media-libs/libsndfile minimal
+net-misc/curl curl_ssl_openssl
+sys-libs/ncurses -gpm -minimal
+sys-libs/zlib minizip
+media-libs/libvpx postproc
+net-libs/nodejs -ssl -system-ssl -npm
+www-client/torbrowser hardened
+#app-arch/p7zip rar
+games-util/game-device-udev-rules -acl
+x11-base/xorg-server xorg -minimal
+sys-apps/util-linux -udev -cramfs -hardlink -logger -ncurses
+#sys-apps/systemd-utils -acl udev -kmod
+net-fs/samba client system-mitkrb5 -gpg
+net-misc/openssh ssl pie
+x11-drivers/nvidia-drivers modules driver static-libs strip
+sys-apps/util-linux -su
+x11-drivers/nvidia-drivers -tools
+www-client/librewolf -kernel_linux pulseaudio system-av1 system-harfbuzz system-icu system-jpeg system-libevent system-libvpx system-webp system-webp system-png hardened openh264 eme-free gmp-autoupdate
+www-client/firefox -kernel_linux pulseaudio system-av1 system-harfbuzz system-icu system-jpeg system-libevent system-libvpx system-webp system-webp system-png hardened openh264 eme-free gmp-autoupdate
+media-sound/apulse sdk
+app-crypt/gnupg tofu ssl
+sys-devel/clang-toolchain-symlinks native-symlinks
+sys-devel/clang extra static-analyzer
+sys-devel/gcc -jit nptl openmp sanitize ssp gcc graphite
+dev-libs/elfutils utils
+dev-libs/nettle gmp
+dev-python/pydantic native-extensions
+dev-python/lxml threads
+dev-lang/ruby -ipv6 -jit
+sys-apps/portage native-extensions rsync-verify
+dev-qt/qtgui -libinput
+dev-qt/qtsql sqlite
+sys-apps/debianutils -installkernel
+sys-kernel/genkernel -firmware
+media-video/mkvtoolnix gui
+net-misc/curl ftp ipv6 openssl progress-meter samba smtp ssl tftp
+dev-lang/python ensurepip gdbm lto ncurses pgo sqlite ssl
+media-video/ffmpeg encode zlib gpl bzip2 dav1d encode iconv network postproc threads x264
+x11-libs/fox truetype png
+x11-libs/cairo glib
+media-libs/imlib2 bzip2 jpeg png shm tiff webp zlib text filters
+media-libs/harfbuzz glib truetype
+media-libs/freetype png
+dev-libs/libpcre2 jit pcre16 unicode
+dev-libs/libxml2 python
+media-libs/imlib2 gif
+sys-libs/glibc multiarch multilib ssp stack-realign static-libs
+dev-libs/gmp cpudetection
+sys-apps/util-linux suid
+app-portage/gemato gpg
+media-sound/mpd ffmpeg
+
+app-eselect/eselect-repository python_single_target_python3_12
+media-video/mpv python_single_target_python3_12
+dev-util/glib-utils python_single_target_python3_12
+dev-util/gdbus-codegen python_single_target_python3_12
+
+x11-libs/libXau abi_x86_32
+x11-libs/libXdmcp abi_x86_32
+x11-libs/libX11 abi_x86_32
+x11-libs/libXrender abi_x86_32
+x11-libs/libXrandr abi_x86_32
+app-arch/zstd abi_x86_32
+x11-libs/libXfixes abi_x86_32
+x11-libs/libxshmfence abi_x86_32
+x11-libs/libdrm abi_x86_32
+sys-libs/zlib abi_x86_32
+media-libs/libglvnd abi_x86_32
+dev-libs/expat abi_x86_32
+x11-libs/libXext abi_x86_32
+media-libs/fontconfig abi_x86_32
+virtual/libiconv abi_x86_32
+dev-libs/libffi abi_x86_32
+dev-libs/libpcre2 abi_x86_32
+media-libs/alsa-lib abi_x86_32
+dev-libs/glib abi_x86_32
+virtual/libintl abi_x86_32
+media-libs/libpng abi_x86_32
+sys-apps/util-linux abi_x86_32
+media-libs/freetype abi_x86_32
+x11-libs/libxcb abi_x86_32
+x11-libs/libXxf86vm abi_x86_32
+media-libs/mesa abi_x86_32
+virtual/opengl abi_x86_32
+x11-drivers/nvidia-drivers abi_x86_32
+media-sound/apulse abi_x86_32
+x11-libs/xcb-util-keysyms abi_x86_32
+# required by x11-libs/gtk+-2.24.33-r4::stefan_overlay
+# required by @selected
+# required by @world (argument)
+=x11-libs/cairo-1.16.0-r4 svg
+# required by games-util/steam-client-meta-0-r20231231::steam-overlay[-steamruntime]
+# required by games-util/steam-meta-0-r20220320::steam-overlay
+# required by @selected
+# required by @world (argument)
+>=app-arch/bzip2-1.0.8-r4 abi_x86_32
+# required by games-util/steam-client-meta-0-r20231231::steam-overlay[-steamruntime]
+# required by games-util/steam-meta-0-r20220320::steam-overlay
+# required by @selected
+# required by @world (argument)
+>=x11-libs/gtk+-2.24.33-r4:2 cups abi_x86_32
+# required by x11-libs/gtk+-2.24.33-r4::stefan_overlay[X]
+# required by @selected
+# required by @world (argument)
+>=x11-libs/cairo-1.18.0 abi_x86_32
+# required by x11-libs/gtk+-2.24.33-r4::stefan_overlay
+# required by @selected
+# required by @world (argument)
+>=x11-libs/gdk-pixbuf-2.42.10-r1 abi_x86_32
+# required by x11-libs/gtk+-2.24.33-r4::stefan_overlay
+# required by @selected
+# required by @world (argument)
+>=x11-libs/pango-1.51.0 abi_x86_32
+# required by x11-libs/gtk+-2.24.33-r4::stefan_overlay[cups]
+# required by @selected
+# required by @world (argument)
+>=net-print/cups-2.4.7-r2 abi_x86_32
+# required by x11-libs/gtk+-2.24.33-r4::stefan_overlay[X]
+# required by @selected
+# required by @world (argument)
+>=x11-libs/libXcomposite-0.4.6 abi_x86_32
+# required by x11-libs/gtk+-2.24.33-r4::stefan_overlay[X]
+# required by @selected
+# required by @world (argument)
+>=x11-libs/libXcursor-1.2.1 abi_x86_32
+# required by x11-libs/gtk+-2.24.33-r4::stefan_overlay[X]
+# required by @selected
+# required by @world (argument)
+>=x11-libs/libXdamage-1.1.6 abi_x86_32
+# required by x11-libs/gtk+-2.24.33-r4::stefan_overlay[X]
+# required by @selected
+# required by @world (argument)
+>=x11-libs/libXi-1.8.1 abi_x86_32
+# required by net-print/cups-2.4.7-r2::gentoo[-openssl]
+# required by x11-libs/gtk+-2.24.33-r4::stefan_overlay[cups]
+# required by @selected
+# required by @world (argument)
+>=net-libs/gnutls-3.8.3 abi_x86_32
+# required by net-libs/gnutls-3.8.3::gentoo
+# required by net-print/cups-2.4.7-r2::gentoo[-openssl]
+# required by x11-libs/gtk+-2.24.33-r4::stefan_overlay[cups]
+# required by @selected
+# required by @world (argument)
+>=dev-libs/libtasn1-4.19.0 abi_x86_32
+# required by net-libs/gnutls-3.8.3::gentoo
+# required by net-print/cups-2.4.7-r2::gentoo[-openssl]
+# required by x11-libs/gtk+-2.24.33-r4::stefan_overlay[cups]
+# required by @selected
+# required by @world (argument)
+>=dev-libs/libunistring-1.1-r1 abi_x86_32
+# required by net-libs/gnutls-3.8.3::gentoo
+# required by net-print/cups-2.4.7-r2::gentoo[-openssl]
+# required by x11-libs/gtk+-2.24.33-r4::stefan_overlay[cups]
+# required by @selected
+# required by @world (argument)
+>=dev-libs/nettle-3.9.1 abi_x86_32
+# required by dev-libs/nettle-3.9.1::gentoo[gmp]
+# required by net-libs/gnutls-3.8.3::gentoo
+# required by net-print/cups-2.4.7-r2::gentoo[-openssl]
+# required by x11-libs/gtk+-2.24.33-r4::stefan_overlay[cups]
+# required by @selected
+# required by @world (argument)
+>=dev-libs/gmp-6.3.0-r1 abi_x86_32
+# required by x11-libs/pango-1.51.0::gentoo
+# required by x11-libs/gtk+-2.24.33-r4::stefan_overlay
+# required by @selected
+# required by @world (argument)
+>=dev-libs/fribidi-1.0.13 abi_x86_32
+# required by x11-libs/pango-1.51.0::gentoo
+# required by x11-libs/gtk+-2.24.33-r4::stefan_overlay
+# required by @selected
+# required by @world (argument)
+>=media-libs/harfbuzz-8.3.0 abi_x86_32
+# required by x11-libs/pango-1.51.0::gentoo[X]
+# required by x11-libs/gtk+-2.24.33-r4::stefan_overlay
+# required by @selected
+# required by @world (argument)
+>=x11-libs/libXft-2.3.8 abi_x86_32
+# required by x11-libs/cairo-1.18.0::stefan_overlay
+# required by x11-libs/pango-1.51.0::gentoo
+# required by x11-libs/gtk+-2.24.33-r4::stefan_overlay
+# required by @selected
+# required by @world (argument)
+>=dev-libs/lzo-2.10 abi_x86_32
+# required by x11-libs/cairo-1.18.0::stefan_overlay
+# required by x11-libs/pango-1.51.0::gentoo
+# required by x11-libs/gtk+-2.24.33-r4::stefan_overlay
+# required by @selected
+# required by @world (argument)
+>=x11-libs/pixman-0.43.0 abi_x86_32
+app-i18n/ibus -X
+# required by games-util/steam-client-meta-0-r20231231::steam-overlay[-steamruntime]
+# required by games-util/steam-launcher-1.0.0.78-r1::steam-overlay[-steamruntime]
+# required by games-util/steam-meta-0-r20220320::steam-overlay
+# required by @selected
+# required by @world (argument)
+>=dev-libs/dbus-glib-0.112 abi_x86_32
+# required by dev-libs/nss-3.97::gentoo
+# required by games-util/steam-client-meta-0-r20231231::steam-overlay[-steamruntime]
+# required by games-util/steam-launcher-1.0.0.78-r1::steam-overlay[-steamruntime]
+# required by games-util/steam-meta-0-r20220320::steam-overlay
+# required by @selected
+# required by @world (argument)
+>=dev-libs/nspr-4.35-r2 abi_x86_32
+# required by games-util/steam-client-meta-0-r20231231::steam-overlay[-steamruntime]
+# required by games-util/steam-launcher-1.0.0.78-r1::steam-overlay[-steamruntime]
+# required by games-util/steam-meta-0-r20220320::steam-overlay
+# required by @selected
+# required by @world (argument)
+>=dev-libs/nss-3.97 abi_x86_32
+# required by games-util/steam-client-meta-0-r20231231::steam-overlay[-steamruntime]
+# required by games-util/steam-launcher-1.0.0.78-r1::steam-overlay[-steamruntime]
+# required by games-util/steam-meta-0-r20220320::steam-overlay
+# required by @selected
+# required by @world (argument)
+>=media-libs/libpng-compat-1.2.59-r1:1.2 abi_x86_32
+# required by games-util/steam-client-meta-0-r20231231::steam-overlay[-steamruntime]
+# required by games-util/steam-launcher-1.0.0.78-r1::steam-overlay[-steamruntime]
+# required by games-util/steam-meta-0-r20220320::steam-overlay
+# required by @selected
+# required by @world (argument)
+>=media-libs/libva-2.20.0 abi_x86_32
+# required by games-util/steam-client-meta-0-r20231231::steam-overlay[-steamruntime]
+# required by games-util/steam-launcher-1.0.0.78-r1::steam-overlay[-steamruntime]
+# required by games-util/steam-meta-0-r20220320::steam-overlay
+# required by @selected
+# required by @world (argument)
+>=media-libs/openal-1.23.1-r1 abi_x86_32
+# required by games-util/steam-client-meta-0-r20231231::steam-overlay[-steamruntime]
+# required by games-util/steam-launcher-1.0.0.78-r1::steam-overlay[-steamruntime]
+# required by games-util/steam-meta-0-r20220320::steam-overlay
+# required by @selected
+# required by @world (argument)
+>=media-video/pipewire-1.0.1 abi_x86_32
+# required by dev-lang/rust-1.74.1::libressl
+# required by virtual/rust-1.74.1::gentoo
+# required by gnome-base/librsvg-2.57.0::gentoo
+# required by app-i18n/ibus-1.5.29::gentoo
+# required by games-util/steam-client-meta-0-r20231231::steam-overlay[-steamruntime]
+# required by games-util/steam-launcher-1.0.0.78-r1::steam-overlay[-steamruntime]
+# required by games-util/steam-meta-0-r20220320::steam-overlay
+# required by @selected
+# required by @world (argument)
+>=net-misc/curl-8.5.0-r3 abi_x86_32 http2
+# required by dev-libs/dbus-glib-0.112::gentoo
+# required by games-util/steam-client-meta-0-r20231231::steam-overlay[-steamruntime]
+# required by games-util/steam-launcher-1.0.0.78-r1::steam-overlay[-steamruntime]
+# required by games-util/steam-meta-0-r20220320::steam-overlay
+# required by @selected
+# required by @world (argument)
+>=sys-apps/dbus-1.15.8 abi_x86_32
+# required by x11-libs/libSM-1.2.4::gentoo
+# required by games-util/steam-client-meta-0-r20231231::steam-overlay[-steamruntime]
+# required by games-util/steam-launcher-1.0.0.78-r1::steam-overlay[-steamruntime]
+# required by games-util/steam-meta-0-r20220320::steam-overlay
+# required by @selected
+# required by @world (argument)
+>=x11-libs/libICE-1.1.1-r1 abi_x86_32
+# required by games-util/steam-client-meta-0-r20231231::steam-overlay[-steamruntime]
+# required by games-util/steam-launcher-1.0.0.78-r1::steam-overlay[-steamruntime]
+# required by games-util/steam-meta-0-r20220320::steam-overlay
+# required by @selected
+# required by @world (argument)
+>=x11-libs/libSM-1.2.4 abi_x86_32
+# required by games-util/steam-client-meta-0-r20231231::steam-overlay[-steamruntime]
+# required by games-util/steam-launcher-1.0.0.78-r1::steam-overlay[-steamruntime]
+# required by games-util/steam-meta-0-r20220320::steam-overlay
+# required by @selected
+# required by @world (argument)
+>=x11-libs/libvdpau-1.5 abi_x86_32
+# required by games-util/steam-client-meta-0-r20231231::steam-overlay[-steamruntime]
+# required by games-util/steam-launcher-1.0.0.78-r1::steam-overlay[-steamruntime]
+# required by games-util/steam-meta-0-r20220320::steam-overlay
+# required by @selected
+# required by @world (argument)
+>=x11-libs/libXinerama-1.1.5 abi_x86_32
+# required by games-util/steam-client-meta-0-r20231231::steam-overlay[-steamruntime]
+# required by games-util/steam-launcher-1.0.0.78-r1::steam-overlay[-steamruntime]
+# required by games-util/steam-meta-0-r20220320::steam-overlay
+# required by @selected
+# required by @world (argument)
+>=x11-libs/libXScrnSaver-1.2.4 abi_x86_32
+# required by games-util/steam-client-meta-0-r20231231::steam-overlay[-steamruntime]
+# required by games-util/steam-launcher-1.0.0.78-r1::steam-overlay[-steamruntime]
+# required by games-util/steam-meta-0-r20220320::steam-overlay
+# required by @selected
+# required by @world (argument)
+>=x11-libs/libXtst-1.2.4 abi_x86_32
+# required by net-misc/curl-8.5.0-r3::gentoo[openssl,ssl]
+# required by dev-lang/rust-1.74.1::libressl
+# required by virtual/rust-1.74.1::gentoo
+# required by gnome-base/librsvg-2.57.0::gentoo
+# required by app-i18n/ibus-1.5.29::gentoo
+# required by games-util/steam-client-meta-0-r20231231::steam-overlay[-steamruntime]
+# required by games-util/steam-launcher-1.0.0.78-r1::steam-overlay[-steamruntime]
+# required by games-util/steam-meta-0-r20220320::steam-overlay
+# required by @selected
+# required by @world (argument)
+>=dev-libs/openssl-3.8.1 abi_x86_32
+# required by dev-libs/openssl-3.8.1::libressl
+# required by net-misc/curl-8.5.0-r3::gentoo[openssl,ssl]
+# required by dev-lang/rust-1.74.1::libressl
+# required by virtual/rust-1.74.1::gentoo
+# required by gnome-base/librsvg-2.57.0::gentoo
+# required by app-i18n/ibus-1.5.29::gentoo
+# required by games-util/steam-client-meta-0-r20231231::steam-overlay[-steamruntime]
+# required by games-util/steam-launcher-1.0.0.78-r1::steam-overlay[-steamruntime]
+# required by games-util/steam-meta-0-r20220320::steam-overlay
+# required by @selected
+# required by @world (argument)
+>=dev-libs/libressl-3.8.2 abi_x86_32
+# required by dev-libs/nss-3.97::gentoo
+# required by games-util/steam-client-meta-0-r20231231::steam-overlay[-steamruntime]
+# required by games-util/steam-launcher-1.0.0.78-r1::steam-overlay[-steamruntime]
+# required by games-util/steam-meta-0-r20220320::steam-overlay
+# required by @selected
+# required by @world (argument)
+>=dev-db/sqlite-3.44.2-r2 abi_x86_32
+# required by media-video/pipewire-1.0.1::gentoo
+# required by games-util/steam-client-meta-0-r20231231::steam-overlay[-steamruntime]
+# required by games-util/steam-launcher-1.0.0.78-r1::steam-overlay[-steamruntime]
+# required by games-util/steam-meta-0-r20220320::steam-overlay
+# required by @selected
+# required by @world (argument)
+>=virtual/libudev-251-r2 abi_x86_32
+# required by games-util/steam-client-meta-0-r20231231::steam-overlay[-steamruntime]
+# required by games-util/steam-launcher-1.0.0.78-r1::steam-overlay[-steamruntime]
+# required by games-util/steam-meta-0-r20220320::steam-overlay
+# required by @selected
+# required by @world (argument)
+>=virtual/libusb-1-r2 abi_x86_32
+# required by virtual/libusb-1-r2::gentoo
+# required by games-util/steam-client-meta-0-r20231231::steam-overlay[-steamruntime]
+# required by games-util/steam-launcher-1.0.0.78-r1::steam-overlay[-steamruntime]
+# required by games-util/steam-meta-0-r20220320::steam-overlay
+# required by @selected
+# required by @world (argument)
+>=dev-libs/libusb-1.0.26 abi_x86_32
+# required by net-misc/curl-8.5.0-r3::gentoo[http2]
+# required by dev-lang/rust-1.74.1::libressl
+# required by virtual/rust-1.74.1::gentoo
+# required by gnome-base/librsvg-2.57.0::gentoo
+# required by app-i18n/ibus-1.5.29::gentoo
+# required by games-util/steam-client-meta-0-r20231231::steam-overlay[-steamruntime]
+# required by games-util/steam-launcher-1.0.0.78-r1::steam-overlay[-steamruntime]
+# required by games-util/steam-meta-0-r20220320::steam-overlay
+# required by @selected
+# required by @world (argument)
+>=net-libs/nghttp2-1.58.0 abi_x86_32
+media-video/wireplumber lua_single_target_lua5-4
+dev-libs/atk abi_x86_32
+# required by games-util/steam-client-meta-0-r20231231::steam-overlay[-steamruntime]
+# required by games-util/steam-launcher-1.0.0.78-r1::steam-overlay[-steamruntime]
+# required by games-util/steam-meta-0-r20220320::steam-overlay
+# required by @selected
+# required by @world (argument)
+>=app-accessibility/at-spi2-core-2.50.1 abi_x86_32
+# required by app-accessibility/at-spi2-core-2.50.1::gentoo
+# required by games-util/steam-client-meta-0-r20231231::steam-overlay[-steamruntime]
+# required by games-util/steam-launcher-1.0.0.78-r1::steam-overlay[-steamruntime]
+# required by games-util/steam-meta-0-r20220320::steam-overlay
+# required by @selected
+# required by @world (argument)
+>=dev-libs/libxml2-2.11.6 abi_x86_32
+# required by games-util/steam-client-meta-0-r20231231::steam-overlay[-steamruntime]
+# required by games-util/steam-meta-0-r20220320::steam-overlay
+# required by @selected
+# required by @world (argument)
+>=net-misc/networkmanager-1.44.2 abi_x86_32 nss
+# required by net-misc/networkmanager-1.44.2::gentoo
+# required by games-util/steam-client-meta-0-r20231231::steam-overlay[-steamruntime]
+# required by games-util/steam-launcher-1.0.0.78-r1::steam-overlay[-steamruntime]
+# required by games-util/steam-meta-0-r20220320::steam-overlay
+# required by @selected
+# required by @world (argument)
+>=net-libs/libndp-1.8 abi_x86_32
+# required by games-util/steam-client-meta-0-r20231231::steam-overlay
+# required by games-util/steam-launcher-1.0.0.78-r1::steam-overlay[-steamruntime]
+# required by games-util/steam-meta-0-r20220320::steam-overlay
+# required by @selected
+# required by @world (argument)
+>=sys-libs/libudev-compat-186-r1 abi_x86_32
+media-libs/libsdl2 alsa sound abi_x86_32 video opengl
+media-libs/vulkan-loader abi_x86_32
+# required by media-libs/libsdl2-2.28.5::gentoo[opengl]
+# required by libsdl2 (argument)
+>=virtual/glu-9.0-r2 abi_x86_32
+# required by virtual/glu-9.0-r2::gentoo
+# required by media-libs/libsdl2-2.28.5::gentoo[opengl]
+# required by libsdl2 (argument)
+>=media-libs/glu-9.0.3 abi_x86_32
+# required by virtual/libudev-251-r2::gentoo[-systemd]
+# required by sys-libs/libudev-compat-186-r1::gentoo
+# required by games-util/steam-client-meta-0-r20231231::steam-overlay
+# required by games-util/steam-launcher-1.0.0.78-r1::steam-overlay[-steamruntime]
+# required by games-util/steam-meta-0-r20220320::steam-overlay
+# required by @selected
+# required by @world (argument)
+sys-apps/systemd-utils abi_x86_32 udev python_single_target_python3_12
+# required by sys-apps/systemd-utils-254.8::gentoo[udev]
+# required by virtual/libudev-251-r2::gentoo[-systemd]
+# required by net-misc/networkmanager-1.44.2::gentoo
+# required by games-util/steam-client-meta-0-r20231231::steam-overlay[-steamruntime]
+# required by games-util/steam-launcher-1.0.0.78-r1::steam-overlay[-steamruntime]
+# required by games-util/steam-meta-0-r20220320::steam-overlay
+# required by @selected
+# required by @world (argument)
+>=sys-libs/libcap-2.69 abi_x86_32
+# required by sys-apps/systemd-utils-254.8::gentoo[udev]
+# required by virtual/libudev-251-r2::gentoo[-systemd]
+# required by net-misc/networkmanager-1.44.2::gentoo
+# required by games-util/steam-client-meta-0-r20231231::steam-overlay[-steamruntime]
+# required by games-util/steam-launcher-1.0.0.78-r1::steam-overlay[-steamruntime]
+# required by games-util/steam-meta-0-r20220320::steam-overlay
+# required by @selected
+# required by @world (argument)
+>=virtual/libcrypt-2-r1 abi_x86_32
+# required by virtual/libcrypt-2-r1::gentoo
+# required by sys-apps/systemd-utils-254.8::gentoo[udev]
+# required by virtual/libudev-251-r2::gentoo[-systemd]
+# required by net-misc/networkmanager-1.44.2::gentoo
+# required by games-util/steam-client-meta-0-r20231231::steam-overlay[-steamruntime]
+# required by games-util/steam-launcher-1.0.0.78-r1::steam-overlay[-steamruntime]
+# required by games-util/steam-meta-0-r20220320::steam-overlay
+# required by @selected
+# required by @world (argument)
+>=sys-libs/libxcrypt-4.4.36-r1 abi_x86_32
+media-libs/libvorbis abi_x86_32
+# required by media-libs/libvorbis-1.3.7-r1::gentoo
+# required by libvorbis (argument)
+>=media-libs/libogg-1.3.5-r1 abi_x86_32

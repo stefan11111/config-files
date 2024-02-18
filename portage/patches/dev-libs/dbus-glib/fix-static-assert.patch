@@ -1,0 +1,11 @@
+--- a/dbus/dbus-gvalue.c	2024-01-25 20:15:33.350963010 +0200
++++ b/dbus/dbus-gvalue.c	2024-01-25 20:15:48.784066073 +0200
+@@ -1953,8 +1953,6 @@
+ G_STATIC_ASSERT (sizeof (dbus_int32_t) == sizeof (gint));
+ G_STATIC_ASSERT (sizeof (dbus_uint32_t) == sizeof (guint));
+ /* These should be true regardless, but just for completeness... */
+-G_STATIC_ASSERT (sizeof (dbus_int64_t) == sizeof (gint64));
+-G_STATIC_ASSERT (sizeof (dbus_uint64_t) == sizeof (guint64));
+ G_STATIC_ASSERT (sizeof (double) == sizeof (gdouble));
+ 
+ static gboolean

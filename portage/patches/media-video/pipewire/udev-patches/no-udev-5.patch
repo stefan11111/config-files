@@ -1,0 +1,10 @@
+--- a/src/modules/module-echo-cancel.c	2024-01-19 17:43:39.391918649 +0200
++++ b/src/modules/module-echo-cancel.c	2024-01-19 17:43:51.055081660 +0200
+@@ -282,7 +282,6 @@
+ 			spa_zero(impl->wav_path);
+ 		}
+ 	} else if (impl->wav_file != NULL) {
+-		wav_file_close(impl->wav_file);
+ 		impl->wav_file = NULL;
+ 	}
+ }

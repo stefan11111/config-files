@@ -1,0 +1,143 @@
+diff --git a/spa/examples/meson.build b/spa/examples/meson.build
+index 5109c0c7d5d77cecfc162813068dd3511e938049..fdd54fdcf8257f1554a7cd927762e00a5b76a324 100644
+--- a/spa/examples/meson.build
++++ b/spa/examples/meson.build
+@@ -6,7 +6,7 @@ spa_examples = [
+   'local-v4l2',
+ ]
+ 
+-if not get_option('examples').allowed()
++if not get_option('examples').allowed() or not get_option('spa-plugins').allowed()
+   subdir_done()
+ endif
+ 
+diff --git a/spa/meson.build b/spa/meson.build
+index ff07f9ddb4b916069d77256cf7927820d83b096e..67e4b5c5061df211113527030b81c4f9ba41e588 100644
+--- a/spa/meson.build
++++ b/spa/meson.build
+@@ -32,6 +32,9 @@ pkgconfig.generate(filebase : 'lib@0@'.format(spa_name),
+ 
+ subdir('include')
+ 
++jack_dep = dependency('jack', version : '>= 1.9.10', required: get_option('jack'))
++summary({'JACK2': jack_dep.found()}, bool_yn: true, section: 'Backend')
++
+ if get_option('spa-plugins').allowed()
+   udevrulesdir = get_option('udevrulesdir')
+   if udevrulesdir == ''
+@@ -87,8 +90,6 @@ if get_option('spa-plugins').allowed()
+     endif
+     cdata.set('HAVE_LC3', get_option('bluez5-codec-lc3').allowed() and lc3_dep.found())
+   endif
+-  jack_dep = dependency('jack', version : '>= 1.9.10', required: get_option('jack'))
+-  summary({'JACK2': jack_dep.found()}, bool_yn: true, section: 'Backend')
+ 
+   have_vulkan = false
+   vulkan_dep = dependency('vulkan', version : '>= 1.2.170', required: get_option('vulkan'))
+@@ -110,6 +111,7 @@ if get_option('spa-plugins').allowed()
+   cdata.set('HAVE_LIBUDEV', libudev_dep.found())
+   summary({'Udev': libudev_dep.found()}, bool_yn: true, section: 'Backend')
+ 
++  cdata.set('HAVE_SPA_PLUGINS', '1')
+   subdir('plugins')
+ endif
+ 
+diff --git a/src/modules/meson.build b/src/modules/meson.build
+index e2478c9654c7ed594ecc092c6e1be04d56472a5c..40d5662de9d7f569041506ec599b3964266b0cc5 100644
+--- a/src/modules/meson.build
++++ b/src/modules/meson.build
+@@ -69,6 +69,11 @@ pipewire_module_loopback = shared_library('pipewire-module-loopback',
+   dependencies : [spa_dep, mathlib, dl_lib, pipewire_dep],
+ )
+ 
++plugin_dependencies = []
++if get_option('spa-plugins').allowed()
++  plugin_dependencies += audioconvert_dep
++endif
++
+ simd_cargs = []
+ simd_dependencies = []
+ 
+@@ -122,7 +127,7 @@ filter_chain_sources = [
+   'module-filter-chain/convolver.c'
+ ]
+ filter_chain_dependencies = [
+-  mathlib, dl_lib, pipewire_dep, sndfile_dep, audioconvert_dep
++  mathlib, dl_lib, pipewire_dep, sndfile_dep, plugin_dependencies
+ ]
+ 
+ pipewire_module_filter_chain = shared_library('pipewire-module-filter-chain',
+@@ -175,7 +180,7 @@ pipewire_module_echo_cancel = shared_library('pipewire-module-echo-cancel',
+   install : true,
+   install_dir : modules_install_dir,
+   install_rpath: modules_install_dir,
+-  dependencies : [mathlib, dl_lib, pipewire_dep, audioconvert_dep],
++  dependencies : [mathlib, dl_lib, pipewire_dep, plugin_dependencies],
+ )
+ 
+ build_module_jack_tunnel = jack_dep.found()
+diff --git a/src/modules/module-echo-cancel.c b/src/modules/module-echo-cancel.c
+index 50cd392122bb286b96720304e1a0e3c8cc1d5cfa..7b126bcc1d6e00e6c95059d70421bcaf8c7b41ec 100644
+--- a/src/modules/module-echo-cancel.c
++++ b/src/modules/module-echo-cancel.c
+@@ -249,6 +249,7 @@ static inline void aec_run(struct impl *impl, const float *rec[], const float *p
+ {
+ 	spa_audio_aec_run(impl->aec, rec, play, out, n_samples);
+ 
++#ifdef HAVE_SPA_PLUGINS
+ 	if (SPA_UNLIKELY(impl->wav_path[0])) {
+ 		if (impl->wav_file == NULL) {
+ 			struct wav_file_info info;
+@@ -287,6 +288,7 @@ static inline void aec_run(struct impl *impl, const float *rec[], const float *p
+ 		wav_file_close(impl->wav_file);
+ 		impl->wav_file = NULL;
+ 	}
++#endif
+ }
+ 
+ static void process(struct impl *impl)
+diff --git a/src/modules/module-filter-chain/builtin_plugin.c b/src/modules/module-filter-chain/builtin_plugin.c
+index 73e3ba79ab8c42ab0abaf954655eebdd49141de4..6a862f748b235d19ffe60dd258cfaedae120ff80 100644
+--- a/src/modules/module-filter-chain/builtin_plugin.c
++++ b/src/modules/module-filter-chain/builtin_plugin.c
+@@ -784,6 +784,7 @@ static float *create_dirac(const char *filename, float gain, int delay, int offs
+ static float *resample_buffer(float *samples, int *n_samples,
+ 		unsigned long in_rate, unsigned long out_rate, uint32_t quality)
+ {
++#ifdef HAVE_SPA_PLUGINS
+ 	uint32_t in_len, out_len, total_out = 0;
+ 	int out_n_samples;
+ 	float *out_samples, *out_buf, *in_buf;
+@@ -849,6 +850,12 @@ error:
+ 	free(samples);
+ 	free(out_samples);
+ 	return NULL;
++#else
++	pw_log_error("compiled without spa-plugins support, can't resample");
++	float *out_samples = calloc(*n_samples, sizeof(float));
++	memcpy(out_samples, samples, *n_samples * sizeof(float));
++	return out_samples;
++#endif
+ }
+ 
+ static void * convolver_instantiate(const struct fc_descriptor * Descriptor,
+diff --git a/test/meson.build b/test/meson.build
+index 1ce7d0089acd929cbb51bf2603098cf371a24708..3cad6dc5670c5280f44fe764bb21fd97852d9979 100644
+--- a/test/meson.build
++++ b/test/meson.build
+@@ -83,6 +83,7 @@ test('test-loop',
+                link_with: pwtest_lib)
+ )
+ 
++if get_option('spa-plugins').allowed()
+ test('test-context',
+     executable('test-context',
+                'test-context.c',
+@@ -106,6 +107,7 @@ test('test-support',
+                dependencies: [spa_dep, systemd_dep, spa_support_dep, spa_journal_dep],
+                link_with: [pwtest_lib])
+ )
++endif
+ test('test-spa',
+     executable('test-spa',
+                'test-spa-buffer.c',

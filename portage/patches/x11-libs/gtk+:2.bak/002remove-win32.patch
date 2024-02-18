@@ -1,0 +1,95 @@
+diff --git a/configure b/configure
+index 48da70e..802d09e 100755
+--- a/configure
++++ b/configure
+@@ -27933,7 +27933,7 @@ fi
+ ac_config_commands="$ac_config_commands gdk/gdkconfig.h"
+ 
+ 
+-ac_config_files="$ac_config_files config.h.win32 gtk-zip.sh Makefile gdk-2.0.pc gtk+-2.0.pc gtk+-unix-print-2.0.pc gail.pc gdk-2.0-uninstalled.pc gtk+-2.0-uninstalled.pc gail-uninstalled.pc m4macros/Makefile demos/Makefile demos/gtk-demo/Makefile demos/gtk-demo/geninclude.pl tests/Makefile docs/Makefile docs/reference/Makefile docs/reference/gdk/Makefile docs/reference/gdk/version.xml docs/reference/gtk/Makefile docs/reference/gtk/version.xml docs/reference/libgail-util/Makefile docs/faq/Makefile docs/tools/Makefile docs/tutorial/Makefile build/Makefile build/win32/Makefile build/win32/vs9/Makefile build/win32/vs9/gtk-version-paths.vsprops build/win32/vs10/Makefile build/win32/vs10/gtk-version-paths.props build/win32/vs11/Makefile build/win32/vs12/Makefile build/win32/vs14/Makefile build/win32/vs15/Makefile build/win32/vs16/Makefile gdk/Makefile gdk/x11/Makefile gdk/win32/Makefile gdk/win32/rc/Makefile gdk/win32/rc/gdk.rc gdk/quartz/Makefile gdk/directfb/Makefile gdk/tests/Makefile gtk/Makefile gtk/makefile.msc gtk/gtkversion.h gtk/gtk-win32.rc gtk/theme-bits/Makefile gtk/tests/Makefile modules/Makefile modules/other/Makefile modules/other/gail/Makefile modules/other/gail/libgail-util/Makefile modules/other/gail/tests/Makefile modules/engines/Makefile modules/engines/pixbuf/Makefile modules/engines/ms-windows/Makefile modules/engines/ms-windows/Theme/Makefile modules/engines/ms-windows/Theme/gtk-2.0/Makefile modules/input/Makefile modules/printbackends/Makefile modules/printbackends/cups/Makefile modules/printbackends/lpr/Makefile modules/printbackends/file/Makefile modules/printbackends/papi/Makefile modules/printbackends/test/Makefile perf/Makefile"
++ac_config_files="$ac_config_files config.h.win32 gtk-zip.sh Makefile gdk-2.0.pc gtk+-2.0.pc gtk+-unix-print-2.0.pc gail.pc gdk-2.0-uninstalled.pc gtk+-2.0-uninstalled.pc gail-uninstalled.pc m4macros/Makefile demos/Makefile demos/gtk-demo/Makefile demos/gtk-demo/geninclude.pl tests/Makefile docs/Makefile docs/reference/Makefile docs/reference/gdk/Makefile docs/reference/gdk/version.xml docs/reference/gtk/Makefile docs/reference/gtk/version.xml docs/reference/libgail-util/Makefile docs/faq/Makefile docs/tools/Makefile docs/tutorial/Makefile build/Makefile build/win32/Makefile build/win32/vs9/Makefile build/win32/vs9/gtk-version-paths.vsprops build/win32/vs10/Makefile build/win32/vs10/gtk-version-paths.props build/win32/vs11/Makefile build/win32/vs12/Makefile build/win32/vs14/Makefile build/win32/vs15/Makefile build/win32/vs16/Makefile gdk/Makefile gdk/x11/Makefile gdk/quartz/Makefile gdk/directfb/Makefile gdk/tests/Makefile gtk/Makefile gtk/makefile.msc gtk/gtkversion.h gtk/gtk-win32.rc gtk/theme-bits/Makefile gtk/tests/Makefile modules/Makefile modules/other/Makefile modules/other/gail/Makefile modules/other/gail/libgail-util/Makefile modules/other/gail/tests/Makefile modules/engines/Makefile modules/engines/pixbuf/Makefile modules/engines/ms-windows/Makefile modules/engines/ms-windows/Theme/Makefile modules/engines/ms-windows/Theme/gtk-2.0/Makefile modules/input/Makefile modules/printbackends/Makefile modules/printbackends/cups/Makefile modules/printbackends/lpr/Makefile modules/printbackends/file/Makefile modules/printbackends/papi/Makefile modules/printbackends/test/Makefile perf/Makefile"
+ 
+ 
+ cat >confcache <<\_ACEOF
+@@ -29375,9 +29375,6 @@ do
+     "build/win32/vs16/Makefile") CONFIG_FILES="$CONFIG_FILES build/win32/vs16/Makefile" ;;
+     "gdk/Makefile") CONFIG_FILES="$CONFIG_FILES gdk/Makefile" ;;
+     "gdk/x11/Makefile") CONFIG_FILES="$CONFIG_FILES gdk/x11/Makefile" ;;
+-    "gdk/win32/Makefile") CONFIG_FILES="$CONFIG_FILES gdk/win32/Makefile" ;;
+-    "gdk/win32/rc/Makefile") CONFIG_FILES="$CONFIG_FILES gdk/win32/rc/Makefile" ;;
+-    "gdk/win32/rc/gdk.rc") CONFIG_FILES="$CONFIG_FILES gdk/win32/rc/gdk.rc" ;;
+     "gdk/quartz/Makefile") CONFIG_FILES="$CONFIG_FILES gdk/quartz/Makefile" ;;
+     "gdk/directfb/Makefile") CONFIG_FILES="$CONFIG_FILES gdk/directfb/Makefile" ;;
+     "gdk/tests/Makefile") CONFIG_FILES="$CONFIG_FILES gdk/tests/Makefile" ;;
+diff --git a/configure.ac b/configure.ac
+index de66b6e..c25528a 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -1718,9 +1718,6 @@ docs/tutorial/Makefile
+ build/Makefile
+ gdk/Makefile
+ gdk/x11/Makefile
+-gdk/win32/Makefile
+-gdk/win32/rc/Makefile
+-gdk/win32/rc/gdk.rc
+ gdk/quartz/Makefile
+ gdk/directfb/Makefile
+ gdk/tests/Makefile
+diff --git a/configure~ b/configure~
+index 266cfaf..23268e8 100755
+--- a/configure~
++++ b/configure~
+@@ -25859,7 +25859,7 @@ fi
+ ac_config_commands="$ac_config_commands gdk/gdkconfig.h"
+ 
+ 
+-ac_config_files="$ac_config_files config.h.win32 gtk-zip.sh Makefile gdk-2.0.pc gtk+-2.0.pc gtk+-unix-print-2.0.pc gail.pc gdk-2.0-uninstalled.pc gtk+-2.0-uninstalled.pc gail-uninstalled.pc m4macros/Makefile demos/Makefile demos/gtk-demo/Makefile demos/gtk-demo/geninclude.pl tests/Makefile docs/Makefile docs/reference/Makefile docs/reference/gdk/Makefile docs/reference/gdk/version.xml docs/reference/gtk/Makefile docs/reference/gtk/version.xml docs/reference/libgail-util/Makefile docs/faq/Makefile docs/tools/Makefile docs/tutorial/Makefile build/Makefile build/win32/Makefile build/win32/vs9/Makefile build/win32/vs9/gtk-version-paths.vsprops build/win32/vs10/Makefile build/win32/vs10/gtk-version-paths.props build/win32/vs11/Makefile build/win32/vs12/Makefile build/win32/vs14/Makefile build/win32/vs15/Makefile build/win32/vs16/Makefile gdk/Makefile gdk/x11/Makefile gdk/win32/Makefile gdk/win32/rc/Makefile gdk/win32/rc/gdk.rc gdk/quartz/Makefile gdk/directfb/Makefile gdk/tests/Makefile gtk/Makefile gtk/makefile.msc gtk/gtkversion.h gtk/gtk-win32.rc gtk/theme-bits/Makefile gtk/tests/Makefile modules/Makefile modules/other/Makefile modules/other/gail/Makefile modules/other/gail/libgail-util/Makefile modules/other/gail/tests/Makefile modules/engines/Makefile modules/engines/pixbuf/Makefile modules/engines/ms-windows/Makefile modules/engines/ms-windows/Theme/Makefile modules/engines/ms-windows/Theme/gtk-2.0/Makefile modules/input/Makefile modules/printbackends/Makefile modules/printbackends/cups/Makefile modules/printbackends/lpr/Makefile modules/printbackends/file/Makefile modules/printbackends/papi/Makefile modules/printbackends/test/Makefile perf/Makefile"
++ac_config_files="$ac_config_files config.h.win32 gtk-zip.sh Makefile gdk-2.0.pc gtk+-2.0.pc gtk+-unix-print-2.0.pc gail.pc gdk-2.0-uninstalled.pc gtk+-2.0-uninstalled.pc gail-uninstalled.pc m4macros/Makefile demos/Makefile demos/gtk-demo/Makefile demos/gtk-demo/geninclude.pl tests/Makefile docs/Makefile docs/reference/Makefile docs/reference/gdk/Makefile docs/reference/gdk/version.xml docs/reference/gtk/Makefile docs/reference/gtk/version.xml docs/reference/libgail-util/Makefile docs/faq/Makefile docs/tools/Makefile docs/tutorial/Makefile build/Makefile build/win32/Makefile build/win32/vs9/Makefile build/win32/vs9/gtk-version-paths.vsprops build/win32/vs10/Makefile build/win32/vs10/gtk-version-paths.props build/win32/vs11/Makefile build/win32/vs12/Makefile build/win32/vs14/Makefile build/win32/vs15/Makefile build/win32/vs16/Makefile gdk/Makefile gdk/x11/Makefile gdk/quartz/Makefile gdk/directfb/Makefile gdk/tests/Makefile gtk/Makefile gtk/makefile.msc gtk/gtkversion.h gtk/gtk-win32.rc gtk/theme-bits/Makefile gtk/tests/Makefile modules/Makefile modules/other/Makefile modules/other/gail/Makefile modules/other/gail/libgail-util/Makefile modules/other/gail/tests/Makefile modules/engines/Makefile modules/engines/pixbuf/Makefile modules/engines/ms-windows/Makefile modules/engines/ms-windows/Theme/Makefile modules/engines/ms-windows/Theme/gtk-2.0/Makefile modules/input/Makefile modules/printbackends/Makefile modules/printbackends/cups/Makefile modules/printbackends/lpr/Makefile modules/printbackends/file/Makefile modules/printbackends/papi/Makefile modules/printbackends/test/Makefile perf/Makefile"
+ 
+ 
+ cat >confcache <<\_ACEOF
+@@ -27295,9 +27295,6 @@ do
+     "build/win32/vs16/Makefile") CONFIG_FILES="$CONFIG_FILES build/win32/vs16/Makefile" ;;
+     "gdk/Makefile") CONFIG_FILES="$CONFIG_FILES gdk/Makefile" ;;
+     "gdk/x11/Makefile") CONFIG_FILES="$CONFIG_FILES gdk/x11/Makefile" ;;
+-    "gdk/win32/Makefile") CONFIG_FILES="$CONFIG_FILES gdk/win32/Makefile" ;;
+-    "gdk/win32/rc/Makefile") CONFIG_FILES="$CONFIG_FILES gdk/win32/rc/Makefile" ;;
+-    "gdk/win32/rc/gdk.rc") CONFIG_FILES="$CONFIG_FILES gdk/win32/rc/gdk.rc" ;;
+     "gdk/quartz/Makefile") CONFIG_FILES="$CONFIG_FILES gdk/quartz/Makefile" ;;
+     "gdk/directfb/Makefile") CONFIG_FILES="$CONFIG_FILES gdk/directfb/Makefile" ;;
+     "gdk/tests/Makefile") CONFIG_FILES="$CONFIG_FILES gdk/tests/Makefile" ;;
+diff --git a/gdk/Makefile.am b/gdk/Makefile.am
+index 520ba4d..e5a918f 100644
+--- a/gdk/Makefile.am
++++ b/gdk/Makefile.am
+@@ -10,7 +10,7 @@ INTROSPECTION_COMPILER_ARGS = \
+    --includedir=.
+ 
+ SUBDIRS = $(gdktarget) . 
+-DIST_SUBDIRS = win32 x11 quartz directfb tests
++DIST_SUBDIRS = x11 quartz directfb tests
+ 
+ CLEANFILES =
+ 
+@@ -392,7 +392,7 @@ MSVC_INTROSPECT_GIRS = Gdk-2.0.gir
+ 
+ BASE_MSVC_GIR_CFLAGS =			\
+ 	-DGDK_COMPILATION		\
+-	-I../.. -I../../gdk -I.../../gdk/win32
++	-I../.. -I../../gdk
+ 
+ INTROSPECTION_INTERMEDIATE_ITEMS = \
+ 	$(top_builddir)/build/win32/Gdk-2.0.gir.msvc.introspect	\
+diff --git a/gdk/Makefile.in b/gdk/Makefile.in
+index 7208fbd..5259b28 100644
+--- a/gdk/Makefile.in
++++ b/gdk/Makefile.in
+@@ -1136,7 +1136,7 @@ _headers_destdir = $(subst /,\\,$(_headers_dest_posix))
+ @HAVE_INTROSPECTION_TRUE@MSVC_INTROSPECT_GIRS = Gdk-2.0.gir
+ @HAVE_INTROSPECTION_TRUE@BASE_MSVC_GIR_CFLAGS = \
+ @HAVE_INTROSPECTION_TRUE@	-DGDK_COMPILATION		\
+-@HAVE_INTROSPECTION_TRUE@	-I../.. -I../../gdk -I.../../gdk/win32
++@HAVE_INTROSPECTION_TRUE@	-I../.. -I../../gdk
+ 
+ @HAVE_INTROSPECTION_FALSE@INTROSPECTION_INTERMEDIATE_ITEMS = 
+ @HAVE_INTROSPECTION_TRUE@INTROSPECTION_INTERMEDIATE_ITEMS = \

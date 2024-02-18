@@ -1,0 +1,20 @@
+--- a/src/modules/module-echo-cancel.c	2024-01-19 17:41:01.734220997 +0200
++++ b/src/modules/module-echo-cancel.c	2024-01-19 17:41:40.756984463 +0200
+@@ -261,8 +261,7 @@
+ 			info.info.info.raw.channels = impl->play_info.channels +
+ 				impl->rec_info.channels + impl->out_info.channels;
+ 
+-			impl->wav_file = wav_file_open(impl->wav_path,
+-					"w", &info);
++			impl->wav_file = NULL;
+ 			if (impl->wav_file == NULL)
+ 				pw_log_warn("can't open wav path '%s': %m",
+ 						impl->wav_path);
+@@ -279,7 +278,6 @@
+ 			for (i = 0; i < impl->out_info.channels; i++)
+ 				data[n++] = out[i];
+ 
+-			wav_file_write(impl->wav_file, (void*)data, n_samples);
+ 		} else {
+ 			spa_zero(impl->wav_path);
+ 		}

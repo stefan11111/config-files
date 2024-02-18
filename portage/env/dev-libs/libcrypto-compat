@@ -1,0 +1,5 @@
+post_pkg_postinst() {
+        cp /usr/lib64/libcrypto.so /lib64/libcrypto.so.3
+        ln -rsf /lib64/libcrypto.so.3 /lib64/libcrypto.so
+        patchelf --set-soname libcrypto.so.3 /lib64/libcrypto.so
+}

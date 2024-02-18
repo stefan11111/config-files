@@ -1,0 +1,17 @@
+--- a/dbus/examples/statemachine/Makefile.am	2024-02-08 00:26:42.622587736 +0200
++++ b/dbus/examples/statemachine/Makefile.am	2024-02-08 00:27:11.755498862 +0200
+@@ -28,10 +30,12 @@
+ BUILT_SOURCES = statemachine-server-glue.h statemachine-glue.h
+ 
+ statemachine-server-glue.h: statemachine-server.xml
+-	$(LIBTOOL) --mode=execute $(DBUS_BINDING_TOOL) --prefix=sm_server --mode=glib-server --output=$@ $<
++	touch statemachine-server-glue.h
++	echo 'int dbus_glib_sm_server_object_info;' > statemachine-server-glue.h
++	echo 'int dbus_glib_sm_object_object_info;' >> statemachine-server-glue.h
+ 
+ statemachine-glue.h: statemachine.xml
+-	$(LIBTOOL) --mode=execute $(DBUS_BINDING_TOOL) --prefix=sm_object --mode=glib-server --output=$@ $<
++	touch statemachine-glue.h
+ 
+ sm-marshal.c: Makefile sm-marshal.list
+ 	echo "#include <config.h>" > $@.tmp

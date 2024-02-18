@@ -1,6 +1,9 @@
-#app-crypt/gcr gtk
-
-www-client/palemoon optimize jemalloc gtk3
+x11-libs/wxGTK nodebug gtk2 expat unicode xrc pcre zlib png
+dev-libs/libcrypto-compat patchelf
+www-client/palemoon optimize jemalloc gtk2 system-extension-dirs system-ffi system-pixman system-cairo
+www-client/basilisk optimize jemalloc gtk2 system-extension-dirs system-ffi system-pixman system-cairo
+mail-client/claws-mail imap
+virtual/wine abi_x86_64
 games-util/steam-client-meta steamruntime
 games-util/steam-launcher steamruntime
 games-util/steam-meta steamruntime
@@ -13,10 +16,11 @@ app-alternatives/lex flex
 app-alternatives/sh bash
 app-alternatives/tar gnu
 app-alternatives/yacc bison
+app-alternatives/ninja reference
 app-editors/nano -minimal
 app-admin/sysklogd logrotate
 #sys-apps/openrc tools sysv-utils
-sys-apps/openrc unicode
+sys-apps/openrc unicode sysvinit
 sys-fs/e2fsprogs tools
 dev-vcs/git blksha1 curl gpg safe-directory webdav perl
 sys-apps/net-tools hostname
@@ -29,9 +33,11 @@ sys-libs/compiler-rt-sanitizers asan cfi clang dfsan gwp-asan hwasan libfuzzer l
 sys-libs/compiler-rt clang
 app-shells/bash net
 dev-libs/libgcrypt asm getentropy
+dev-libs/xmlsec openssl
 media-sound/alsa-utils libsamplerate ncurses
-media-video/mpv lua cli drm egl iconv libmpv libplacebo uchardet xv zlib
-media-libs/libvpx highbitdepth
+media-video/mpv lua cli -drm egl iconv libmpv uchardet xv zlib
+media-libs/libplacebo libplacebo opengl
+#media-libs/libvpx highbitdepth
 media-libs/dav1d 8bit 10bit asm
 media-libs/libass fontconfig
 media-libs/libpng apng
@@ -40,11 +46,11 @@ net-p2p/qbittorrent webui -dbus -gui
 net-libs/libtorrent-rasterbar dht ssl
 sys-libs/ldb lmdb
 #sys-libs/gdbm berkdb
-app-emulation/wine-vanilla -samba truetype fontconfig gecko mingw mono opengl sdl ssl unwind vulkan xcomposite
+app-emulation/wine-vanilla -samba truetype fontconfig gecko mingw mono opengl sdl ssl unwind vulkan xcomposite wow64 kerberos
 media-video/vlc -upnp -ssl -libnotify -xml -gcrypt libass dvbpsi gui ncurses libsamplerate dav1d
-media-libs/libplacebo opengl
-media-libs/mesa gles2 proprietary-codecs zstd abi_x86_32
+#media-libs/mesa gles2 zstd
 media-libs/openh264 plugin
+mail-mta/postfix berkdb
 net-irc/hexchat -dbus -gtk
 net-misc/youtube-viewer -gtk
 net-fs/cifs-utils creds
@@ -65,30 +71,31 @@ sys-apps/util-linux -udev -cramfs -hardlink -logger -ncurses
 #sys-apps/systemd-utils -acl udev -kmod
 net-fs/samba client system-mitkrb5 -gpg
 net-misc/openssh ssl pie
-x11-drivers/nvidia-drivers modules driver static-libs strip abi_x86_32
+x11-drivers/nvidia-drivers modules driver static-libs strip
 sys-apps/util-linux -su
 x11-drivers/nvidia-drivers -tools
 www-client/librewolf -kernel_linux pulseaudio system-av1 system-harfbuzz system-icu system-jpeg system-libevent system-libvpx system-webp system-webp system-png hardened openh264 eme-free gmp-autoupdate
 www-client/firefox -kernel_linux pulseaudio system-av1 system-harfbuzz system-icu system-jpeg system-libevent system-libvpx system-webp system-webp system-png hardened openh264 eme-free gmp-autoupdate
-media-sound/apulse sdk abi_x86_32
+media-sound/apulse sdk
 app-crypt/gnupg tofu ssl
 sys-devel/clang-toolchain-symlinks native-symlinks
 sys-devel/clang extra static-analyzer
-sys-devel/gcc jit nptl openmp sanitize ssp
+sys-devel/gcc -jit nptl openmp sanitize ssp gcc graphite
 dev-libs/elfutils utils
 dev-libs/nettle gmp
 dev-python/pydantic native-extensions
 dev-python/lxml threads
-dev-lang/ruby gdbm
+dev-lang/ruby -ipv6 -jit
 sys-apps/portage native-extensions rsync-verify
 dev-qt/qtgui -libinput
 dev-qt/qtsql sqlite
 sys-apps/debianutils -installkernel
 sys-kernel/genkernel -firmware
 media-video/mkvtoolnix gui
-net-misc/curl ftp http2 imap ipv6 openssl pop3 progress-meter samba smtp ssl tftp
+net-misc/curl ftp ipv6 openssl progress-meter samba smtp ssl tftp
 dev-lang/python ensurepip gdbm lto ncurses pgo sqlite ssl
 media-video/ffmpeg encode zlib gpl bzip2 dav1d encode iconv network postproc threads x264
+x11-libs/fox truetype png
 x11-libs/cairo glib
 media-libs/imlib2 bzip2 jpeg png shm tiff webp zlib text filters
 media-libs/harfbuzz glib truetype
@@ -96,11 +103,17 @@ media-libs/freetype png
 dev-libs/libpcre2 jit pcre16 unicode
 dev-libs/libxml2 python
 media-libs/imlib2 gif
-dev-lang/ruby ssl
 sys-libs/glibc multiarch multilib ssp stack-realign static-libs
 dev-libs/gmp cpudetection
 sys-apps/util-linux suid
 app-portage/gemato gpg
+media-sound/mpd ffmpeg
+
+app-eselect/eselect-repository python_single_target_python3_12
+media-video/mpv python_single_target_python3_12
+dev-util/glib-utils python_single_target_python3_12
+dev-util/gdbus-codegen python_single_target_python3_12
+
 x11-libs/libXau abi_x86_32
 x11-libs/libXdmcp abi_x86_32
 x11-libs/libX11 abi_x86_32
@@ -125,8 +138,13 @@ media-libs/libpng abi_x86_32
 sys-apps/util-linux abi_x86_32
 media-libs/freetype abi_x86_32
 x11-libs/libxcb abi_x86_32
-# required by sys-apps/portage-3.0.49::gentoo[-build]
-# required by virtual/package-manager-1::gentoo
-# required by @system
+x11-libs/libXxf86vm abi_x86_32
+media-libs/mesa abi_x86_32
+virtual/opengl abi_x86_32
+x11-drivers/nvidia-drivers abi_x86_32
+media-sound/apulse abi_x86_32
+x11-libs/xcb-util-keysyms abi_x86_32
+# required by x11-libs/gtk+-2.24.33-r4::stefan_overlay
+# required by @selected
 # required by @world (argument)
->=app-shells/bash-5.2_p15-r6 readline
+=x11-libs/cairo-1.16.0-r4 svg

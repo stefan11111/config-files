@@ -1,0 +1,68 @@
+diff --git a/src/XFileImage.cpp b/src/XFileImage.cpp
+index a3fbe81..96071ad 100644
+--- a/src/XFileImage.cpp
++++ b/src/XFileImage.cpp
+@@ -2858,12 +2858,6 @@ int main(int argc, char* argv[])
+     // Smooth scrolling
+     window->setSmoothScroll(smoothscroll);
+ 
+-    // Icon path not found
+-    if (!iconpathfound)
+-    {
+-        MessageBox::error(application, BOX_OK, _("Error loading icons"), _("Icon path doesn't exist, icon theme was set back to default. Please check your icon path!") );
+-    }
+-    
+     // Some icons not found
+     if (!loadicons)
+     {
+diff --git a/src/XFilePackage.cpp b/src/XFilePackage.cpp
+index 3bfc74d..5a3ff97 100644
+--- a/src/XFilePackage.cpp
++++ b/src/XFilePackage.cpp
+@@ -883,12 +883,6 @@ int main(int argc, char* argv[])
+     // Create it
+     application->create();
+ 
+-    // Icon path not found
+-    if (!iconpathfound)
+-    {
+-        MessageBox::error(application, BOX_OK, _("Error loading icons"), _("Icon path doesn't exist, icon theme was set back to default. Please check your icon path!") );
+-    }
+-    
+     // Some icons not found
+     if (!loadicons)
+     {
+diff --git a/src/XFileWrite.cpp b/src/XFileWrite.cpp
+index 3648147..d163f8d 100644
+--- a/src/XFileWrite.cpp
++++ b/src/XFileWrite.cpp
+@@ -349,12 +349,6 @@ int main(int argc, char* argv[])
+     // Create application
+     application->create();
+ 
+-    // Icon path not found
+-    if (!iconpathfound)
+-    {
+-        MessageBox::error(application, BOX_OK, _("Error loading icons"), _("Icon path doesn't exist, icon theme was set back to default. Please check your icon path!") );
+-    }
+-    
+     // Some icons not found
+     if (!loadicons)
+     {
+diff --git a/src/main.cpp b/src/main.cpp
+index 8128813..0655b06 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -560,12 +560,6 @@ int main(int argc, char* argv[])
+     application->setTooltipPause(TOOLTIP_PAUSE);
+     application->setTooltipTime(TOOLTIP_TIME);
+ 
+-    // Icon path not found
+-    if (!iconpathfound)
+-    {
+-        MessageBox::error(application, BOX_OK, _("Error loading icons"), _("Icon path doesn't exist, icon theme was set back to default. Please check your icon path!") );
+-    }
+-    
+     // Some icons not found
+     if (!loadicons)
+     {

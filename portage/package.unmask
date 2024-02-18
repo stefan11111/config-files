@@ -9,3 +9,4 @@ x11-misc/sprop
 #dev-lang/rust::libressl
 #dev-perl/Net-SSLeay::libressl
 #dev-libs/openssl::libressl
+dev-lang/python:2.7::libressl

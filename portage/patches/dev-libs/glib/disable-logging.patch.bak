@@ -1,0 +1,10 @@
+--- a/glib/gmessages.c    2024-01-09 21:02:12.058240536 +0200
++++ b/glib/gmessages.c    2024-01-09 21:02:47.021063483 +0200
+@@ -1455,6 +1455,7 @@
+        const gchar   *format,
+        ...)
+ {
++  return;
+   va_list args;
+
+   va_start (args, format);

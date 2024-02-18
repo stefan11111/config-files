@@ -1,0 +1,11 @@
+--- a/spa/examples/meson.build	2024-01-19 15:22:19.342423412 +0200
++++ b/spa/examples/meson.build	2024-01-19 15:22:27.952297679 +0200
+@@ -12,7 +12,7 @@
+ 
+ spa_examples_extra_deps = {
+   'local-v4l2': [sdl_dep],
+-  'local-libcamera': [sdl_dep, libcamera_dep],
++  'local-libcamera': [sdl_dep],
+ }
+ 
+ foreach c : spa_examples

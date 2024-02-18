@@ -1,0 +1,10 @@
+--- a/dbus/examples/Makefile.am	2024-02-08 00:24:08.554820555 +0200
++++ b/dbus/examples/Makefile.am	2024-02-08 00:24:44.087638930 +0200
+@@ -24,6 +24,7 @@
+ 
+ example-service-glue.h: example-service.xml
+ 	touch example-service-glue.h
++	echo 'int dbus_glib_some_object_object_info;' > example-service-glue.h
+ 
+ 
+ ## Makefile.am bits for another client/server pair

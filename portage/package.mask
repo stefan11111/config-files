@@ -2,12 +2,14 @@
 #dev-libs/libevent::gentoo
 dev-lang/python::gentoo
 dev-lang/python::pg_overlay
-dev-lang/ruby::gentoo
+<dev-lang/python-3.12
+#dev-lang/ruby::gentoo
 dev-lang/rust::gentoo
 dev-lang/rust::pg_overlay
-dev-lang/rust-bin
+#dev-lang/rust-bin
 dev-perl/Net-SSLeay::gentoo
 dev-libs/openssl::gentoo
+dev-qt/qtnetwork::gentoo
 #dev-libs/libevent
 #dev-lang/python
 #dev-lang/ruby
@@ -16,6 +18,7 @@ dev-libs/openssl::gentoo
 #dev-perl/Net-SSLeay
 #dev-libs/openssl
 # go back to a static /dev
+>=sys-fs/static-dev-0.1-r3
 sys-fs/eudev
 sys-fs/udev
 virtual/udev
@@ -29,15 +32,17 @@ sys-apps/systemd
 # purge systemd
 #sys-apps/openrc::gentoo
 sys-apps/systemd-utils
+# mask dbus
+#sys-apps/dbus
 # gtk3 without dbus
-
 #app-accessibility/at-spi2-core
 >=dev-libs/atk-2.46
+dev-util/gdbus-codegen::stefan_overlay
 #>x11-libs/gtk+-3.14.13
 #dev-libs/atk::gentoo
 #dev-libs/atk::stefan_overlay
 #x11-libs/gtk+::mv
-x11-libs/gtk+::stefan_overlay
+#x11-libs/gtk+::stefan_overlay
 # other bloat
 sys-libs/pam
 sys-auth/pambase
@@ -47,3 +52,19 @@ sys-auth/pambase
 #www-client/firefox::pg_overlay
 #www-client/librewolf::librewolf
 #dev-libs/atk
+
+x11-apps/xinit::stefan_overlay
+x11-drivers/xf86-video-nouveau::gentoo-static
+#=sys-apps/util-linux-2.39.2
+
+# stable libtorrent-rasterbar
+>=net-libs/libtorrent-rasterbar-2
+
+# stable nvidia-drivers
+>x11-drivers/nvidia-drivers-525.147.05
+
+# mask rust
+dev-lang/rust
+
+# Prevent steam overlay insanity
+#=games-util/steam-launcher-1.0.0.78-r2

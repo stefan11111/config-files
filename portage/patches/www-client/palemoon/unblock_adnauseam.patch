@@ -1,0 +1,12 @@
+diff -Naru palemoon/app/blocklist.xml.bak palemoon/app/blocklist.xml
+--- a/palemoon/app/blocklist.xml      2024-01-06 15:45:23.467354695 +0200
++++ b/palemoon/app/blocklist.xml      2024-01-06 15:45:31.890564743 +0200
+@@ -2505,7 +2505,7 @@
+       <prefs></prefs>
+     </emItem>
+     <emItem blockID="pm110" id="adnauseam@rednoise.org">
+-      <versionRange minVersion="0" maxVersion="*" severity="2">
++      <versionRange minVersion="0" maxVersion="*" severity="1">
+       </versionRange>
+       <prefs></prefs>
+     </emItem>

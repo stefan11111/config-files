@@ -1,1 +1,2 @@
 MYMESONARGS="-Dlibmount=disabled -Dnls=disabled"
+#CFLAGS="$CFLAGS -Wno-strict-prototypes -w"

@@ -1,0 +1,12 @@
+diff --git a/platform/build/moz.configure/old.configure b/platform/build/moz.configure/old.configure
+index 0a3b84be7b..39cf2129bd 100644
+--- a/platform/build/moz.configure/old.configure
++++ b/platform/build/moz.configure/old.configure
+@@ -240,6 +240,7 @@ def old_configure_options(*options):
+     '--enable-strip',
+     '--enable-synth-pico',
+     '--enable-system-cairo',
++    '--enable-system-hunspell',
+     '--enable-system-extension-dirs',
+     '--enable-system-pixman',
+     '--enable-tasktracer',

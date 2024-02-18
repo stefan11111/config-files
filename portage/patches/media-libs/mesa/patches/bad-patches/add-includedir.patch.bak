@@ -1,0 +1,13 @@
+diff --git a/src/gbm/meson.build b/src/gbm/meson.build
+index df65361..8961f46 100644
+--- a/src/gbm/meson.build
++++ b/src/gbm/meson.build
+@@ -33,7 +33,7 @@ args_gbm = [
+ ]
+ deps_gbm = []
+ incs_gbm = [
+-  include_directories('main'), inc_include, inc_src, inc_loader,
++  include_directories('main'), inc_include, inc_src, inc_loader, '/usr/include/drm'
+ ]
+
+ if with_dri2

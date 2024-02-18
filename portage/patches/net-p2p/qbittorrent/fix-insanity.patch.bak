@@ -1,0 +1,32 @@
+diff --git a/src/webui/webapplication.cpp b/src/webui/webapplication.cpp
+index 629639e..3f71f33 100644
+--- a/src/webui/webapplication.cpp
++++ b/src/webui/webapplication.cpp
+@@ -175,8 +175,10 @@ void WebApplication::sendWebUIFile()
+ 
+     if (m_isAltUIUsed)
+     {
+-        if (!Utils::Fs::isRegularFile(localPath))
+-            throw InternalServerErrorHTTPError(tr("Unacceptable file type, only regular file is allowed."));
++        if (!Utils::Fs::isRegularFile(localPath)) {
++            m_isAltUIUsed = 0;
++            return;
++        }
+ 
+         const QString rootFolder = m_rootFolder.data();
+ 
+@@ -335,10 +337,13 @@ void WebApplication::configure()
+ {
+     const auto *pref = Preferences::instance();
+ 
++    static bool changed;
++
+     const bool isAltUIUsed = pref->isAltWebUiEnabled();
+     const Path rootFolder = (!isAltUIUsed ? Path(WWW_FOLDER) : pref->getWebUiRootFolder());
+-    if ((isAltUIUsed != m_isAltUIUsed) || (rootFolder != m_rootFolder))
++    if (!changed && ((isAltUIUsed != m_isAltUIUsed) || (rootFolder != m_rootFolder)))
+     {
++        changed = 1;
+         m_isAltUIUsed = isAltUIUsed;
+         m_rootFolder = rootFolder;
+         m_translatedFiles.clear();

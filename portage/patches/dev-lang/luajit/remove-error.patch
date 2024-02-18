@@ -1,0 +1,13 @@
+diff -Naru src/lj_err.c.bak src/lj_err.c
+--- a/src/lj_err.c        2024-02-16 17:05:21.333223369 +0200
++++ b/src/lj_err.c        2024-02-16 17:05:38.336309646 +0200
+@@ -465,9 +465,6 @@
+     ** it on non-x64 because the interpreter restores all callee-saved regs.
+     */
+     lj_err_throw(L, errcode);
+-#if LJ_TARGET_X64
+-#error "Broken build system -- only use the provided Makefiles!"
+-#endif
+ #endif
+   }
+   return _URC_CONTINUE_UNWIND;

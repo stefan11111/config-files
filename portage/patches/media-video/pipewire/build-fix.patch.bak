@@ -1,0 +1,264 @@
+diff --git a/spa/examples/meson.build b/spa/examples/meson.build
+index 5109c0c7d..fdd54fdcf 100644
+--- a/spa/examples/meson.build
++++ b/spa/examples/meson.build
+@@ -6,7 +6,7 @@ spa_examples = [
+   'local-v4l2',
+ ]
+ 
+-if not get_option('examples').allowed()
++if not get_option('examples').allowed() or not get_option('spa-plugins').allowed()
+   subdir_done()
+ endif
+ 
+diff --git a/spa/meson.build b/spa/meson.build
+index 145769a2e..49b113021 100644
+--- a/spa/meson.build
++++ b/spa/meson.build
+@@ -31,6 +31,9 @@ pkgconfig.generate(filebase : 'lib@0@'.format(spa_name),
+ 
+ subdir('include')
+ 
++jack_dep = dependency('jack', version : '>= 1.9.10', required: get_option('jack'))
++summary({'JACK2': jack_dep.found()}, bool_yn: true, section: 'Backend')
++
+ if get_option('spa-plugins').allowed()
+   udevrulesdir = get_option('udevrulesdir')
+   if udevrulesdir == ''
+@@ -86,8 +89,6 @@ if get_option('spa-plugins').allowed()
+     endif
+     cdata.set('HAVE_LC3', get_option('bluez5-codec-lc3').allowed() and lc3_dep.found())
+   endif
+-  jack_dep = dependency('jack', version : '>= 1.9.10', required: get_option('jack'))
+-  summary({'JACK2': jack_dep.found()}, bool_yn: true, section: 'Backend')
+ 
+   have_vulkan = false
+   vulkan_dep = dependency('vulkan', version : '>= 1.2.170', required: get_option('vulkan'))
+@@ -105,9 +106,11 @@ if get_option('spa-plugins').allowed()
+   cdata.set('HAVE_ALSA_COMPRESS_OFFLOAD', compress_offload_option.allowed())
+ 
+   # common dependencies
+-  libudev_dep = dependency('libudev', required: alsa_dep.found() or get_option('udev').enabled() or get_option('v4l2').enabled())
++  libudev_dep = dependency('libudev', required: get_option('udev').enabled())
++  cdata.set('HAVE_LIBUDEV', libudev_dep.found())
+   summary({'Udev': libudev_dep.found()}, bool_yn: true, section: 'Backend')
+ 
++  cdata.set('HAVE_SPA_PLUGINS', '1')
+   subdir('plugins')
+ endif
+ 
+diff --git a/spa/plugins/alsa/alsa.c b/spa/plugins/alsa/alsa.c
+index 252e131d0..1bc836097 100644
+--- a/spa/plugins/alsa/alsa.c
++++ b/spa/plugins/alsa/alsa.c
+@@ -40,8 +40,13 @@ int spa_handle_factory_enum(const struct spa_handle_factory **factory, uint32_t
+ 		*factory = &spa_alsa_sink_factory;
+ 		break;
+ 	case 2:
++#ifdef HAVE_LIBUDEV
+ 		*factory = &spa_alsa_udev_factory;
+ 		break;
++#else
++		(*index)++;
++		SPA_FALLTHROUGH;
++#endif
+ 	case 3:
+ 		*factory = &spa_alsa_pcm_device_factory;
+ 		break;
+diff --git a/spa/plugins/alsa/meson.build b/spa/plugins/alsa/meson.build
+index 5eb2a1810..4282e0bbf 100644
+--- a/spa/plugins/alsa/meson.build
++++ b/spa/plugins/alsa/meson.build
+@@ -1,11 +1,10 @@
+ subdir('acp')
+ subdir('mixer')
+ 
+-spa_alsa_dependencies = [ spa_dep, alsa_dep, libudev_dep, mathlib, epoll_shim_dep, libinotify_dep ]
++spa_alsa_dependencies = [ spa_dep, alsa_dep, mathlib, epoll_shim_dep, libinotify_dep ]
+ 
+ spa_alsa_sources = ['alsa.c',
+                 'alsa.h',
+-                'alsa-udev.c',
+                 'alsa-acp-device.c',
+                 'alsa-pcm-device.c',
+                 'alsa-pcm-sink.c',
+@@ -14,6 +13,11 @@ spa_alsa_sources = ['alsa.c',
+                 'alsa-seq-bridge.c',
+                 'alsa-seq.c']
+ 
++if libudev_dep.found()
++spa_alsa_sources += [ 'alsa-udev.c' ]
++spa_alsa_dependencies += [ libudev_dep ]
++endif
++
+ if compress_offload_option.allowed()
+   spa_alsa_sources += ['alsa-compress-offload-sink.c',
+                        'alsa-compress-offload-device.c',
+diff --git a/spa/plugins/libcamera/meson.build b/spa/plugins/libcamera/meson.build
+index 5f36b286c..9f396aba2 100644
+--- a/spa/plugins/libcamera/meson.build
++++ b/spa/plugins/libcamera/meson.build
+@@ -8,6 +8,6 @@ libcamera_sources = [
+ libcameralib = shared_library('spa-libcamera',
+   libcamera_sources,
+   include_directories : [ configinc ],
+-  dependencies : [ spa_dep, libudev_dep, libcamera_dep, pthread_lib  ],
++  dependencies : [ spa_dep, libcamera_dep, pthread_lib  ],
+   install : true,
+   install_dir : spa_plugindir / 'libcamera')
+diff --git a/spa/plugins/meson.build b/spa/plugins/meson.build
+index 210004691..97ba78af7 100644
+--- a/spa/plugins/meson.build
++++ b/spa/plugins/meson.build
+@@ -45,10 +45,9 @@ if have_vulkan
+ endif
+ 
+ v4l2_header_found = cc.has_header('linux/videodev2.h', required: get_option('v4l2'))
+-v4l2_supported = libudev_dep.found() and v4l2_header_found
+ summary({'V4L2 kernel header': v4l2_header_found}, bool_yn: true, section: 'Backend')
+-summary({'V4L2 enabled': v4l2_supported}, bool_yn: true, section: 'Backend')
+-if v4l2_supported
++summary({'V4L2 enabled': v4l2_header_found}, bool_yn: true, section: 'Backend')
++if v4l2_header_found
+   subdir('v4l2')
+ endif
+ if libcamera_dep.found()
+diff --git a/spa/plugins/v4l2/meson.build b/spa/plugins/v4l2/meson.build
+index 648583f32..1dfe92cf8 100644
+--- a/spa/plugins/v4l2/meson.build
++++ b/spa/plugins/v4l2/meson.build
+@@ -1,10 +1,15 @@
+ v4l2_sources = ['v4l2.c',
+                 'v4l2-device.c',
+-                'v4l2-udev.c',
+                 'v4l2-source.c']
++v4l2_dependencies = [ spa_dep, libinotify_dep ]
++
++if libudev_dep.found()
++v4l2_sources += [ 'v4l2-udev.c' ]
++v4l2_dependencies += [ libudev_dep ]
++endif
+ 
+ v4l2lib = shared_library('spa-v4l2',
+                           v4l2_sources,
+-                          dependencies : [ spa_dep, libudev_dep, libinotify_dep ],
++                          dependencies : v4l2_dependencies,
+                           install : true,
+                           install_dir : spa_plugindir / 'v4l2')
+diff --git a/spa/plugins/v4l2/v4l2.c b/spa/plugins/v4l2/v4l2.c
+index 843fbb1b6..ed39f3bd5 100644
+--- a/spa/plugins/v4l2/v4l2.c
++++ b/spa/plugins/v4l2/v4l2.c
+@@ -29,8 +29,13 @@ int spa_handle_factory_enum(const struct spa_handle_factory **factory,
+ 		*factory = &spa_v4l2_source_factory;
+ 		break;
+ 	case 1:
++#ifdef HAVE_LIBUDEV
+ 		*factory = &spa_v4l2_udev_factory;
+ 		break;
++#else
++		(*index)++;
++		SPA_FALLTHROUGH;
++#endif
+ 	case 2:
+ 		*factory = &spa_v4l2_device_factory;
+ 		break;
+diff --git a/src/modules/meson.build b/src/modules/meson.build
+index e2478c965..40d5662de 100644
+--- a/src/modules/meson.build
++++ b/src/modules/meson.build
+@@ -69,6 +69,11 @@ pipewire_module_loopback = shared_library('pipewire-module-loopback',
+   dependencies : [spa_dep, mathlib, dl_lib, pipewire_dep],
+ )
+ 
++plugin_dependencies = []
++if get_option('spa-plugins').allowed()
++  plugin_dependencies += audioconvert_dep
++endif
++
+ simd_cargs = []
+ simd_dependencies = []
+ 
+@@ -122,7 +127,7 @@ filter_chain_sources = [
+   'module-filter-chain/convolver.c'
+ ]
+ filter_chain_dependencies = [
+-  mathlib, dl_lib, pipewire_dep, sndfile_dep, audioconvert_dep
++  mathlib, dl_lib, pipewire_dep, sndfile_dep, plugin_dependencies
+ ]
+ 
+ pipewire_module_filter_chain = shared_library('pipewire-module-filter-chain',
+@@ -175,7 +180,7 @@ pipewire_module_echo_cancel = shared_library('pipewire-module-echo-cancel',
+   install : true,
+   install_dir : modules_install_dir,
+   install_rpath: modules_install_dir,
+-  dependencies : [mathlib, dl_lib, pipewire_dep, audioconvert_dep],
++  dependencies : [mathlib, dl_lib, pipewire_dep, plugin_dependencies],
+ )
+ 
+ build_module_jack_tunnel = jack_dep.found()
+diff --git a/src/modules/module-echo-cancel.c b/src/modules/module-echo-cancel.c
+index 50cd39212..7b126bcc1 100644
+--- a/src/modules/module-echo-cancel.c
++++ b/src/modules/module-echo-cancel.c
+@@ -249,6 +249,7 @@ static inline void aec_run(struct impl *impl, const float *rec[], const float *p
+ {
+ 	spa_audio_aec_run(impl->aec, rec, play, out, n_samples);
+ 
++#ifdef HAVE_SPA_PLUGINS
+ 	if (SPA_UNLIKELY(impl->wav_path[0])) {
+ 		if (impl->wav_file == NULL) {
+ 			struct wav_file_info info;
+@@ -287,6 +288,7 @@ static inline void aec_run(struct impl *impl, const float *rec[], const float *p
+ 		wav_file_close(impl->wav_file);
+ 		impl->wav_file = NULL;
+ 	}
++#endif
+ }
+ 
+ static void process(struct impl *impl)
+diff --git a/src/modules/module-filter-chain/builtin_plugin.c b/src/modules/module-filter-chain/builtin_plugin.c
+index 73e3ba79a..6a862f748 100644
+--- a/src/modules/module-filter-chain/builtin_plugin.c
++++ b/src/modules/module-filter-chain/builtin_plugin.c
+@@ -784,6 +784,7 @@ static float *create_dirac(const char *filename, float gain, int delay, int offs
+ static float *resample_buffer(float *samples, int *n_samples,
+ 		unsigned long in_rate, unsigned long out_rate, uint32_t quality)
+ {
++#ifdef HAVE_SPA_PLUGINS
+ 	uint32_t in_len, out_len, total_out = 0;
+ 	int out_n_samples;
+ 	float *out_samples, *out_buf, *in_buf;
+@@ -849,6 +850,12 @@ error:
+ 	free(samples);
+ 	free(out_samples);
+ 	return NULL;
++#else
++	pw_log_error("compiled without spa-plugins support, can't resample");
++	float *out_samples = calloc(*n_samples, sizeof(float));
++	memcpy(out_samples, samples, *n_samples * sizeof(float));
++	return out_samples;
++#endif
+ }
+ 
+ static void * convolver_instantiate(const struct fc_descriptor * Descriptor,
+diff --git a/test/meson.build b/test/meson.build
+index 1ce7d0089..3cad6dc56 100644
+--- a/test/meson.build
++++ b/test/meson.build
+@@ -83,6 +83,7 @@ test('test-loop',
+                link_with: pwtest_lib)
+ )
+ 
++if get_option('spa-plugins').allowed()
+ test('test-context',
+     executable('test-context',
+                'test-context.c',
+@@ -106,6 +107,7 @@ test('test-support',
+                dependencies: [spa_dep, systemd_dep, spa_support_dep, spa_journal_dep],
+                link_with: [pwtest_lib])
+ )
++endif
+ test('test-spa',
+     executable('test-spa',
+                'test-spa-buffer.c',

@@ -1,0 +1,2 @@
+MYMESONARGS="-Dgbm=enabled -Ddri3=disabled -Dexpat=disabled -Dgallium-drivers= -Dshared-glapi=disabled"
+#CFLAGS="${CFLAGS} -I/usr/include/drm"

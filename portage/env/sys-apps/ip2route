@@ -1,0 +1,2 @@
+#CFLAGS="-O3 -pipe -march=native -flto=4 -frecord-gcc-switches -ftree-vectorize -ffast-math -funswitch-loops -fno-semantic-interposition -fipa-pta -fdevirtualize-at-ltrans"
+#CXXFLAGS="-O3 -pipe -march=native -flto=4 -frecord-gcc-switches -ftree-vectorize -ffast-math -funswitch-loops -fno-semantic-interposition -fipa-pta -fdevirtualize-at-ltrans"

@@ -1,0 +1,21 @@
+--- a/src/nv_driver.c     2023-08-16 13:03:30.163473272 +0300
++++ b/src/nv_driver.c     2023-08-16 13:04:53.415588447 +0300
+@@ -559,16 +559,16 @@
+ {
+	RegionRec pixregion;
+
+-	PixmapRegionInit(&pixregion, dirty->slave_dst);
++	PixmapRegionInit(&pixregion, dirty->secondary_dst);
+
+-	DamageRegionAppend(&dirty->slave_dst->drawable, &pixregion);
++	DamageRegionAppend(&dirty->secondary_dst->drawable, &pixregion);
+ #ifdef HAS_DIRTYTRACKING_ROTATION
+	PixmapSyncDirtyHelper(dirty);
+ #else
+	PixmapSyncDirtyHelper(dirty, &pixregion);
+ #endif
+
+-	DamageRegionProcessPending(&dirty->slave_dst->drawable);
++	DamageRegionProcessPending(&dirty->secondary_dst->drawable);
+	RegionUninit(&pixregion);
+ }

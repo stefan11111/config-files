@@ -1,1 +1,11 @@
 PALEMOON_ENABLE_UNSUPPORTED_COMPILERS=1
+#COMMON_FLAGS="-O3 -pipe -march=native -ftree-vectorize -funswitch-loops -fuse-linker-plugin -flto=4 -fdevirtualize-at-ltrans -fno-plt -fno-semantic-interposition -fno-common -falign-functions=32 -fgraphite-identity -floop-nest-optimize"
+#CFLAGS="${COMMON_FLAGS}"
+#CXXFLAGS="${COMMON_FLAGS}"
+#CFLAGS="-O3 -pipe -march=native -flto=4 -frecord-gcc-switches -ftree-vectorize -funswitch-loops -fno-semantic-interposition -fipa-pta -fdevirtualize-at-ltrans"
+#CFLAGS="-O2 -pipe -march=native -flto=4"
+#CFLAGS="${CFLAGS} -DFLOAT_APPROX"
+#CFLAGS="-O3 -pipe -march=native -flto=4 -frecord-gcc-switches -ftree-vectorize -funswitch-loops -fno-semantic-interposition -fdevirtualize-at-ltrans"
+#CXXFLAGS="-O3 -pipe -march=native -flto=4 -frecord-gcc-switches -ftree-vectorize -funswitch-loops -fno-semantic-interposition -fdevirtualize-at-ltrans"
+#LDFLAGS='-Wl,-O1,--enable-new-dtags,--sort-common,--allow-multiple-definition,--allow-multiple-definition,--relax -z combreloc -z muldefs -s'
+#LDFLAGS="-Wl,-O1 -Wl,--as-needed"

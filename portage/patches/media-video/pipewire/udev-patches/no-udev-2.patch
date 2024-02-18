@@ -1,0 +1,11 @@
+--- a/src/modules/meson.build	2024-01-19 15:17:44.459770986 +0200
++++ b/src/modules/meson.build	2024-01-19 15:18:22.565881171 +0200
+@@ -178,7 +178,7 @@
+   dependencies : [mathlib, dl_lib, pipewire_dep],
+ )
+ 
+-build_module_jack_tunnel = jack_dep.found()
++build_module_jack_tunnel = false
+ if build_module_jack_tunnel
+   pipewire_module_jack_tunnel = shared_library('pipewire-module-jack-tunnel',
+     [ 'module-jack-tunnel.c' ],

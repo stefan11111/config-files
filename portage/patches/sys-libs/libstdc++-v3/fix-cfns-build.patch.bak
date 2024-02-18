@@ -1,0 +1,12 @@
+--- a/gcc/cp/except.c	2024-01-28 13:17:40.624860056 +0200
++++ b/gcc/cp/except.c	2024-01-28 13:18:00.367901034 +0200
+@@ -890,8 +890,7 @@
+     /* Can't be a C library function.  */
+     return 0;
+ 
+-  id = DECL_ASSEMBLER_NAME (fn);
+-  return !!libc_name_p (IDENTIFIER_POINTER (id), IDENTIFIER_LENGTH (id));
++  return 1;
+ }
+ 
+ /* Returns nonzero if an exception of type FROM will be caught by a

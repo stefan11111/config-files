@@ -1,0 +1,36 @@
+--- a/platform/python/mozbuild/mozbuild/test/configure/test_moz_configure.py	2023-08-29 21:25:40.505674044 +0300
++++ b/platform/python/mozbuild/mozbuild/test/configure/test_moz_configure.py	2023-08-29 21:27:34.903987259 +0300
+@@ -31,13 +31,6 @@
+                           get_value_for(['--enable-application=browser',
+                                          'MOZ_PROFILING=1']))
+ 
+-        value = get_value_for(
+-            environ={'MOZ_PROFILING': '1'},
+-            mozconfig='ac_add_options --enable-project=js')
+-
+-        self.assertEquals('--enable-project=js MOZ_PROFILING=1',
+-                          value)
+-
+         # --disable-js-shell is the default, so it's filtered out.
+         self.assertEquals('--enable-application=browser',
+                           get_value_for(['--enable-application=browser',
+--- a/platform/js/src/configure.in	2023-08-29 21:25:27.409200482 +0300
++++ b/platform/js/src/configure.in	2023-08-29 21:26:33.831554428 +0300
+@@ -22,6 +22,6 @@
+ TOPSRCDIR="$SRCDIR"/../..
+ export OLD_CONFIGURE="$SRCDIR"/old-configure
+ 
+-set -- "$@" --enable-project=js
++set -- "$@"
+ 
+ which python2.7 > /dev/null && exec python2.7 "$TOPSRCDIR/configure.py" "$@" || exec python "$TOPSRCDIR/configure.py" "$@"
+--- a/platform/build/subconfigure.py	2023-08-29 21:24:50.939738219 +0300
++++ b/platform/build/subconfigure.py	2023-08-29 21:26:11.801879253 +0300
+@@ -317,7 +317,6 @@
+             command = [
+                 sys.executable,
+                 os.path.join(os.path.dirname(__file__), '..', 'configure.py'),
+-                '--enable-project=js',
+             ]
+             data['env']['OLD_CONFIGURE'] = os.path.join(
+                 os.path.dirname(configure), 'old-configure')

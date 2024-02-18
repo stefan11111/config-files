@@ -1,0 +1,61 @@
+diff --git a/build/moz.configure/old.configure b/build/moz.configure/old.configure
+index 6dcc86546e..5f41d6bcfc 100644
+--- a/platform/build/moz.configure/old.configure
++++ b/platform/build/moz.configure/old.configure
+@@ -240,6 +240,7 @@ def old_configure_options(*options):
+     '--enable-synth-pico',
+     '--enable-system-cairo',
+     '--enable-system-extension-dirs',
++    '--enable-system-hunspell',
+     '--enable-system-pixman',
+     '--enable-tasktracer',
+     '--enable-tests',
+diff --git a/moz.configure b/moz.configure
+index eed4b87d5d..5413774f25 100644
+--- a/platform/moz.configure
++++ b/platform/moz.configure
+@@ -148,19 +148,6 @@ check_prog('GENISOIMAGE', delayed_getattr(extra_programs, 'GENISOIMAGE'),
+ check_prog('RPMBUILD', delayed_getattr(extra_programs, 'RPMBUILD'),
+            allow_missing=True)
+ 
+-option('--enable-system-hunspell',
+-       help="Use system hunspell (located with pkgconfig)")
+-
+-@depends('--enable-system-hunspell', compile_environment)
+-def check_for_hunspell(value, compile_env):
+-    return value and compile_env
+-
+-system_hunspell = pkg_check_modules('MOZ_HUNSPELL', 'hunspell',
+-                                    when=check_for_hunspell)
+-
+-set_config('MOZ_SYSTEM_HUNSPELL', depends_if(system_hunspell)(lambda _: True))
+-
+-
+ @depends(target)
+ @imports('os')
+ def makensis_progs(target):
+diff --git a/old-configure.in b/old-configure.in
+index 034d0f4630..f7f394d15f 100644
+--- a/platform/old-configure.in
++++ b/platform/old-configure.in
+@@ -1946,6 +1946,20 @@ if test -n "${JPEG_DIR}" -a -d "${JPEG_DIR}" -a "$MOZ_SYSTEM_JPEG" = 1; then
+ fi
+ fi # SKIP_LIBRARY_CHECKS
+ 
++dnl ========================================================
++dnl system HunSpell Support
++dnl ========================================================
++MOZ_ARG_ENABLE_BOOL(system-hunspell,
++[  --enable-system-hunspell
++                          Use system hunspell (located with pkgconfig)],
++    MOZ_SYSTEM_HUNSPELL=1 )
++
++if test -n "$MOZ_SYSTEM_HUNSPELL"; then
++    PKG_CHECK_MODULES(MOZ_HUNSPELL, hunspell)
++fi
++
++AC_SUBST(MOZ_SYSTEM_HUNSPELL)
++
+ dnl system ZLIB support
+ dnl ========================================================
+ MOZ_ZLIB_CHECK([1.2.3])
