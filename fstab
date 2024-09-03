@@ -35,9 +35,21 @@
 /dev/sda3					/	ext4	defaults,noatime	0 2
 #UUID="213d31b7-bd4c-4f97-8b26-4abffb6fc142"	/home/stefan/hdd	ext4	rw,exec,async,user	0 2
 /dev/sdb1					/home/stefan/hdd	ext4	rw,exec,async,user	0 2
-//10.0.15.220/hdd1	/home/stefan/HDD1	cifs	username=admin,password=raspberry,uid=stefan,_netdev	0 0
-//10.0.15.220/hdd2	/home/stefan/HDD2	cifs	username=admin,password=raspberry,uid=stefan,_netdev	0 0
-//10.0.15.220/MyBook	/home/stefan/MyBook	cifs	username=admin,password=raspberry,uid=stefan,_netdev	0 0
-//10.0.15.115/DuneHDD_349216fe_819a_4f56_b771_d977ce430eb3/	/home/stefan/DuneHDD	cifs	username=root,password=,vers=1.0,uid=stefan,_netdev	0 0
+/dev/sdc1					/home/stefan/ssd	ext4	rw,exec,async,user	0 2
+//10.0.15.220/hdd1	/home/stefan/HDD1	cifs	username=admin,password=raspberry,uid=1000,gid=1000,_netdev,vers=1.0	0 0
+//10.0.15.220/hdd2	/home/stefan/HDD2	cifs	username=admin,password=raspberry,uid=1000,gid=1000,_netdev	0 0
+//10.0.15.220/MyBook	/home/stefan/MyBook	cifs	username=admin,password=raspberry,uid=1000,gid=1000,_netdev	0 0
+//10.0.15.115/DuneHDD_349216fe_819a_4f56_b771_d977ce430eb3/	/home/stefan/DuneHDD	cifs	username=root,password=,vers=1.0,uid=1000,gid=1000,_netdev	0 0
+//10.0.15.251/hdd3  /home/stefan/HDD3   cifs    username=admin,password=CSgo1234,uid=1000,gid=1000,_netdev 0 0
+//10.0.15.251/hdd4  /home/stefan/HDD4   cifs    username=admin,password=CSgo1234,uid=1000,gid=1000,_netdev 0 0
 #//10.0.15.115/D      /home/stefan/DuneHDD    cifs    username=root,password=,vers=1.0,uid=stefan,_netdev     0 0
 /dev/cdrom	/mnt/cdrom	auto	noauto,user	0 0
+
+## usb mount
+
+#/dev/sdc1                   /home/stefan/usb   ntfs    noauto,user    0 2
+
+## raspi mounts
+
+#/dev/sde3					/mnt/gentoo			ext4	noauto		0 2
+#/dev/sde1					/mnt/gentoo/boot	vfat	noauto		0 2
