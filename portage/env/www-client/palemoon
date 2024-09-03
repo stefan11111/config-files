@@ -1,4 +1,6 @@
 PALEMOON_ENABLE_UNSUPPORTED_COMPILERS=1
+#CFLAGS="${CFLAGS} -fno-fast-math"
+#CXXFLAGS="${CXXFLAGS} -fno-fast-math"
 #COMMON_FLAGS="-O3 -pipe -march=native -ftree-vectorize -funswitch-loops -fuse-linker-plugin -flto=4 -fdevirtualize-at-ltrans -fno-plt -fno-semantic-interposition -fno-common -falign-functions=32 -fgraphite-identity -floop-nest-optimize"
 #CFLAGS="${COMMON_FLAGS}"
 #CXXFLAGS="${COMMON_FLAGS}"

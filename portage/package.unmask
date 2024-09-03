@@ -10,3 +10,4 @@ x11-misc/sprop
 #dev-perl/Net-SSLeay::libressl
 #dev-libs/openssl::libressl
 dev-lang/python:2.7::libressl
+app-misc/binwalk::stefan_overlay

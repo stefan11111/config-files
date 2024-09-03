@@ -1,0 +1,11 @@
+--- a/meson.build	2024-04-19 18:09:42.688659443 +0300
++++ b/meson.build	2024-04-19 18:11:11.174063925 +0300
+@@ -95,7 +95,7 @@
+     _glu_name = 'glu32'
+   endif
+   dep_glu = cc.find_library(_glu_name, has_headers: 'GL/glu.h',
+-    required : dep_x11.found())
++    required : false)
+ endif
+ dep_glu = disabler()
+ 

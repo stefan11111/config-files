@@ -1,0 +1,2489 @@
+diff --git a/glx/meson.build b/glx/meson.build
+index f71bc0d..9fafa80 100644
+--- a/glx/meson.build
++++ b/glx/meson.build
+@@ -38,7 +38,6 @@ if build_glx
+         dependencies: [
+             common_dep,
+             dl_dep,
+-            dri_dep,
+             dependency('glproto', version: '>= 1.4.17'),
+             dependency('gl', version: '>= 1.2'),
+         ],
+diff --git a/hw/xwayland/meson.build b/hw/xwayland/meson.build
+index 54529b6..713e2a0 100644
+--- a/hw/xwayland/meson.build
++++ b/hw/xwayland/meson.build
+@@ -30,11 +30,11 @@ srcs = [
+     '../../mi/miinitext.h',
+ ]
+ 
+-scanner_dep = dependency('wayland-scanner', native: true)
+-scanner = find_program(scanner_dep.get_pkgconfig_variable('wayland_scanner'))
++scanner_dep = ''
++scanner = ''
+ 
+-protocols_dep = dependency('wayland-protocols', version: wayland_protocols_req)
+-protodir = protocols_dep.get_pkgconfig_variable('pkgdatadir')
++protocols_dep = ''
++protodir = ''
+ 
+ pointer_xml = join_paths(protodir, 'unstable', 'pointer-constraints', 'pointer-constraints-unstable-v1.xml')
+ relative_xml = join_paths(protodir, 'unstable', 'relative-pointer', 'relative-pointer-unstable-v1.xml')
+@@ -50,47 +50,9 @@ shortcuts_inhibit_xml = join_paths(protodir, 'unstable', 'keyboard-shortcuts-inh
+ xwayland_shell_xml = join_paths(protodir, 'staging', 'xwayland-shell', 'xwayland-shell-v1.xml')
+ tearing_xml = join_paths(protodir, 'staging', 'tearing-control', 'tearing-control-v1.xml')
+ 
+-client_header = generator(scanner,
+-    output : '@BASENAME@-client-protocol.h',
+-    arguments : ['client-header', '@INPUT@', '@OUTPUT@']
+-)
+-
+-if scanner_dep.version().version_compare('>= 1.14.91')
+-    scanner_argument = 'private-code'
+-else
+-    scanner_argument = 'code'
+-endif
++client_header = ''
+ 
+-code = generator(scanner,
+-    output : '@BASENAME@-protocol.c',
+-    arguments : [scanner_argument, '@INPUT@', '@OUTPUT@']
+-)
+-srcs += client_header.process(relative_xml)
+-srcs += client_header.process(pointer_xml)
+-srcs += client_header.process(gestures_xml)
+-srcs += client_header.process(tablet_xml)
+-srcs += client_header.process(kbgrab_xml)
+-srcs += client_header.process(xdg_output_xml)
+-srcs += client_header.process(dmabuf_xml)
+-srcs += client_header.process(viewporter_xml)
+-srcs += client_header.process(xdg_shell_xml)
+-srcs += client_header.process(drm_lease_xml)
+-srcs += client_header.process(shortcuts_inhibit_xml)
+-srcs += client_header.process(xwayland_shell_xml)
+-srcs += client_header.process(tearing_xml)
+-srcs += code.process(relative_xml)
+-srcs += code.process(pointer_xml)
+-srcs += code.process(gestures_xml)
+-srcs += code.process(tablet_xml)
+-srcs += code.process(kbgrab_xml)
+-srcs += code.process(xdg_output_xml)
+-srcs += code.process(dmabuf_xml)
+-srcs += code.process(viewporter_xml)
+-srcs += code.process(xdg_shell_xml)
+-srcs += code.process(drm_lease_xml)
+-srcs += code.process(shortcuts_inhibit_xml)
+-srcs += code.process(xwayland_shell_xml)
+-srcs += code.process(tearing_xml)
++code = ''
+ 
+ if build_ei
+     xwayland_dep += libei_dep
+diff --git a/hw/xwayland/xwayland-cursor.c b/hw/xwayland/xwayland-cursor.c
+index bd94b0c..e0e7fd7 100644
+--- a/hw/xwayland/xwayland-cursor.c
++++ b/hw/xwayland/xwayland-cursor.c
+@@ -39,8 +39,6 @@
+ #include "xwayland-shm.h"
+ #include "xwayland-types.h"
+ 
+-#include "tablet-unstable-v2-client-protocol.h"
+-
+ #define DELAYED_X_CURSOR_TIMEOUT 5 /* ms */
+ 
+ static DevPrivateKeyRec xwl_cursor_private_key;
+@@ -127,9 +125,7 @@ frame_callback(void *data,
+     }
+ }
+ 
+-static const struct wl_callback_listener frame_listener = {
+-    frame_callback
+-};
++static const void* frame_listener;
+ 
+ static void
+ xwl_cursor_buffer_release_callback(void *data)
+@@ -163,13 +159,11 @@ xwl_cursor_attach_pixmap(struct xwl_seat *xwl_seat,
+         return;
+     }
+ 
+-    wl_surface_attach(xwl_cursor->surface, buffer, 0, 0);
+     xwl_surface_damage(xwl_seat->xwl_screen, xwl_cursor->surface, 0, 0,
+                        xwl_seat->x_cursor->bits->width,
+                        xwl_seat->x_cursor->bits->height);
+ 
+-    xwl_cursor->frame_cb = wl_surface_frame(xwl_cursor->surface);
+-    wl_callback_add_listener(xwl_cursor->frame_cb, &frame_listener, xwl_cursor);
++    xwl_cursor->frame_cb = 0;
+ 
+     /* Hold a reference on the pixmap until it's released by the compositor */
+     pixmap->refcnt++;
+@@ -177,14 +171,12 @@ xwl_cursor_attach_pixmap(struct xwl_seat *xwl_seat,
+                                      xwl_cursor_buffer_release_callback,
+                                      pixmap);
+ 
+-    wl_surface_commit(xwl_cursor->surface);
+ }
+ 
+ Bool
+ xwl_cursor_clear_frame_cb(struct xwl_cursor *xwl_cursor)
+ {
+     if (xwl_cursor->frame_cb) {
+-        wl_callback_destroy(xwl_cursor->frame_cb);
+         xwl_cursor->frame_cb = NULL;
+         return TRUE;
+     }
+@@ -203,8 +195,6 @@ xwl_seat_set_cursor(struct xwl_seat *xwl_seat)
+         return;
+ 
+     if (!xwl_seat->x_cursor) {
+-        wl_pointer_set_cursor(xwl_seat->wl_pointer,
+-                              xwl_seat->pointer_enter_serial, NULL, 0, 0);
+         xwl_cursor_clear_frame_cb(xwl_cursor);
+         xwl_cursor->needs_update = FALSE;
+         return;
+@@ -222,12 +212,6 @@ xwl_seat_set_cursor(struct xwl_seat *xwl_seat)
+ 
+     xwl_cursor_copy_bits_to_pixmap(cursor, pixmap);
+ 
+-    wl_pointer_set_cursor(xwl_seat->wl_pointer,
+-                          xwl_seat->pointer_enter_serial,
+-                          xwl_cursor->surface,
+-                          xwl_seat->x_cursor->bits->xhot,
+-                          xwl_seat->x_cursor->bits->yhot);
+-
+     xwl_cursor_attach_pixmap(xwl_seat, xwl_cursor, pixmap);
+ }
+ 
+@@ -240,9 +224,6 @@ xwl_tablet_tool_set_cursor(struct xwl_tablet_tool *xwl_tablet_tool)
+     CursorPtr cursor;
+ 
+     if (!xwl_seat->x_cursor) {
+-        zwp_tablet_tool_v2_set_cursor(xwl_tablet_tool->tool,
+-                                      xwl_tablet_tool->proximity_in_serial,
+-                                      NULL, 0, 0);
+         xwl_cursor_clear_frame_cb(xwl_cursor);
+         xwl_cursor->needs_update = FALSE;
+         return;
+@@ -260,19 +241,12 @@ xwl_tablet_tool_set_cursor(struct xwl_tablet_tool *xwl_tablet_tool)
+ 
+     xwl_cursor_copy_bits_to_pixmap(cursor, pixmap);
+ 
+-    zwp_tablet_tool_v2_set_cursor(xwl_tablet_tool->tool,
+-                                  xwl_tablet_tool->proximity_in_serial,
+-                                  xwl_cursor->surface,
+-                                  xwl_seat->x_cursor->bits->xhot,
+-                                  xwl_seat->x_cursor->bits->yhot);
+-
+     xwl_cursor_attach_pixmap(xwl_seat, xwl_cursor, pixmap);
+ }
+ 
+ void
+ xwl_cursor_release(struct xwl_cursor *xwl_cursor)
+ {
+-    wl_surface_destroy(xwl_cursor->surface);
+     xwl_cursor_clear_frame_cb(xwl_cursor);
+ }
+ 
+diff --git a/hw/xwayland/xwayland-drm-lease.c b/hw/xwayland/xwayland-drm-lease.c
+index 51e9072..f3a0b0e 100644
+--- a/hw/xwayland/xwayland-drm-lease.c
++++ b/hw/xwayland/xwayland-drm-lease.c
+@@ -72,10 +72,7 @@ drm_lease_handle_finished(void *data,
+     }
+ }
+ 
+-static struct wp_drm_lease_v1_listener drm_lease_listener = {
+-    .lease_fd = drm_lease_handle_lease_fd,
+-    .finished = drm_lease_handle_finished,
+-};
++static void* drm_lease_listener;
+ 
+ void
+ xwl_randr_get_lease(ClientPtr client, ScreenPtr screen, RRLeasePtr *rrLease, int *fd)
+@@ -140,22 +137,18 @@ xwl_randr_request_lease(ClientPtr client, ScreenPtr screen, RRLeasePtr rrLease)
+         }
+     }
+ 
+-    req = wp_drm_lease_device_v1_create_lease_request(
+-            lease_device->drm_lease_device);
++    req = 0;
+     lease_private = calloc(1, sizeof(struct xwl_drm_lease));
+     for (i = 0; i < rrLease->numOutputs; ++i) {
+         output = rrLease->outputs[i]->devPrivate;
+         output->lease = lease_private;
+-        wp_drm_lease_request_v1_request_connector(req, output->lease_connector);
+     }
+     lease_private->fd = -1;
+-    lease_private->lease = wp_drm_lease_request_v1_submit(req);
++    lease_private->lease = 0;
+     lease_private->rrLease = rrLease;
+     lease_private->client = client;
+     rrLease->devPrivate = lease_private;
+ 
+-    wp_drm_lease_v1_add_listener(lease_private->lease,
+-                                  &drm_lease_listener, lease_private);
+     xorg_list_add(&lease_private->link, &xwl_screen->drm_leases);
+ 
+     ResetCurrentRequest(client);
+@@ -175,7 +168,6 @@ xwl_randr_terminate_lease(ScreenPtr screen, RRLeasePtr lease)
+         xorg_list_del(&lease_private->link);
+         if (lease_private->fd >= 0)
+             close(lease_private->fd);
+-        wp_drm_lease_v1_destroy(lease_private->lease);
+         free(lease_private);
+         lease->devPrivate = NULL;
+     }
+@@ -322,13 +314,7 @@ lease_connector_handle_withdrawn(void *data,
+     xwl_output_remove(data);
+ }
+ 
+-static const struct wp_drm_lease_connector_v1_listener lease_connector_listener = {
+-    .name = lease_connector_handle_name,
+-    .description = lease_connector_handle_description,
+-    .connector_id = lease_connector_handle_connector_id,
+-    .withdrawn = lease_connector_handle_withdrawn,
+-    .done = lease_connector_handle_done,
+-};
++static const void* lease_connector_listener;
+ 
+ static void
+ drm_lease_device_handle_drm_fd(void *data,
+@@ -379,10 +365,6 @@ drm_lease_device_handle_connector(void *data,
+     RROutputSetNonDesktop(xwl_output->randr_output, TRUE);
+     xwl_output->randr_output->devPrivate = xwl_output;
+ 
+-    wp_drm_lease_connector_v1_add_listener(connector,
+-                                            &lease_connector_listener,
+-                                            xwl_output);
+-
+     xorg_list_append(&xwl_output->link, &xwl_screen->output_list);
+     return;
+ 
+@@ -407,18 +389,12 @@ drm_lease_device_handle_done(void *data,
+     /* This space is deliberately left blank */
+ }
+ 
+-static const struct wp_drm_lease_device_v1_listener drm_lease_device_listener = {
+-    .drm_fd = drm_lease_device_handle_drm_fd,
+-    .connector = drm_lease_device_handle_connector,
+-    .released = drm_lease_device_handle_released,
+-    .done = drm_lease_device_handle_done,
+-};
++static const void* drm_lease_device_listener;
+ 
+ void
+ xwl_screen_add_drm_lease_device(struct xwl_screen *xwl_screen, uint32_t id)
+ {
+-    struct wp_drm_lease_device_v1 *lease_device = wl_registry_bind(
+-        xwl_screen->registry, id, &wp_drm_lease_device_v1_interface, 1);
++    struct wp_drm_lease_device_v1 *lease_device = 0;
+     struct xwl_drm_lease_device *device_data = malloc(sizeof(struct xwl_drm_lease_device));
+ 
+     device_data->drm_lease_device = lease_device;
+@@ -426,9 +402,6 @@ xwl_screen_add_drm_lease_device(struct xwl_screen *xwl_screen, uint32_t id)
+     device_data->drm_read_only_fd = -1;
+     device_data->id = id;
+     xorg_list_add(&device_data->link, &xwl_screen->drm_lease_devices);
+-    wp_drm_lease_device_v1_add_listener(lease_device,
+-                                         &drm_lease_device_listener,
+-                                         device_data);
+ }
+ 
+ void
+@@ -439,7 +412,6 @@ xwl_screen_destroy_drm_lease_device(struct xwl_screen *xwl_screen,
+ 
+     xorg_list_for_each_entry(device_data, &xwl_screen->drm_lease_devices, link) {
+         if (device_data->drm_lease_device == wp_drm_lease_device_v1) {
+-            wp_drm_lease_device_v1_destroy(wp_drm_lease_device_v1);
+             xorg_list_del(&device_data->link);
+             if (device_data->drm_read_only_fd >= 0)
+                 close(device_data->drm_read_only_fd);
+diff --git a/hw/xwayland/xwayland-drm-lease.h b/hw/xwayland/xwayland-drm-lease.h
+index aa5aed6..fadc763 100644
+--- a/hw/xwayland/xwayland-drm-lease.h
++++ b/hw/xwayland/xwayland-drm-lease.h
+@@ -33,8 +33,6 @@
+ #include "xwayland-types.h"
+ #include "list.h"
+ 
+-#include "drm-lease-v1-client-protocol.h"
+-
+ struct xwl_drm_lease_device {
+     struct xorg_list link;
+     struct wp_drm_lease_device_v1 *drm_lease_device;
+diff --git a/hw/xwayland/xwayland-glamor.h b/hw/xwayland/xwayland-glamor.h
+index 183fe75..68df068 100644
+--- a/hw/xwayland/xwayland-glamor.h
++++ b/hw/xwayland/xwayland-glamor.h
+@@ -30,7 +30,6 @@
+ 
+ #include <sys/types.h>
+ 
+-#include <wayland-client.h>
+ #include <xf86drm.h>
+ 
+ #include "xwayland-types.h"
+diff --git a/hw/xwayland/xwayland-input.c b/hw/xwayland/xwayland-input.c
+index 67c7c15..15a123f 100644
+--- a/hw/xwayland/xwayland-input.c
++++ b/hw/xwayland/xwayland-input.c
+@@ -48,13 +48,6 @@
+ #include "xwayland-xtest.h"
+ #endif
+ 
+-#include "pointer-constraints-unstable-v1-client-protocol.h"
+-#include "relative-pointer-unstable-v1-client-protocol.h"
+-#include "tablet-unstable-v2-client-protocol.h"
+-#include "pointer-gestures-unstable-v1-client-protocol.h"
+-#include "xwayland-keyboard-grab-unstable-v1-client-protocol.h"
+-#include "keyboard-shortcuts-inhibit-unstable-v1-client-protocol.h"
+-
+ #define SCROLL_AXIS_HORIZ 2
+ #define SCROLL_AXIS_VERT 3
+ 
+@@ -160,11 +153,7 @@ maybe_fake_grab_devices(struct xwl_seat *xwl_seat)
+     if (xwl_screen->shortcuts_inhibit)
+         return;
+ 
+-    xwl_screen->shortcuts_inhibit =
+-        zwp_keyboard_shortcuts_inhibit_manager_v1_inhibit_shortcuts (
+-            xwl_screen->shortcuts_inhibit_manager,
+-            xwl_window->surface,
+-            xwl_seat->seat);
++    xwl_screen->shortcuts_inhibit = 0;
+ }
+ 
+ static void
+@@ -177,7 +166,6 @@ maybe_fake_ungrab_devices(struct xwl_seat *xwl_seat)
+     if (!xwl_screen->shortcuts_inhibit)
+         return;
+ 
+-    zwp_keyboard_shortcuts_inhibitor_v1_destroy (xwl_screen->shortcuts_inhibit);
+     xwl_screen->shortcuts_inhibit = NULL;
+ }
+ 
+@@ -505,14 +493,14 @@ xwl_tablet_proc(DeviceIntPtr device, int what)
+ static void
+ pointer_handle_enter(void *data, struct wl_pointer *pointer,
+                      uint32_t serial, struct wl_surface *surface,
+-                     wl_fixed_t sx_w, wl_fixed_t sy_w)
++                     void* sx_w, void* sy_w)
+ {
+     struct xwl_seat *xwl_seat = data;
+     DeviceIntPtr dev = get_pointer_device(xwl_seat);
+     DeviceIntPtr master;
+     int i;
+-    int sx = wl_fixed_to_int(sx_w);
+-    int sy = wl_fixed_to_int(sy_w);
++    int sx = sx_w;
++    int sy = sy_w;
+     int dx, dy;
+     ScreenPtr pScreen = xwl_seat->xwl_screen->screen;
+     ValuatorMask mask;
+@@ -532,7 +520,7 @@ pointer_handle_enter(void *data, struct wl_pointer *pointer,
+     xwl_seat->xwl_screen->serial = serial;
+     xwl_seat->pointer_enter_serial = serial;
+ 
+-    xwl_seat->focus_window = wl_surface_get_user_data(surface);
++    xwl_seat->focus_window = 0;
+     dx = xwl_seat->focus_window->window->drawable.x;
+     dy = xwl_seat->focus_window->window->drawable.y;
+ 
+@@ -623,8 +611,8 @@ dispatch_absolute_motion(struct xwl_seat *xwl_seat)
+     ValuatorMask mask;
+     DeviceIntPtr device;
+     int flags;
+-    int event_x = wl_fixed_to_int(xwl_seat->pending_pointer_event.x);
+-    int event_y = wl_fixed_to_int(xwl_seat->pending_pointer_event.y);
++    int event_x = xwl_seat->pending_pointer_event.x;
++    int event_y = xwl_seat->pending_pointer_event.y;
+     int drawable_x = xwl_seat->focus_window->window->drawable.x;
+     int drawable_y = xwl_seat->focus_window->window->drawable.y;
+     int x;
+@@ -675,8 +663,8 @@ dispatch_scroll_motion(struct xwl_seat *xwl_seat)
+ {
+     ValuatorMask mask;
+     const int divisor = 10;
+-    wl_fixed_t dy = xwl_seat->pending_pointer_event.scroll_dy;
+-    wl_fixed_t dx = xwl_seat->pending_pointer_event.scroll_dx;
++    void* dy = xwl_seat->pending_pointer_event.scroll_dy;
++    void* dx = xwl_seat->pending_pointer_event.scroll_dx;
+     int32_t dy_v120 = xwl_seat->pending_pointer_event.scroll_dy_v120;
+     int32_t dx_v120 = xwl_seat->pending_pointer_event.scroll_dx_v120;
+ 
+@@ -686,14 +674,14 @@ dispatch_scroll_motion(struct xwl_seat *xwl_seat)
+     else if (xwl_seat->pending_pointer_event.has_vertical_scroll)
+         valuator_mask_set_double(&mask,
+                                  SCROLL_AXIS_VERT,
+-                                 wl_fixed_to_double(dy) / divisor);
++                                 (double)(long long)dy / divisor);
+ 
+     if (xwl_seat->pending_pointer_event.has_horizontal_scroll_v120)
+         valuator_mask_set_double(&mask, SCROLL_AXIS_HORIZ, dx_v120 / 120.0);
+     else if (xwl_seat->pending_pointer_event.has_horizontal_scroll)
+         valuator_mask_set_double(&mask,
+                                  SCROLL_AXIS_HORIZ,
+-                                 wl_fixed_to_double(dx) / divisor);
++                                 (double)(long long)dx / divisor);
+ 
+     QueuePointerEvents(get_pointer_device(xwl_seat),
+                        MotionNotify, 0, POINTER_RELATIVE, &mask);
+@@ -732,7 +720,7 @@ dispatch_pointer_motion_event(struct xwl_seat *xwl_seat)
+ 
+ static void
+ pointer_handle_motion(void *data, struct wl_pointer *pointer,
+-                      uint32_t time, wl_fixed_t sx_w, wl_fixed_t sy_w)
++                      uint32_t time, void* sx_w, void* sy_w)
+ {
+     struct xwl_seat *xwl_seat = data;
+ 
+@@ -742,9 +730,6 @@ pointer_handle_motion(void *data, struct wl_pointer *pointer,
+     xwl_seat->pending_pointer_event.has_absolute = TRUE;
+     xwl_seat->pending_pointer_event.x = sx_w;
+     xwl_seat->pending_pointer_event.y = sy_w;
+-
+-    if (wl_proxy_get_version((struct wl_proxy *) xwl_seat->wl_pointer) < 5)
+-        dispatch_pointer_motion_event(xwl_seat);
+ }
+ 
+ static void
+@@ -779,13 +764,18 @@ pointer_handle_button(void *data, struct wl_pointer *pointer, uint32_t serial,
+                        state ? ButtonPress : ButtonRelease, index, 0, &mask);
+ }
+ 
++enum enum_wl_pointer {
++    WL_POINTER_AXIS_VERTICAL_SCROLL,
++    WL_POINTER_AXIS_HORIZONTAL_SCROLL
++};
++
+ static void
+ pointer_handle_axis(void *data, struct wl_pointer *pointer,
+-                    uint32_t time, uint32_t axis, wl_fixed_t value)
++                    uint32_t time, uint32_t axis, void* value)
+ {
+     struct xwl_seat *xwl_seat = data;
+ 
+-    switch (axis) {
++    switch ((enum enum_wl_pointer)axis) {
+     case WL_POINTER_AXIS_VERTICAL_SCROLL:
+         xwl_seat->pending_pointer_event.has_vertical_scroll = TRUE;
+         xwl_seat->pending_pointer_event.scroll_dy = value;
+@@ -819,7 +809,7 @@ pointer_handle_axis_stop(void *data, struct wl_pointer *wl_pointer,
+ {
+     struct xwl_seat *xwl_seat = data;
+ 
+-    switch (axis) {
++    switch ((enum enum_wl_pointer)axis) {
+     case WL_POINTER_AXIS_VERTICAL_SCROLL:
+         xwl_seat->pending_pointer_event.has_vertical_scroll = TRUE;
+         xwl_seat->pending_pointer_event.scroll_dy = 0;
+@@ -837,7 +827,7 @@ pointer_handle_axis_discrete(void *data, struct wl_pointer *wl_pointer,
+ {
+     struct xwl_seat *xwl_seat = data;
+ 
+-    switch (axis) {
++    switch ((enum enum_wl_pointer)axis) {
+     case WL_POINTER_AXIS_VERTICAL_SCROLL:
+         xwl_seat->pending_pointer_event.has_vertical_scroll_v120 = TRUE;
+         xwl_seat->pending_pointer_event.scroll_dy_v120 = 120 * discrete;
+@@ -855,7 +845,7 @@ pointer_handle_axis_v120(void *data, struct wl_pointer *pointer,
+ {
+     struct xwl_seat *xwl_seat = data;
+ 
+-    switch (axis) {
++    switch ((enum enum_wl_pointer)axis) {
+     case WL_POINTER_AXIS_VERTICAL_SCROLL:
+         xwl_seat->pending_pointer_event.has_vertical_scroll_v120 = TRUE;
+         xwl_seat->pending_pointer_event.scroll_dy_v120 = v120;
+@@ -867,47 +857,31 @@ pointer_handle_axis_v120(void *data, struct wl_pointer *pointer,
+     }
+ }
+ 
+-static const struct wl_pointer_listener pointer_listener = {
+-    pointer_handle_enter,
+-    pointer_handle_leave,
+-    pointer_handle_motion,
+-    pointer_handle_button,
+-    pointer_handle_axis,
+-    pointer_handle_frame,
+-    pointer_handle_axis_source,
+-    pointer_handle_axis_stop,
+-    pointer_handle_axis_discrete,
+-    pointer_handle_axis_v120,
+-};
++static const void* pointer_listener;
+ 
+ static void
+ relative_pointer_handle_relative_motion(void *data,
+                                         struct zwp_relative_pointer_v1 *zwp_relative_pointer_v1,
+                                         uint32_t utime_hi,
+                                         uint32_t utime_lo,
+-                                        wl_fixed_t dxf,
+-                                        wl_fixed_t dyf,
+-                                        wl_fixed_t dx_unaccelf,
+-                                        wl_fixed_t dy_unaccelf)
++                                        void* dxf,
++                                        void* dyf,
++                                        void* dx_unaccelf,
++                                        void* dy_unaccelf)
+ {
+     struct xwl_seat *xwl_seat = data;
+ 
+     xwl_seat->pending_pointer_event.has_relative = TRUE;
+-    xwl_seat->pending_pointer_event.dx = wl_fixed_to_double(dxf);
+-    xwl_seat->pending_pointer_event.dy = wl_fixed_to_double(dyf);
+-    xwl_seat->pending_pointer_event.dx_unaccel = wl_fixed_to_double(dx_unaccelf);
+-    xwl_seat->pending_pointer_event.dy_unaccel = wl_fixed_to_double(dy_unaccelf);
++    xwl_seat->pending_pointer_event.dx = (double)(long long)dxf;
++    xwl_seat->pending_pointer_event.dy = (double)(long long)dyf;
++    xwl_seat->pending_pointer_event.dx_unaccel = (double)(long long)dx_unaccelf;
++    xwl_seat->pending_pointer_event.dy_unaccel = (double)(long long)dy_unaccelf;
+ 
+     if (!xwl_seat->focus_window)
+         return;
+-
+-    if (wl_proxy_get_version((struct wl_proxy *) xwl_seat->wl_pointer) < 5)
+-        dispatch_pointer_motion_event(xwl_seat);
+ }
+ 
+-static const struct zwp_relative_pointer_v1_listener relative_pointer_listener = {
+-    relative_pointer_handle_relative_motion,
+-};
++static const void* relative_pointer_listener;
+ 
+ static void
+ pointer_gesture_swipe_handle_begin(void *data,
+@@ -931,12 +905,12 @@ static void
+ pointer_gesture_swipe_handle_update(void *data,
+                                     struct zwp_pointer_gesture_swipe_v1 *swipe,
+                                     uint32_t time,
+-                                    wl_fixed_t dxf,
+-                                    wl_fixed_t dyf)
++                                    void* dxf,
++                                    void* dyf)
+ {
+     struct xwl_seat *xwl_seat = data;
+-    double dx = wl_fixed_to_double(dxf);
+-    double dy = wl_fixed_to_double(dyf);
++    double dx = (double)(long long)dxf;
++    double dy = (double)(long long)dyf;
+ 
+     QueueGestureSwipeEvents(xwl_seat->pointer_gestures,
+                             XI_GestureSwipeUpdate,
+@@ -965,11 +939,7 @@ pointer_gesture_swipe_handle_end(void *data,
+                             flags, 0.0, 0.0, 0.0, 0.0);
+ }
+ 
+-static const struct zwp_pointer_gesture_swipe_v1_listener pointer_gesture_swipe_listener = {
+-    pointer_gesture_swipe_handle_begin,
+-    pointer_gesture_swipe_handle_update,
+-    pointer_gesture_swipe_handle_end
+-};
++static const void* pointer_gesture_swipe_listener;
+ 
+ static void
+ pointer_gesture_pinch_handle_begin(void *data,
+@@ -995,15 +965,15 @@ static void
+ pointer_gesture_pinch_handle_update(void *data,
+                                     struct zwp_pointer_gesture_pinch_v1 *pinch,
+                                     uint32_t time,
+-                                    wl_fixed_t dxf,
+-                                    wl_fixed_t dyf,
+-                                    wl_fixed_t scalef,
+-                                    wl_fixed_t rotation)
++                                    void* dxf,
++                                    void* dyf,
++                                    void* scalef,
++                                    void* rotation)
+ {
+     struct xwl_seat *xwl_seat = data;
+-    double dx = wl_fixed_to_double(dxf);
+-    double dy = wl_fixed_to_double(dyf);
+-    double scale = wl_fixed_to_double(scalef);
++    double dx = (double)(long long)dxf;
++    double dy = (double)(long long)dyf;
++    double scale = (double)(long long)scalef;
+ 
+     xwl_seat->pointer_gesture_pinch_last_scale = scale;
+     QueueGesturePinchEvents(xwl_seat->pointer_gestures,
+@@ -1012,7 +982,7 @@ pointer_gesture_pinch_handle_update(void *data,
+                             0,
+                             dx, dy,
+                             dx, dy,
+-                            scale, wl_fixed_to_double(rotation));
++                            scale, (double)(long long)rotation);
+ }
+ 
+ static void
+@@ -1035,11 +1005,7 @@ pointer_gesture_pinch_handle_end(void *data,
+                             xwl_seat->pointer_gesture_pinch_last_scale, 0.0);
+ }
+ 
+-static const struct zwp_pointer_gesture_pinch_v1_listener pointer_gesture_pinch_listener = {
+-    pointer_gesture_pinch_handle_begin,
+-    pointer_gesture_pinch_handle_update,
+-    pointer_gesture_pinch_handle_end
+-};
++static const void* pointer_gesture_pinch_listener;
+ 
+ static void
+ maybe_toggle_fake_grab(struct xwl_seat *xwl_seat, uint32_t key)
+@@ -1083,17 +1049,6 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard, uint32_t serial,
+ 
+     xwl_seat->xwl_screen->serial = serial;
+ 
+-    end = (uint32_t *) ((char *) xwl_seat->keys.data + xwl_seat->keys.size);
+-    for (k = xwl_seat->keys.data; k < end; k++) {
+-        if (*k == key)
+-            *k = *--end;
+-    }
+-    xwl_seat->keys.size = (char *) end - (char *) xwl_seat->keys.data;
+-    if (state) {
+-        k = wl_array_add(&xwl_seat->keys, sizeof *k);
+-        *k = key;
+-    }
+-
+     QueueKeyboardEvents(xwl_seat->keyboard,
+                         state ? KeyPress : KeyRelease, key + 8);
+ 
+@@ -1159,10 +1114,6 @@ keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
+     xwl_seat->xwl_screen->serial = serial;
+     xwl_seat->keyboard_focus = surface;
+ 
+-    wl_array_copy(&xwl_seat->keys, keys);
+-    wl_array_for_each(k, &xwl_seat->keys)
+-        QueueKeyboardEvents(xwl_seat->keyboard, EnterNotify, *k + 8);
+-
+     maybe_fake_grab_devices(xwl_seat);
+ }
+ 
+@@ -1175,9 +1126,6 @@ keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
+ 
+     xwl_seat->xwl_screen->serial = serial;
+ 
+-    wl_array_for_each(k, &xwl_seat->keys)
+-        QueueKeyboardEvents(xwl_seat->keyboard, LeaveNotify, *k + 8);
+-
+     xwl_seat->keyboard_focus = NULL;
+ 
+     maybe_fake_ungrab_devices(xwl_seat);
+@@ -1250,12 +1198,9 @@ sync_callback(void *data, struct wl_callback *callback, uint32_t serial)
+     DeviceIntPtr dev = (DeviceIntPtr) data;
+ 
+     remove_sync_pending(dev);
+-    wl_callback_destroy(callback);
+ }
+ 
+-static const struct wl_callback_listener sync_listener = {
+-   sync_callback
+-};
++static const void* sync_listener = &sync_callback;
+ 
+ static Bool
+ keyboard_check_repeat (DeviceIntPtr dev, XkbSrvInfoPtr xkbi, unsigned key)
+@@ -1283,11 +1228,9 @@ keyboard_check_repeat (DeviceIntPtr dev, XkbSrvInfoPtr xkbi, unsigned key)
+ 
+     p = xnfalloc(sizeof(struct sync_pending));
+     p->pending_dev = dev;
+-    callback = wl_display_sync (xwl_screen->display);
++    callback = 0;
+     xorg_list_add(&p->l, &xwl_seat->sync_pending);
+ 
+-    wl_callback_add_listener(callback, &sync_listener, dev);
+-
+     return TRUE;
+ }
+ 
+@@ -1321,14 +1264,7 @@ keyboard_handle_repeat_info (void *data, struct wl_keyboard *keyboard,
+     }
+ }
+ 
+-static const struct wl_keyboard_listener keyboard_listener = {
+-    keyboard_handle_keymap,
+-    keyboard_handle_enter,
+-    keyboard_handle_leave,
+-    keyboard_handle_key,
+-    keyboard_handle_modifiers,
+-    keyboard_handle_repeat_info,
+-};
++static const void* keyboard_listener;
+ 
+ static struct xwl_touch *
+ xwl_seat_lookup_touch(struct xwl_seat *xwl_seat, int32_t id)
+@@ -1367,7 +1303,7 @@ static void
+ touch_handle_down(void *data, struct wl_touch *wl_touch,
+                   uint32_t serial, uint32_t time,
+                   struct wl_surface *surface,
+-                  int32_t id, wl_fixed_t sx_w, wl_fixed_t sy_w)
++                  int32_t id, void* sx_w, void* sy_w)
+ {
+     struct xwl_seat *xwl_seat = data;
+     struct xwl_touch *xwl_touch;
+@@ -1384,10 +1320,10 @@ touch_handle_down(void *data, struct wl_touch *wl_touch,
+         return;
+     }
+ 
+-    xwl_touch->window = wl_surface_get_user_data(surface);
++    xwl_touch->window = 0;
+     xwl_touch->id = id;
+-    xwl_touch->x = wl_fixed_to_int(sx_w);
+-    xwl_touch->y = wl_fixed_to_int(sy_w);
++    xwl_touch->x = sx_w;
++    xwl_touch->y = sy_w;
+     xorg_list_add(&xwl_touch->link_touch, &xwl_seat->touches);
+ 
+     xwl_touch_send_event(xwl_touch, xwl_seat, XI_TouchBegin);
+@@ -1413,7 +1349,7 @@ touch_handle_up(void *data, struct wl_touch *wl_touch,
+ static void
+ touch_handle_motion(void *data, struct wl_touch *wl_touch,
+                     uint32_t time, int32_t id,
+-                    wl_fixed_t sx_w, wl_fixed_t sy_w)
++                    void* sx_w, void* sy_w)
+ {
+     struct xwl_seat *xwl_seat = data;
+     struct xwl_touch *xwl_touch;
+@@ -1423,8 +1359,8 @@ touch_handle_motion(void *data, struct wl_touch *wl_touch,
+     if (!xwl_touch)
+         return;
+ 
+-    xwl_touch->x = wl_fixed_to_int(sx_w);
+-    xwl_touch->y = wl_fixed_to_int(sy_w);
++    xwl_touch->x = sx_w;
++    xwl_touch->y = sy_w;
+     xwl_touch_send_event(xwl_touch, xwl_seat, XI_TouchUpdate);
+ }
+ 
+@@ -1451,13 +1387,7 @@ touch_handle_cancel(void *data, struct wl_touch *wl_touch)
+     }
+ }
+ 
+-static const struct wl_touch_listener touch_listener = {
+-    touch_handle_down,
+-    touch_handle_up,
+-    touch_handle_motion,
+-    touch_handle_frame,
+-    touch_handle_cancel
+-};
++static const void* touch_listener;
+ 
+ static struct xwl_seat *
+ find_matching_seat(DeviceIntPtr device)
+@@ -1475,8 +1405,6 @@ find_matching_seat(DeviceIntPtr device)
+ static void
+ release_grab(struct xwl_seat *xwl_seat)
+ {
+-    if (xwl_seat->keyboard_grab)
+-        zwp_xwayland_keyboard_grab_v1_destroy(xwl_seat->keyboard_grab);
+     xwl_seat->keyboard_grab = NULL;
+ }
+ 
+@@ -1493,10 +1421,7 @@ set_grab(struct xwl_seat *xwl_seat, struct xwl_window *xwl_window)
+         release_grab (xwl_seat);
+ 
+     xwl_screen = xwl_seat->xwl_screen;
+-    xwl_seat->keyboard_grab =
+-        zwp_xwayland_keyboard_grab_manager_v1_grab_keyboard(xwl_screen->wp_grab,
+-                                                            xwl_window->surface,
+-                                                            xwl_seat->seat);
++    xwl_seat->keyboard_grab = 0;
+ }
+ 
+ static void
+@@ -1604,9 +1529,7 @@ enable_device(struct xwl_seat *xwl_seat, DeviceIntPtr dev)
+ static void
+ init_pointer(struct xwl_seat *xwl_seat)
+ {
+-    xwl_seat->wl_pointer = wl_seat_get_pointer(xwl_seat->seat);
+-    wl_pointer_add_listener(xwl_seat->wl_pointer,
+-                            &pointer_listener, xwl_seat);
++    xwl_seat->wl_pointer = 0;
+ 
+     if (xwl_seat->pointer == NULL) {
+         xwl_seat_set_cursor(xwl_seat);
+@@ -1620,7 +1543,6 @@ init_pointer(struct xwl_seat *xwl_seat)
+ static void
+ release_pointer(struct xwl_seat *xwl_seat)
+ {
+-    wl_pointer_release(xwl_seat->wl_pointer);
+     xwl_seat->wl_pointer = NULL;
+ 
+     if (xwl_seat->pointer)
+@@ -1642,24 +1564,12 @@ init_relative_pointer(struct xwl_seat *xwl_seat)
+ static void
+ init_relative_pointer_listener(struct xwl_seat *xwl_seat)
+ {
+-    struct zwp_relative_pointer_manager_v1 *relative_pointer_manager =
+-        xwl_seat->xwl_screen->relative_pointer_manager;
+-
+-    if (relative_pointer_manager) {
+-        xwl_seat->wp_relative_pointer =
+-            zwp_relative_pointer_manager_v1_get_relative_pointer(
+-                relative_pointer_manager, xwl_seat->wl_pointer);
+-        zwp_relative_pointer_v1_add_listener(xwl_seat->wp_relative_pointer,
+-                                             &relative_pointer_listener,
+-                                             xwl_seat);
+-    }
+ }
+ 
+ static void
+ release_relative_pointer(struct xwl_seat *xwl_seat)
+ {
+     if (xwl_seat->wp_relative_pointer) {
+-        zwp_relative_pointer_v1_destroy(xwl_seat->wp_relative_pointer);
+         xwl_seat->wp_relative_pointer = NULL;
+     }
+ 
+@@ -1682,47 +1592,11 @@ init_pointer_gestures_device(struct xwl_seat *xwl_seat)
+ static void
+ init_pointer_gestures_listener(struct xwl_seat *xwl_seat)
+ {
+-    struct zwp_pointer_gestures_v1 *pointer_gestures =
+-            xwl_seat->xwl_screen->pointer_gestures;
+-
+-    if (pointer_gestures && !xwl_seat->wp_pointer_gesture_swipe) {
+-        xwl_seat->wp_pointer_gesture_swipe =
+-                zwp_pointer_gestures_v1_get_swipe_gesture(pointer_gestures,
+-                                                          xwl_seat->wl_pointer);
+-        zwp_pointer_gesture_swipe_v1_set_user_data(xwl_seat->wp_pointer_gesture_swipe,
+-                                                   xwl_seat);
+-        zwp_pointer_gesture_swipe_v1_add_listener(xwl_seat->wp_pointer_gesture_swipe,
+-                                                  &pointer_gesture_swipe_listener,
+-                                                  xwl_seat);
+-    }
+-
+-    if (pointer_gestures && !xwl_seat->wp_pointer_gesture_pinch) {
+-        xwl_seat->wp_pointer_gesture_pinch =
+-                zwp_pointer_gestures_v1_get_pinch_gesture(pointer_gestures,
+-                                                          xwl_seat->wl_pointer);
+-        zwp_pointer_gesture_pinch_v1_set_user_data(xwl_seat->wp_pointer_gesture_pinch,
+-                                                   xwl_seat);
+-        zwp_pointer_gesture_pinch_v1_add_listener(xwl_seat->wp_pointer_gesture_pinch,
+-                                                  &pointer_gesture_pinch_listener,
+-                                                  xwl_seat);
+-    }
+ }
+ 
+ static void
+ release_pointer_gestures_device(struct xwl_seat *xwl_seat)
+ {
+-    if (xwl_seat->wp_pointer_gesture_swipe) {
+-        zwp_pointer_gesture_swipe_v1_destroy(xwl_seat->wp_pointer_gesture_swipe);
+-        xwl_seat->wp_pointer_gesture_swipe = NULL;
+-    }
+-
+-    if (xwl_seat->wp_pointer_gesture_pinch) {
+-        zwp_pointer_gesture_pinch_v1_destroy(xwl_seat->wp_pointer_gesture_pinch);
+-        xwl_seat->wp_pointer_gesture_pinch = NULL;
+-    }
+-
+-    if (xwl_seat->pointer_gestures)
+-        disable_device(xwl_seat->pointer_gestures);
+ }
+ 
+ static void
+@@ -1730,9 +1604,7 @@ init_keyboard(struct xwl_seat *xwl_seat)
+ {
+     DeviceIntPtr master;
+ 
+-    xwl_seat->wl_keyboard = wl_seat_get_keyboard(xwl_seat->seat);
+-    wl_keyboard_add_listener(xwl_seat->wl_keyboard,
+-                             &keyboard_listener, xwl_seat);
++    xwl_seat->wl_keyboard = 0;
+ 
+     if (xwl_seat->keyboard == NULL) {
+         xwl_seat->keyboard =
+@@ -1754,7 +1626,6 @@ static void
+ release_keyboard(struct xwl_seat *xwl_seat)
+ {
+     release_grab(xwl_seat);
+-    wl_keyboard_release(xwl_seat->wl_keyboard);
+     xwl_seat->wl_keyboard = NULL;
+ 
+     if (xwl_seat->keyboard) {
+@@ -1766,9 +1637,7 @@ release_keyboard(struct xwl_seat *xwl_seat)
+ static void
+ init_touch(struct xwl_seat *xwl_seat)
+ {
+-    xwl_seat->wl_touch = wl_seat_get_touch(xwl_seat->seat);
+-    wl_touch_add_listener(xwl_seat->wl_touch,
+-                          &touch_listener, xwl_seat);
++    xwl_seat->wl_touch = 0;
+ 
+     if (xwl_seat->touch == NULL) {
+         xwl_seat->touch =
+@@ -1781,13 +1650,18 @@ init_touch(struct xwl_seat *xwl_seat)
+ static void
+ release_touch(struct xwl_seat *xwl_seat)
+ {
+-    wl_touch_release(xwl_seat->wl_touch);
+     xwl_seat->wl_touch = NULL;
+ 
+     if (xwl_seat->touch)
+         disable_device(xwl_seat->touch);
+ }
+ 
++enum wl_seat_capability {
++    WL_SEAT_CAPABILITY_POINTER = 0x1 << 0,
++    WL_SEAT_CAPABILITY_KEYBOARD = 0x1 << 1,
++    WL_SEAT_CAPABILITY_TOUCH = 0x1 << 2
++};
++
+ static void
+ seat_handle_capabilities(void *data, struct wl_seat *seat,
+                          enum wl_seat_capability caps)
+@@ -1828,16 +1702,13 @@ seat_handle_name(void *data, struct wl_seat *seat,
+ 
+ }
+ 
+-static const struct wl_seat_listener seat_listener = {
+-    seat_handle_capabilities,
+-    seat_handle_name
+-};
++static const void* seat_listener;
+ 
+ static void
+ xwl_cursor_init(struct xwl_cursor *xwl_cursor, struct xwl_screen *xwl_screen,
+                 void (* update_proc)(struct xwl_cursor *))
+ {
+-    xwl_cursor->surface = wl_compositor_create_surface(xwl_screen->compositor);
++    xwl_cursor->surface = 0;
+     xwl_cursor->update_proc = update_proc;
+     xwl_cursor->frame_cb = NULL;
+     xwl_cursor->needs_update = FALSE;
+@@ -1846,8 +1717,6 @@ xwl_cursor_init(struct xwl_cursor *xwl_cursor, struct xwl_screen *xwl_screen,
+ static void
+ xwl_seat_update_cursor(struct xwl_cursor *xwl_cursor)
+ {
+-    struct xwl_seat *xwl_seat = wl_container_of(xwl_cursor, xwl_seat, cursor);
+-    xwl_seat_set_cursor(xwl_seat);
+ }
+ 
+ static void
+@@ -1865,19 +1734,14 @@ create_input_device(struct xwl_screen *xwl_screen, uint32_t id, uint32_t version
+     xwl_seat->xwl_screen = xwl_screen;
+     xorg_list_add(&xwl_seat->link, &xwl_screen->seat_list);
+ 
+-    xwl_seat->seat =
+-        wl_registry_bind(xwl_screen->registry, id,
+-                         &wl_seat_interface, min(version, seat_version));
++    xwl_seat->seat = 0;
+     xwl_seat->id = id;
+ 
+     xwl_cursor_init(&xwl_seat->cursor, xwl_seat->xwl_screen,
+                     xwl_seat_update_cursor);
+-    wl_seat_add_listener(xwl_seat->seat, &seat_listener, xwl_seat);
+ 
+     init_tablet_manager_seat(xwl_screen, xwl_seat);
+ 
+-    wl_array_init(&xwl_seat->keys);
+-
+     xorg_list_init(&xwl_seat->touches);
+     xorg_list_init(&xwl_seat->sync_pending);
+ }
+@@ -1902,9 +1766,7 @@ xwl_seat_destroy(struct xwl_seat *xwl_seat)
+     release_tablet_manager_seat(xwl_seat);
+ 
+     release_grab(xwl_seat);
+-    wl_seat_destroy(xwl_seat->seat);
+     xwl_cursor_release(&xwl_seat->cursor);
+-    wl_array_release(&xwl_seat->keys);
+     free(xwl_seat);
+ }
+ 
+@@ -1969,16 +1831,15 @@ tablet_handle_removed(void *data, struct zwp_tablet_v2 *tablet)
+         /* pads are removed separately */
+     }
+ 
+-    zwp_tablet_v2_destroy(tablet);
+     free(xwl_tablet);
+ }
+ 
+-static const struct zwp_tablet_v2_listener tablet_listener = {
+-    tablet_handle_name,
+-    tablet_handle_id,
+-    tablet_handle_path,
+-    tablet_handle_done,
+-    tablet_handle_removed
++static const void* tablet_listener;
++
++enum zpw_tablet_tool_type {
++    ZWP_TABLET_TOOL_V2_TYPE_ERASER,
++    ZWP_TABLET_TOOL_V2_TYPE_MOUSE,
++    ZWP_TABLET_TOOL_V2_TYPE_LENS
+ };
+ 
+ static void
+@@ -1988,7 +1849,7 @@ tablet_tool_receive_type(void *data, struct zwp_tablet_tool_v2 *tool,
+     struct xwl_tablet_tool *xwl_tablet_tool = data;
+     struct xwl_seat *xwl_seat = xwl_tablet_tool->seat;
+ 
+-    switch (type) {
++    switch ((enum zpw_tablet_tool_type)type) {
+         case ZWP_TABLET_TOOL_V2_TYPE_ERASER:
+             xwl_tablet_tool->xdevice = xwl_seat->eraser;
+             break;
+@@ -2032,7 +1893,6 @@ tablet_tool_receive_removed(void *data, struct zwp_tablet_tool_v2 *tool)
+ 
+     xorg_list_del(&xwl_tablet_tool->link);
+     xwl_cursor_release(&xwl_tablet_tool->cursor);
+-    zwp_tablet_tool_v2_destroy(tool);
+     free(xwl_tablet_tool);
+ }
+ 
+@@ -2059,7 +1919,7 @@ tablet_tool_proximity_in(void *data, struct zwp_tablet_tool_v2 *tool,
+         return;
+ 
+     xwl_tablet_tool->proximity_in_serial = serial;
+-    xwl_seat->tablet_focus_window = wl_surface_get_user_data(wl_surface);
++    xwl_seat->tablet_focus_window = 0;
+ 
+     /* If there is a cursor surface frame callback pending, we need to clear it
+      * so that we can continue submitting new cursor frames.
+@@ -2109,13 +1969,13 @@ tablet_tool_up(void *data, struct zwp_tablet_tool_v2 *tool)
+ 
+ static void
+ tablet_tool_motion(void *data, struct zwp_tablet_tool_v2 *tool,
+-                   wl_fixed_t x, wl_fixed_t y)
++                   double x, double y)
+ {
+     struct xwl_tablet_tool *xwl_tablet_tool = data;
+     struct xwl_seat *xwl_seat = xwl_tablet_tool->seat;
+     int32_t dx, dy;
+-    double sx = wl_fixed_to_double(x);
+-    double sy = wl_fixed_to_double(y);
++    double sx = x;
++    double sy = y;
+ 
+     if (!xwl_seat->tablet_focus_window)
+         return;
+@@ -2149,7 +2009,7 @@ tablet_tool_distance(void *data, struct zwp_tablet_tool_v2 *tool,
+ 
+ static void
+ tablet_tool_tilt(void *data, struct zwp_tablet_tool_v2 *tool,
+-                 wl_fixed_t tilt_x, wl_fixed_t tilt_y)
++                 double tilt_x, double tilt_y)
+ {
+     struct xwl_tablet_tool *xwl_tablet_tool = data;
+     struct xwl_seat *xwl_seat = xwl_tablet_tool->seat;
+@@ -2157,17 +2017,17 @@ tablet_tool_tilt(void *data, struct zwp_tablet_tool_v2 *tool,
+     if (!xwl_seat->tablet_focus_window)
+         return;
+ 
+-    xwl_tablet_tool->tilt_x = wl_fixed_to_double(tilt_x);
+-    xwl_tablet_tool->tilt_y = wl_fixed_to_double(tilt_y);
++    xwl_tablet_tool->tilt_x = tilt_x;
++    xwl_tablet_tool->tilt_y = tilt_y;
+ }
+ 
+ static void
+ tablet_tool_rotation(void *data, struct zwp_tablet_tool_v2 *tool,
+-                     wl_fixed_t angle)
++                     double angle)
+ {
+     struct xwl_tablet_tool *xwl_tablet_tool = data;
+     struct xwl_seat *xwl_seat = xwl_tablet_tool->seat;
+-    double rotation = wl_fixed_to_double(angle);
++    double rotation = angle;
+ 
+     if (!xwl_seat->tablet_focus_window)
+         return;
+@@ -2196,7 +2056,7 @@ tablet_tool_slider(void *data, struct zwp_tablet_tool_v2 *tool,
+ 
+ static void
+ tablet_tool_wheel(void *data, struct zwp_tablet_tool_v2 *tool,
+-                  wl_fixed_t degrees, int32_t clicks)
++                  double degrees, int32_t clicks)
+ {
+     struct xwl_tablet_tool *xwl_tablet_tool = data;
+     struct xwl_seat *xwl_seat = xwl_tablet_tool->seat;
+@@ -2336,32 +2196,11 @@ tablet_tool_frame(void *data, struct zwp_tablet_tool_v2 *tool, uint32_t time)
+     }
+ }
+ 
+-static const struct zwp_tablet_tool_v2_listener tablet_tool_listener = {
+-    tablet_tool_receive_type,
+-    tablet_tool_receive_hardware_serial,
+-    tablet_tool_receive_hardware_id_wacom,
+-    tablet_tool_receive_capability,
+-    tablet_tool_receive_done,
+-    tablet_tool_receive_removed,
+-    tablet_tool_proximity_in,
+-    tablet_tool_proximity_out,
+-    tablet_tool_down,
+-    tablet_tool_up,
+-    tablet_tool_motion,
+-    tablet_tool_pressure,
+-    tablet_tool_distance,
+-    tablet_tool_tilt,
+-    tablet_tool_rotation,
+-    tablet_tool_slider,
+-    tablet_tool_wheel,
+-    tablet_tool_button_state,
+-    tablet_tool_frame
+-};
++static const void* tablet_tool_listener;
+ 
+ static void
+ tablet_pad_ring_destroy(struct xwl_tablet_pad_ring *ring)
+ {
+-    zwp_tablet_pad_ring_v2_destroy(ring->ring);
+     xorg_list_del(&ring->link);
+     free(ring);
+ }
+@@ -2376,11 +2215,11 @@ tablet_pad_ring_source(void *data,
+ static void
+ tablet_pad_ring_angle(void *data,
+                       struct zwp_tablet_pad_ring_v2 *zwp_tablet_pad_ring_v2,
+-                      wl_fixed_t degrees)
++                      double degrees)
+ {
+     struct xwl_tablet_pad_ring *ring = data;
+     struct xwl_tablet_pad *pad = ring->group->pad;
+-    double deg = wl_fixed_to_double(degrees);
++    double deg = degrees;
+     ValuatorMask mask;
+ 
+     valuator_mask_zero(&mask);
+@@ -2401,18 +2240,12 @@ tablet_pad_ring_frame(void *data,
+ {
+ }
+ 
+-static const struct zwp_tablet_pad_ring_v2_listener tablet_pad_ring_listener = {
+-    tablet_pad_ring_source,
+-    tablet_pad_ring_angle,
+-    tablet_pad_ring_stop,
+-    tablet_pad_ring_frame,
+-};
++static const void* tablet_pad_ring_listener;
+ 
+ 
+ static void
+ tablet_pad_strip_destroy(struct xwl_tablet_pad_strip *strip)
+ {
+-    zwp_tablet_pad_strip_v2_destroy(strip->strip);
+     xorg_list_del(&strip->link);
+     free(strip);
+ }
+@@ -2451,12 +2284,7 @@ tablet_pad_strip_frame(void *data,
+ {
+ }
+ 
+-static const struct zwp_tablet_pad_strip_v2_listener tablet_pad_strip_listener = {
+-    tablet_pad_strip_source,
+-    tablet_pad_strip_position,
+-    tablet_pad_strip_stop,
+-    tablet_pad_strip_frame,
+-};
++static const void* tablet_pad_strip_listener;
+ 
+ static void
+ tablet_pad_group_destroy(struct xwl_tablet_pad_group *group)
+@@ -2474,7 +2302,6 @@ tablet_pad_group_destroy(struct xwl_tablet_pad_group *group)
+                                   link)
+         tablet_pad_strip_destroy(s);
+ 
+-    zwp_tablet_pad_group_v2_destroy(group->group);
+     xorg_list_del(&group->link);
+     free(group);
+ }
+@@ -2507,9 +2334,6 @@ tablet_pad_group_ring(void *data,
+     ring->ring = wp_ring;
+ 
+     xorg_list_add(&ring->link, &group->pad_group_ring_list);
+-
+-    zwp_tablet_pad_ring_v2_add_listener(wp_ring, &tablet_pad_ring_listener,
+-                                        ring);
+ }
+ 
+ static void
+@@ -2532,9 +2356,6 @@ tablet_pad_group_strip(void *data,
+     strip->strip = wp_strip;
+ 
+     xorg_list_add(&strip->link, &group->pad_group_strip_list);
+-
+-    zwp_tablet_pad_strip_v2_add_listener(wp_strip, &tablet_pad_strip_listener,
+-                                         strip);
+ }
+ 
+ static void
+@@ -2562,14 +2383,7 @@ tablet_pad_group_mode_switch(void *data,
+ 
+ }
+ 
+-static struct zwp_tablet_pad_group_v2_listener tablet_pad_group_listener = {
+-    tablet_pad_group_buttons,
+-    tablet_pad_group_ring,
+-    tablet_pad_group_strip,
+-    tablet_pad_group_modes,
+-    tablet_pad_group_done,
+-    tablet_pad_group_mode_switch,
+-};
++static void* tablet_pad_group_listener;
+ 
+ static int
+ xwl_tablet_pad_proc(DeviceIntPtr device, int what)
+@@ -2667,10 +2481,6 @@ tablet_pad_group(void *data,
+     xorg_list_init(&group->pad_group_strip_list);
+ 
+     xorg_list_add(&group->link, &pad->pad_group_list);
+-
+-    zwp_tablet_pad_group_v2_add_listener(pad_group,
+-                                         &tablet_pad_group_listener,
+-                                         group);
+ }
+ 
+ static void
+@@ -2756,20 +2566,10 @@ tablet_pad_removed(void *data,
+ 
+     RemoveDevice(pad->xdevice, TRUE);
+     xorg_list_del(&pad->link);
+-    zwp_tablet_pad_v2_destroy(pad->pad);
+     free(pad);
+ }
+ 
+-static const struct zwp_tablet_pad_v2_listener tablet_pad_listener = {
+-    tablet_pad_group,
+-    tablet_pad_path,
+-    tablet_pad_buttons,
+-    tablet_pad_done,
+-    tablet_pad_button,
+-    tablet_pad_enter,
+-    tablet_pad_leave,
+-    tablet_pad_removed,
+-};
++static void* tablet_pad_listener;
+ 
+ static void
+ tablet_seat_handle_add_tablet(void *data, struct zwp_tablet_seat_v2 *tablet_seat,
+@@ -2788,17 +2588,11 @@ tablet_seat_handle_add_tablet(void *data, struct zwp_tablet_seat_v2 *tablet_seat
+     xwl_tablet->seat = xwl_seat;
+ 
+     xorg_list_add(&xwl_tablet->link, &xwl_seat->tablets);
+-
+-    zwp_tablet_v2_add_listener(tablet, &tablet_listener, xwl_tablet);
+ }
+ 
+ static void
+ xwl_tablet_tool_update_cursor(struct xwl_cursor *xwl_cursor)
+ {
+-    struct xwl_tablet_tool *xwl_tablet_tool = wl_container_of(xwl_cursor,
+-                                                              xwl_tablet_tool,
+-                                                              cursor);
+-    xwl_tablet_tool_set_cursor(xwl_tablet_tool);
+ }
+ 
+ static void
+@@ -2821,8 +2615,6 @@ tablet_seat_handle_add_tool(void *data, struct zwp_tablet_seat_v2 *tablet_seat,
+                     xwl_tablet_tool_update_cursor);
+ 
+     xorg_list_add(&xwl_tablet_tool->link, &xwl_seat->tablet_tools);
+-
+-    zwp_tablet_tool_v2_add_listener(tool, &tablet_tool_listener, xwl_tablet_tool);
+ }
+ 
+ static void
+@@ -2843,16 +2635,9 @@ tablet_seat_handle_add_pad(void *data, struct zwp_tablet_seat_v2 *tablet_seat,
+     xorg_list_init(&xwl_tablet_pad->pad_group_list);
+ 
+     xorg_list_add(&xwl_tablet_pad->link, &xwl_seat->tablet_pads);
+-
+-    zwp_tablet_pad_v2_add_listener(pad, &tablet_pad_listener,
+-                                   xwl_tablet_pad);
+ }
+ 
+-static const struct zwp_tablet_seat_v2_listener tablet_seat_listener = {
+-    tablet_seat_handle_add_tablet,
+-    tablet_seat_handle_add_tool,
+-    tablet_seat_handle_add_pad
+-};
++static const void* tablet_seat_listener;
+ 
+ static void
+ init_tablet_manager_seat(struct xwl_screen *xwl_screen,
+@@ -2861,15 +2646,6 @@ init_tablet_manager_seat(struct xwl_screen *xwl_screen,
+     xorg_list_init(&xwl_seat->tablets);
+     xorg_list_init(&xwl_seat->tablet_tools);
+     xorg_list_init(&xwl_seat->tablet_pads);
+-
+-    if (!xwl_screen->tablet_manager)
+-        return;
+-
+-    xwl_seat->tablet_seat =
+-        zwp_tablet_manager_v2_get_tablet_seat(xwl_screen->tablet_manager,
+-                                              xwl_seat->seat);
+-
+-    zwp_tablet_seat_v2_add_listener(xwl_seat->tablet_seat, &tablet_seat_listener, xwl_seat);
+ }
+ 
+ static void
+@@ -2882,26 +2658,22 @@ release_tablet_manager_seat(struct xwl_seat *xwl_seat)
+     xorg_list_for_each_entry_safe(xwl_tablet_pad, next_xwl_tablet_pad,
+                                   &xwl_seat->tablet_pads, link) {
+         xorg_list_del(&xwl_tablet_pad->link);
+-        zwp_tablet_pad_v2_destroy(xwl_tablet_pad->pad);
+         free(xwl_tablet_pad);
+     }
+ 
+     xorg_list_for_each_entry_safe(xwl_tablet_tool, next_xwl_tablet_tool,
+                                   &xwl_seat->tablet_tools, link) {
+         xorg_list_del(&xwl_tablet_tool->link);
+-        zwp_tablet_tool_v2_destroy(xwl_tablet_tool->tool);
+         free(xwl_tablet_tool);
+     }
+ 
+     xorg_list_for_each_entry_safe(xwl_tablet, next_xwl_tablet,
+                                   &xwl_seat->tablets, link) {
+         xorg_list_del(&xwl_tablet->link);
+-        zwp_tablet_v2_destroy(xwl_tablet->tablet);
+         free(xwl_tablet);
+     }
+ 
+     if (xwl_seat->tablet_seat) {
+-        zwp_tablet_seat_v2_destroy(xwl_seat->tablet_seat);
+         xwl_seat->tablet_seat = NULL;
+     }
+ }
+@@ -2911,10 +2683,7 @@ init_tablet_manager(struct xwl_screen *xwl_screen, uint32_t id, uint32_t version
+ {
+     struct xwl_seat *xwl_seat;
+ 
+-    xwl_screen->tablet_manager = wl_registry_bind(xwl_screen->registry,
+-                                                  id,
+-                                                  &zwp_tablet_manager_v2_interface,
+-                                                  min(version,1));
++    xwl_screen->tablet_manager = 0;
+ 
+     xorg_list_for_each_entry(xwl_seat, &xwl_screen->seat_list, link) {
+         init_tablet_manager_seat(xwl_screen, xwl_seat);
+@@ -2925,7 +2694,6 @@ void
+ xwl_screen_release_tablet_manager(struct xwl_screen *xwl_screen)
+ {
+     if (xwl_screen->tablet_manager) {
+-        zwp_tablet_manager_v2_destroy(xwl_screen->tablet_manager);
+         xwl_screen->tablet_manager = NULL;
+     }
+ }
+@@ -2934,30 +2702,21 @@ static void
+ init_relative_pointer_manager(struct xwl_screen *xwl_screen,
+                               uint32_t id, uint32_t version)
+ {
+-    xwl_screen->relative_pointer_manager =
+-        wl_registry_bind(xwl_screen->registry, id,
+-                         &zwp_relative_pointer_manager_v1_interface,
+-                         1);
++    xwl_screen->relative_pointer_manager = 0;
+ }
+ 
+ static void
+ init_pointer_constraints(struct xwl_screen *xwl_screen,
+                          uint32_t id, uint32_t version)
+ {
+-    xwl_screen->pointer_constraints =
+-        wl_registry_bind(xwl_screen->registry, id,
+-                         &zwp_pointer_constraints_v1_interface,
+-                         1);
++    xwl_screen->pointer_constraints = 0;
+ }
+ 
+ static void
+ init_pointer_gestures(struct xwl_screen *xwl_screen,
+                       uint32_t id, uint32_t version)
+ {
+-    xwl_screen->pointer_gestures =
+-        wl_registry_bind(xwl_screen->registry, id,
+-                         &zwp_pointer_gestures_v1_interface,
+-                         1);
++    xwl_screen->pointer_gestures = 0;
+ }
+ 
+ static void
+@@ -2967,10 +2726,7 @@ init_keyboard_grab(struct xwl_screen *xwl_screen,
+     struct xwl_seat *xwl_seat;
+     DeviceIntPtr master;
+ 
+-    xwl_screen->wp_grab =
+-         wl_registry_bind(xwl_screen->registry, id,
+-                          &zwp_xwayland_keyboard_grab_manager_v1_interface,
+-                          1);
++    xwl_screen->wp_grab = 0;
+ 
+     xorg_list_for_each_entry(xwl_seat, &xwl_screen->seat_list, link) {
+         if (xwl_seat->keyboard) {
+@@ -2985,10 +2741,7 @@ static void
+ init_keyboard_shortcuts_inhibit(struct xwl_screen *xwl_screen,
+                                 uint32_t id, uint32_t version)
+ {
+-    xwl_screen->shortcuts_inhibit_manager =
+-         wl_registry_bind(xwl_screen->registry, id,
+-                          &zwp_keyboard_shortcuts_inhibit_manager_v1_interface,
+-                          1);
++    xwl_screen->shortcuts_inhibit_manager = 0;
+ }
+ 
+ /* The compositor may send us wl_seat and its capabilities before sending e.g.
+@@ -3050,10 +2803,7 @@ global_remove(void *data, struct wl_registry *registry, uint32_t name)
+ {
+ }
+ 
+-static const struct wl_registry_listener input_listener = {
+-    input_handler,
+-    global_remove,
+-};
++static const void* input_listener;
+ 
+ void
+ ProcessInputEvents(void)
+@@ -3174,10 +2924,6 @@ xwl_pointer_warp_emulator_set_fake_pos(struct xwl_pointer_warp_emulator *warp_em
+         y < (window->drawable.y + window->drawable.height)) {
+         sx = x - window->drawable.x;
+         sy = y - window->drawable.y;
+-        zwp_locked_pointer_v1_set_cursor_position_hint(locked_pointer,
+-                                                       wl_fixed_from_int(sx),
+-                                                       wl_fixed_from_int(sy));
+-        wl_surface_commit(warp_emulator->xwl_seat->focus_window->surface);
+     }
+ }
+ 
+@@ -3201,12 +2947,7 @@ xwl_pointer_warp_emulator_lock(struct xwl_pointer_warp_emulator *warp_emulator)
+ 
+     warp_emulator->locked_window = lock_window;
+ 
+-    warp_emulator->locked_pointer =
+-        zwp_pointer_constraints_v1_lock_pointer(pointer_constraints,
+-                                                lock_window->surface,
+-                                                xwl_seat->wl_pointer,
+-                                                NULL,
+-                                                ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
++    warp_emulator->locked_pointer = 0;
+ }
+ 
+ static void
+@@ -3307,8 +3048,6 @@ xwl_pointer_warp_emulator_create(struct xwl_seat *xwl_seat)
+ static void
+ xwl_pointer_warp_emulator_destroy(struct xwl_pointer_warp_emulator *warp_emulator)
+ {
+-    if (warp_emulator->locked_pointer)
+-        zwp_locked_pointer_v1_destroy(warp_emulator->locked_pointer);
+     free(warp_emulator);
+ }
+ 
+@@ -3451,18 +3190,12 @@ xwl_seat_confine_pointer(struct xwl_seat *xwl_seat,
+     if (xwl_seat_maybe_lock_on_hidden_cursor(xwl_seat))
+         return;
+ 
+-    xwl_seat->confined_pointer =
+-        zwp_pointer_constraints_v1_confine_pointer(pointer_constraints,
+-                                                   xwl_window->surface,
+-                                                   xwl_seat->wl_pointer,
+-                                                   NULL,
+-                                                   ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
++    xwl_seat->confined_pointer = 0;
+ }
+ 
+ static void
+ xwl_seat_destroy_confined_pointer(struct xwl_seat *xwl_seat)
+ {
+-    zwp_confined_pointer_v1_destroy(xwl_seat->confined_pointer);
+     xwl_seat->confined_pointer = NULL;
+ }
+ 
+@@ -3488,9 +3221,7 @@ InitInput(int argc, char *argv[])
+ 
+     mieqInit();
+ 
+-    xwl_screen->input_registry = wl_display_get_registry(xwl_screen->display);
+-    wl_registry_add_listener(xwl_screen->input_registry, &input_listener,
+-                             xwl_screen);
++    xwl_screen->input_registry = 0;
+ 
+     xwl_screen->XYToWindow = pScreen->XYToWindow;
+     pScreen->XYToWindow = xwl_xy_to_window;
+diff --git a/hw/xwayland/xwayland-input.h b/hw/xwayland/xwayland-input.h
+index ee94d73..b767a42 100644
+--- a/hw/xwayland/xwayland-input.h
++++ b/hw/xwayland/xwayland-input.h
+@@ -27,9 +27,6 @@
+ #ifndef XWAYLAND_INPUT_H
+ #define XWAYLAND_INPUT_H
+ 
+-#include <xwayland-config.h>
+-#include <wayland-client.h>
+-
+ #include <dix.h>
+ #include <input.h>
+ 
+@@ -71,7 +68,7 @@ struct xwl_seat {
+     struct wl_keyboard *wl_keyboard;
+     struct wl_touch *wl_touch;
+     struct zwp_tablet_seat_v2 *tablet_seat;
+-    struct wl_array keys;
++    void* keys;
+     struct xwl_window *focus_window;
+     struct xwl_window *tablet_focus_window;
+     uint32_t id;
+@@ -102,8 +99,8 @@ struct xwl_seat {
+ 
+     struct {
+         Bool has_absolute;
+-        wl_fixed_t x;
+-        wl_fixed_t y;
++        void* x;
++        void* y;
+ 
+         Bool has_relative;
+         double dx;
+@@ -111,8 +108,8 @@ struct xwl_seat {
+         double dx_unaccel;
+         double dy_unaccel;
+ 
+-        wl_fixed_t scroll_dy;
+-        wl_fixed_t scroll_dx;
++        void* scroll_dy;
++        void* scroll_dx;
+         int32_t scroll_dy_v120;
+         int32_t scroll_dx_v120;
+         Bool has_vertical_scroll;
+diff --git a/hw/xwayland/xwayland-output.c b/hw/xwayland/xwayland-output.c
+index cf99c6e..e1bd805 100644
+--- a/hw/xwayland/xwayland-output.c
++++ b/hw/xwayland/xwayland-output.c
+@@ -33,12 +33,21 @@
+ #include "xwayland-screen.h"
+ #include "xwayland-window.h"
+ 
+-#include "xdg-output-unstable-v1-client-protocol.h"
+-
+ #define MAX_OUTPUT_NAME 256
+ 
+ static void xwl_output_get_xdg_output(struct xwl_output *xwl_output);
+ 
++enum wl_output_transform {
++    WL_OUTPUT_TRANSFORM_NORMAL,
++    WL_OUTPUT_TRANSFORM_90,
++    WL_OUTPUT_TRANSFORM_180,
++    WL_OUTPUT_TRANSFORM_270,
++    WL_OUTPUT_TRANSFORM_FLIPPED,
++    WL_OUTPUT_TRANSFORM_FLIPPED_90,
++    WL_OUTPUT_TRANSFORM_FLIPPED_180,
++    WL_OUTPUT_TRANSFORM_FLIPPED_270
++};
++
+ static Rotation
+ wl_transform_to_xrandr(enum wl_output_transform transform)
+ {
+@@ -63,10 +72,19 @@ wl_transform_to_xrandr(enum wl_output_transform transform)
+     }
+ }
+ 
++enum enum_subpixel {
++    WL_OUTPUT_SUBPIXEL_UNKNOWN,
++    WL_OUTPUT_SUBPIXEL_NONE,
++    WL_OUTPUT_SUBPIXEL_HORIZONTAL_RGB,
++    WL_OUTPUT_SUBPIXEL_HORIZONTAL_BGR,
++    WL_OUTPUT_SUBPIXEL_VERTICAL_RGB,
++    WL_OUTPUT_SUBPIXEL_VERTICAL_BGR
++};
++
+ static int
+ wl_subpixel_to_xrandr(int subpixel)
+ {
+-    switch (subpixel) {
++    switch ((enum enum_subpixel)subpixel) {
+     default:
+     case WL_OUTPUT_SUBPIXEL_UNKNOWN:
+         return SubPixelUnknown;
+@@ -111,9 +129,6 @@ output_handle_mode(void *data, struct wl_output *wl_output, uint32_t flags,
+ {
+     struct xwl_output *xwl_output = data;
+ 
+-    if (!(flags & WL_OUTPUT_MODE_CURRENT))
+-        return;
+-
+     /* Apply the change from wl_output only if xdg-output is not supported */
+     if (!xwl_output->xdg_output) {
+         xwl_output->width = width;
+@@ -695,9 +710,6 @@ output_handle_done(void *data, struct wl_output *wl_output)
+     /* Apply the changes from wl_output only if both "done" events are received,
+      * if xdg-output is not supported or if xdg-output version is high enough.
+      */
+-    if (xwl_output->xdg_output_done || !xwl_output->xdg_output ||
+-        zxdg_output_v1_get_version(xwl_output->xdg_output) >= 3)
+-        apply_output_change(xwl_output);
+ }
+ 
+ static void
+@@ -720,14 +732,7 @@ output_handle_description(void *data, struct wl_output *wl_output,
+ {
+ }
+ 
+-static const struct wl_output_listener output_listener = {
+-    output_handle_geometry,
+-    output_handle_mode,
+-    output_handle_done,
+-    output_handle_scale,
+-    output_handle_name,
+-    output_handle_description,
+-};
++static const void* output_listener;
+ 
+ static void
+ xdg_output_handle_logical_position(void *data, struct zxdg_output_v1 *xdg_output,
+@@ -755,9 +760,6 @@ xdg_output_handle_done(void *data, struct zxdg_output_v1 *xdg_output)
+     struct xwl_output *xwl_output = data;
+ 
+     xwl_output->xdg_output_done = TRUE;
+-    if (xwl_output->wl_output_done &&
+-        zxdg_output_v1_get_version(xdg_output) < 3)
+-        apply_output_change(xwl_output);
+ }
+ 
+ static void
+@@ -766,9 +768,6 @@ xdg_output_handle_name(void *data, struct zxdg_output_v1 *xdg_output,
+ {
+     struct xwl_output *xwl_output = data;
+ 
+-    if (wl_output_get_version(xwl_output->output) >= 4)
+-        return; /* wl_output.name is preferred */
+-
+     xwl_output_set_name(xwl_output, name);
+ }
+ 
+@@ -778,13 +777,7 @@ xdg_output_handle_description(void *data, struct zxdg_output_v1 *xdg_output,
+ {
+ }
+ 
+-static const struct zxdg_output_v1_listener xdg_output_listener = {
+-    xdg_output_handle_logical_position,
+-    xdg_output_handle_logical_size,
+-    xdg_output_handle_done,
+-    xdg_output_handle_name,
+-    xdg_output_handle_description,
+-};
++static const void* xdg_output_listener;
+ 
+ #define XRANDR_EMULATION_PROP "RANDR Emulation"
+ static Atom
+@@ -834,15 +827,13 @@ xwl_output_create(struct xwl_screen *xwl_screen, uint32_t id,
+         return NULL;
+     }
+ 
+-    xwl_output->output = wl_registry_bind(xwl_screen->registry, id,
+-                                          &wl_output_interface, min(version, 4));
++    xwl_output->output = 0;
+     if (!xwl_output->output) {
+         ErrorF("Failed binding wl_output\n");
+         goto err;
+     }
+ 
+     xwl_output->server_output_id = id;
+-    wl_output_add_listener(xwl_output->output, &output_listener, xwl_output);
+ 
+     xwl_output->xwl_screen = xwl_screen;
+ 
+@@ -885,8 +876,6 @@ xwl_output_create(struct xwl_screen *xwl_screen, uint32_t id,
+ err:
+     if (xwl_output->randr_crtc)
+         RRCrtcDestroy(xwl_output->randr_crtc);
+-    if (xwl_output->output)
+-        wl_output_destroy(xwl_output->output);
+     free(xwl_output);
+     return NULL;
+ }
+@@ -894,12 +883,6 @@ err:
+ void
+ xwl_output_destroy(struct xwl_output *xwl_output)
+ {
+-    if (xwl_output->lease_connector)
+-        wp_drm_lease_connector_v1_destroy(xwl_output->lease_connector);
+-    if (xwl_output->xdg_output)
+-        zxdg_output_v1_destroy(xwl_output->xdg_output);
+-    if (xwl_output->output)
+-        wl_output_destroy(xwl_output->output);
+     free(xwl_output);
+ }
+ 
+@@ -1239,13 +1222,7 @@ xwl_output_get_xdg_output(struct xwl_output *xwl_output)
+         return;
+     }
+ 
+-    xwl_output->xdg_output =
+-        zxdg_output_manager_v1_get_xdg_output (xwl_screen->xdg_output_manager,
+-                                               xwl_output->output);
+-
+-    zxdg_output_v1_add_listener(xwl_output->xdg_output,
+-                                &xdg_output_listener,
+-                                xwl_output);
++    xwl_output->xdg_output = 0;
+ }
+ 
+ void
+diff --git a/hw/xwayland/xwayland-output.h b/hw/xwayland/xwayland-output.h
+index bcdf25b..15697f7 100644
+--- a/hw/xwayland/xwayland-output.h
++++ b/hw/xwayland/xwayland-output.h
+@@ -27,7 +27,6 @@
+ #define XWAYLAND_OUTPUT_H
+ 
+ #include <xwayland-config.h>
+-#include <wayland-client.h>
+ 
+ #include <dix.h>
+ #include <input.h>
+diff --git a/hw/xwayland/xwayland-pixmap.c b/hw/xwayland/xwayland-pixmap.c
+index 6e797a3..594d59a 100644
+--- a/hw/xwayland/xwayland-pixmap.c
++++ b/hw/xwayland/xwayland-pixmap.c
+@@ -98,7 +98,7 @@ xwl_pixmap_del_buffer_release_cb(PixmapPtr pixmap)
+ }
+ 
+ void
+-xwl_pixmap_buffer_release_cb(void *data, struct wl_buffer *wl_buffer)
++xwl_pixmap_buffer_release_cb(void *data, void *wl_buffer)
+ {
+     PixmapPtr pixmap = data;
+     struct xwl_pixmap_buffer_release_callback *xwl_pixmap_buffer_release_callback;
+diff --git a/hw/xwayland/xwayland-pixmap.h b/hw/xwayland/xwayland-pixmap.h
+index 06ee489..e9dfaae 100644
+--- a/hw/xwayland/xwayland-pixmap.h
++++ b/hw/xwayland/xwayland-pixmap.h
+@@ -27,7 +27,6 @@
+ #define XWAYLAND_PIXMAP_H
+ 
+ #include <xwayland-config.h>
+-#include <wayland-client.h>
+ 
+ #include "pixmapstr.h"
+ 
+@@ -41,7 +40,7 @@ struct xwl_pixmap *xwl_pixmap_get(PixmapPtr pixmap);
+ Bool xwl_pixmap_set_buffer_release_cb(PixmapPtr pixmap,
+                                       xwl_buffer_release_cb func, void *data);
+ void xwl_pixmap_del_buffer_release_cb(PixmapPtr pixmap);
+-void xwl_pixmap_buffer_release_cb(void *data, struct wl_buffer *wl_buffer);
++void xwl_pixmap_buffer_release_cb(void *data, void *wl_buffer);
+ Bool xwl_pixmap_init(void);
+ 
+ #endif /* XWAYLAND_PIXMAP_H */
+diff --git a/hw/xwayland/xwayland-screen.c b/hw/xwayland/xwayland-screen.c
+index cc14e07..b9e047d 100644
+--- a/hw/xwayland/xwayland-screen.c
++++ b/hw/xwayland/xwayland-screen.c
+@@ -59,12 +59,6 @@
+ #include "shmint.h"
+ #endif
+ 
+-#include "xdg-output-unstable-v1-client-protocol.h"
+-#include "viewporter-client-protocol.h"
+-#include "xdg-shell-client-protocol.h"
+-#include "xwayland-shell-v1-client-protocol.h"
+-#include "tearing-control-v1-client-protocol.h"
+-
+ static DevPrivateKeyRec xwl_screen_private_key;
+ static DevPrivateKeyRec xwl_client_private_key;
+ 
+@@ -101,9 +95,7 @@ xwl_screen_get(ScreenPtr screen)
+ Bool
+ xwl_screen_has_viewport_support(struct xwl_screen *xwl_screen)
+ {
+-    return wl_compositor_get_version(xwl_screen->compositor) >=
+-                            WL_SURFACE_DAMAGE_BUFFER_SINCE_VERSION &&
+-           xwl_screen->viewporter != NULL;
++    return 1;
+ }
+ 
+ Bool
+@@ -218,8 +210,6 @@ xwl_close_screen(ScreenPtr screen)
+ 
+     RemoveNotifyFd(xwl_screen->wayland_fd);
+ 
+-    wl_display_disconnect(xwl_screen->display);
+-
+     screen->CloseScreen = xwl_screen->CloseScreen;
+     free(xwl_screen);
+ 
+@@ -394,7 +384,6 @@ xwl_screen_post_damage(struct xwl_screen *xwl_screen)
+ 
+     xorg_list_for_each_entry_safe(xwl_window, next_xwl_window,
+                                   &commit_window_list, link_damage) {
+-        wl_surface_commit(xwl_window->surface);
+         xorg_list_del(&xwl_window->link_damage);
+     }
+ }
+@@ -403,12 +392,9 @@ static void
+ xdg_wm_base_ping(void *data, struct xdg_wm_base *xdg_wm_base,
+                  uint32_t serial)
+ {
+-    xdg_wm_base_pong(xdg_wm_base, serial);
+ }
+ 
+-static const struct xdg_wm_base_listener xdg_wm_base_listener = {
+-    xdg_wm_base_ping,
+-};
++static const void* xdg_wm_base_listener;
+ 
+ static void
+ registry_global(void *data, struct wl_registry *registry, uint32_t id,
+@@ -419,21 +405,6 @@ registry_global(void *data, struct wl_registry *registry, uint32_t id,
+     if (strcmp(interface, "wl_compositor") == 0) {
+         uint32_t request_version = 1;
+ 
+-        if (version >= WL_SURFACE_DAMAGE_BUFFER_SINCE_VERSION)
+-            request_version = WL_SURFACE_DAMAGE_BUFFER_SINCE_VERSION;
+-
+-        xwl_screen->compositor =
+-            wl_registry_bind(registry, id, &wl_compositor_interface, request_version);
+-    }
+-    else if (strcmp(interface, "wl_shm") == 0) {
+-        xwl_screen->shm = wl_registry_bind(registry, id, &wl_shm_interface, 1);
+-    }
+-    else if (strcmp(interface, "xdg_wm_base") == 0) {
+-        xwl_screen->xdg_wm_base =
+-            wl_registry_bind(registry, id, &xdg_wm_base_interface, 1);
+-        xdg_wm_base_add_listener(xwl_screen->xdg_wm_base,
+-                                 &xdg_wm_base_listener,
+-                                 NULL);
+     }
+     else if (strcmp(interface, "wl_output") == 0 && version >= 2) {
+         if (xwl_output_create(xwl_screen, id, (xwl_screen->fixed_output == NULL), version))
+@@ -442,8 +413,6 @@ registry_global(void *data, struct wl_registry *registry, uint32_t id,
+     else if (strcmp(interface, "zxdg_output_manager_v1") == 0) {
+         /* We support xdg-output from version 1 to version 3 */
+         version = min(version, 3);
+-        xwl_screen->xdg_output_manager =
+-            wl_registry_bind(registry, id, &zxdg_output_manager_v1_interface, version);
+         xwl_screen_init_xdg_output(xwl_screen);
+     }
+     else if (strcmp(interface, "wp_drm_lease_device_v1") == 0) {
+@@ -455,17 +424,6 @@ registry_global(void *data, struct wl_registry *registry, uint32_t id,
+             xwl_screen_add_drm_lease_device(xwl_screen, id);
+         }
+     }
+-    else if (strcmp(interface, "wp_viewporter") == 0) {
+-        xwl_screen->viewporter = wl_registry_bind(registry, id, &wp_viewporter_interface, 1);
+-    }
+-    else if (strcmp(interface, "xwayland_shell_v1") == 0 && xwl_screen->rootless) {
+-        xwl_screen->xwayland_shell =
+-            wl_registry_bind(registry, id, &xwayland_shell_v1_interface, 1);
+-    }
+-    else if (strcmp(interface, "wp_tearing_control_manager_v1") == 0) {
+-        xwl_screen->tearing_control_manager =
+-            wl_registry_bind(registry, id, &wp_tearing_control_manager_v1_interface, 1);
+-    }
+ #ifdef XWL_HAS_GLAMOR
+     else if (xwl_screen->glamor) {
+         xwl_glamor_init_wl_registry(xwl_screen, registry, id, interface,
+@@ -492,34 +450,21 @@ global_remove(void *data, struct wl_registry *registry, uint32_t name)
+     xorg_list_for_each_entry_safe(lease_device, tmp_lease_device,
+                                   &xwl_screen->drm_lease_devices, link) {
+         if (lease_device->id == name) {
+-            wp_drm_lease_device_v1_release(lease_device->drm_lease_device);
+             break;
+         }
+     }
+ }
+ 
+-static const struct wl_registry_listener registry_listener = {
+-    registry_global,
+-    global_remove
+-};
++static const void* registry_listener;
+ 
+ static void
+ xwl_read_events (struct xwl_screen *xwl_screen)
+ {
+-    int ret;
+ 
+     if (xwl_screen->wait_flush)
+         return;
+ 
+-    ret = wl_display_read_events(xwl_screen->display);
+-    if (ret == -1)
+-        xwl_give_up("failed to read Wayland events: %s\n", strerror(errno));
+-
+     xwl_screen->prepare_read = 0;
+-
+-    ret = wl_display_dispatch_pending(xwl_screen->display);
+-    if (ret == -1)
+-        xwl_give_up("failed to dispatch Wayland events: %s\n", strerror(errno));
+ }
+ 
+ static int
+@@ -527,7 +472,7 @@ xwl_display_pollout (struct xwl_screen *xwl_screen, int timeout)
+ {
+     struct pollfd poll_fd;
+ 
+-    poll_fd.fd = wl_display_get_fd(xwl_screen->display);
++    poll_fd.fd = 0;
+     poll_fd.events = POLLOUT;
+ 
+     return xserver_poll(&poll_fd, 1, timeout);
+@@ -569,26 +514,10 @@ xwl_dispatch_events (struct xwl_screen *xwl_screen)
+     if (xwl_screen->wait_flush)
+         goto pollout;
+ 
+-    while (xwl_screen->prepare_read == 0 &&
+-           wl_display_prepare_read(xwl_screen->display) == -1) {
+-        ret = wl_display_dispatch_pending(xwl_screen->display);
+-        if (ret == -1)
+-            xwl_give_up("failed to dispatch Wayland events: %s\n",
+-                       strerror(errno));
+-    }
+-
+     xwl_screen->prepare_read = 1;
+ 
+ pollout:
+     ready = xwl_display_pollout(xwl_screen, 5);
+-    if (ready == -1 && errno != EINTR)
+-        xwl_give_up("error polling on Xwayland fd: %s\n", strerror(errno));
+-
+-    if (ready > 0)
+-        ret = wl_display_flush(xwl_screen->display);
+-
+-    if (ret == -1 && errno != EAGAIN)
+-        xwl_give_up("failed to write to Xwayland fd: %s\n", strerror(errno));
+ 
+     xwl_screen->wait_flush = (ready == 0 || ready == -1 || ret == -1);
+ }
+@@ -644,23 +573,11 @@ void xwl_surface_damage(struct xwl_screen *xwl_screen,
+                         struct wl_surface *surface,
+                         int32_t x, int32_t y, int32_t width, int32_t height)
+ {
+-    if (wl_surface_get_version(surface) >= WL_SURFACE_DAMAGE_BUFFER_SINCE_VERSION)
+-        wl_surface_damage_buffer(surface, x, y, width, height);
+-    else
+-        wl_surface_damage(surface, x, y, width, height);
+ }
+ 
+ void
+ xwl_screen_roundtrip(struct xwl_screen *xwl_screen)
+ {
+-    int ret;
+-
+-    ret = wl_display_roundtrip(xwl_screen->display);
+-    while (ret >= 0 && xwl_screen->expecting_event)
+-        ret = wl_display_roundtrip(xwl_screen->display);
+-
+-    if (ret < 0)
+-        xwl_give_up("could not connect to wayland server\n");
+ }
+ 
+ static int
+@@ -857,7 +774,8 @@ xwl_screen_init(ScreenPtr pScreen, int argc, char **argv)
+     if (!monitorResolution)
+         monitorResolution = DEFAULT_DPI;
+ 
+-    xwl_screen->display = wl_display_connect(NULL);
++    xwl_screen->display = 0;
++    return TRUE;
+     if (xwl_screen->display == NULL) {
+         ErrorF("could not connect to wayland server\n");
+         return FALSE;
+@@ -872,9 +790,7 @@ xwl_screen_init(ScreenPtr pScreen, int argc, char **argv)
+     }
+ 
+     xwl_screen->expecting_event = 0;
+-    xwl_screen->registry = wl_display_get_registry(xwl_screen->display);
+-    wl_registry_add_listener(xwl_screen->registry,
+-                             &registry_listener, xwl_screen);
++    xwl_screen->registry = 0;
+     xwl_screen_roundtrip(xwl_screen);
+ 
+ 
+@@ -942,7 +858,7 @@ xwl_screen_init(ScreenPtr pScreen, int argc, char **argv)
+     else
+ #endif
+     {
+-        xwl_screen->wayland_fd = wl_display_get_fd(xwl_screen->display);
++        xwl_screen->wayland_fd = 1;
+     }
+     SetNotifyFd(xwl_screen->wayland_fd, socket_handler, X_NOTIFY_READ, xwl_screen);
+     RegisterBlockAndWakeupHandlers(block_handler, wakeup_handler, xwl_screen);
+diff --git a/hw/xwayland/xwayland-shm.c b/hw/xwayland/xwayland-shm.c
+index ff12831..7cbd707 100644
+--- a/hw/xwayland/xwayland-shm.c
++++ b/hw/xwayland/xwayland-shm.c
+@@ -201,21 +201,19 @@ shm_format_for_depth(int depth)
+ {
+     switch (depth) {
+     case 32:
+-        return WL_SHM_FORMAT_ARGB8888;
++        return XWL_FORMAT_ARGB8888;
+     case 24:
+     default:
+-        return WL_SHM_FORMAT_XRGB8888;
++        return XWL_FORMAT_XRGB8888;
+ #ifdef WL_SHM_FORMAT_RGB565
+     case 16:
+         /* XXX: Check run-time protocol version too */
+-        return WL_SHM_FORMAT_RGB565;
++        return XWL_FORMAT_RGB565;
+ #endif
+     }
+ }
+ 
+-static const struct wl_buffer_listener xwl_shm_buffer_listener = {
+-    xwl_pixmap_buffer_release_cb,
+-};
++static const void* xwl_shm_buffer_listener;
+ 
+ PixmapPtr
+ xwl_shm_create_pixmap(ScreenPtr screen,
+@@ -268,17 +266,10 @@ xwl_shm_create_pixmap(ScreenPtr screen,
+         goto err_munmap;
+ 
+     format = shm_format_for_depth(pixmap->drawable.depth);
+-    pool = wl_shm_create_pool(xwl_screen->shm, fd, xwl_pixmap->size);
+-    xwl_pixmap->buffer = wl_shm_pool_create_buffer(pool, 0,
+-                                                   pixmap->drawable.width,
+-                                                   pixmap->drawable.height,
+-                                                   pixmap->devKind, format);
+-    wl_shm_pool_destroy(pool);
++    pool = 0;
++    xwl_pixmap->buffer = 0;
+     close(fd);
+ 
+-    wl_buffer_add_listener(xwl_pixmap->buffer,
+-                           &xwl_shm_buffer_listener, pixmap);
+-
+     xwl_pixmap_set_private(pixmap, xwl_pixmap);
+ 
+     return pixmap;
+@@ -303,7 +294,6 @@ xwl_shm_destroy_pixmap(PixmapPtr pixmap)
+     if (xwl_pixmap && pixmap->refcnt == 1) {
+         xwl_pixmap_del_buffer_release_cb(pixmap);
+         if (xwl_pixmap->buffer)
+-            wl_buffer_destroy(xwl_pixmap->buffer);
+         munmap(xwl_pixmap->data, xwl_pixmap->size);
+         free(xwl_pixmap);
+     }
+diff --git a/hw/xwayland/xwayland-window.c b/hw/xwayland/xwayland-window.c
+index 4978f37..7d00041 100644
+--- a/hw/xwayland/xwayland-window.c
++++ b/hw/xwayland/xwayland-window.c
+@@ -45,12 +45,6 @@
+ #include "xwayland-window-buffers.h"
+ #include "xwayland-shm.h"
+ 
+-#include "linux-dmabuf-unstable-v1-client-protocol.h"
+-#include "tearing-control-v1-client-protocol.h"
+-#include "viewporter-client-protocol.h"
+-#include "xdg-shell-client-protocol.h"
+-#include "xwayland-shell-v1-client-protocol.h"
+-
+ #define DELAYED_WL_SURFACE_DESTROY 1000 /* ms */
+ 
+ #define MAX_ROOTFUL_WIDTH 32767
+@@ -95,19 +89,17 @@ xwl_window_from_window(WindowPtr window)
+ static void
+ xwl_window_set_xwayland_tag(struct xwl_window *xwl_window)
+ {
+-    wl_proxy_set_tag((struct wl_proxy *)xwl_window->surface, &xwl_surface_tag);
+ }
+ 
+ static void
+ xwl_window_clear_xwayland_tag(struct xwl_window *xwl_window)
+ {
+-    wl_proxy_set_tag((struct wl_proxy *)xwl_window->surface, NULL);
+ }
+ 
+ Bool
+ is_surface_from_xwl_window(struct wl_surface *surface)
+ {
+-    return wl_proxy_get_tag((struct wl_proxy *) surface) == &xwl_surface_tag;
++    return 1;
+ }
+ 
+ static void
+@@ -252,10 +244,8 @@ xwl_window_has_viewport_enabled(struct xwl_window *xwl_window)
+ static void
+ xwl_window_disable_viewport(struct xwl_window *xwl_window)
+ {
+-    assert (xwl_window->viewport);
+ 
+     DebugF("XWAYLAND: disabling viewport\n");
+-    wp_viewport_destroy(xwl_window->viewport);
+     xwl_window->viewport = NULL;
+ }
+ 
+@@ -268,19 +258,9 @@ xwl_window_enable_viewport(struct xwl_window *xwl_window,
+         DebugF("XWAYLAND: enabling viewport %dx%d -> %dx%d\n",
+                emulated_mode->width, emulated_mode->height,
+                xwl_output->width, xwl_output->height);
+-        xwl_window->viewport = wp_viewporter_get_viewport(xwl_window->xwl_screen->viewporter,
+-                                                          xwl_window->surface);
++        xwl_window->viewport = 0;
+     }
+ 
+-    wp_viewport_set_source(xwl_window->viewport,
+-                           wl_fixed_from_int(0),
+-                           wl_fixed_from_int(0),
+-                           wl_fixed_from_int(emulated_mode->width),
+-                           wl_fixed_from_int(emulated_mode->height));
+-    wp_viewport_set_destination(xwl_window->viewport,
+-                                xwl_output->width,
+-                                xwl_output->height);
+-
+     xwl_window->scale_x = (float)emulated_mode->width  / xwl_output->width;
+     xwl_window->scale_y = (float)emulated_mode->height / xwl_output->height;
+ }
+@@ -509,12 +489,6 @@ send_surface_id_event_serial(struct xwl_window *xwl_window)
+     serial = ++xwl_window->xwl_screen->surface_association_serial;
+ 
+     send_window_client_message(xwl_window, type_atom, serial);
+-    xwayland_surface_v1_set_serial(xwl_window->xwayland_surface,
+-        serial_lo(serial), serial_hi(serial));
+-    wl_surface_commit(xwl_window->surface);
+-
+-    /* Flush wayland display *after* commit in the new path. */
+-    wl_display_flush(xwl_window->xwl_screen->display);
+ }
+ 
+ static void
+@@ -527,10 +501,7 @@ send_surface_id_event_legacy(struct xwl_window *xwl_window)
+     if (type_atom == None)
+         type_atom = MakeAtom(atom_name, strlen(atom_name), TRUE);
+ 
+-    surface_id = wl_proxy_get_id((struct wl_proxy *) xwl_window->surface);
+-
+-    /* Flush wayland display *before* setting the atom in the legacy path */
+-    wl_display_flush(xwl_window->xwl_screen->display);
++    surface_id = 0;
+ 
+     send_window_client_message(xwl_window, type_atom, (uint64_t)surface_id);
+ }
+@@ -560,9 +531,7 @@ xwl_window_set_fullscreen(struct xwl_window *xwl_window)
+     if (wl_output && xwl_window->wl_output_fullscreen == wl_output)
+         return FALSE;
+ 
+-    xdg_toplevel_set_fullscreen(xwl_window->xdg_toplevel, wl_output);
+     xwl_window_check_resolution_change_emulation(xwl_window);
+-    wl_surface_commit(xwl_window->surface);
+ 
+     xwl_window->wl_output_fullscreen = wl_output;
+ 
+@@ -613,8 +582,6 @@ xwl_window_rootful_update_title(struct xwl_window *xwl_window)
+         libdecor_frame_set_title(xwl_window->libdecor_frame, title);
+     else
+ #endif
+-    if (xwl_window->xdg_toplevel)
+-        xdg_toplevel_set_title(xwl_window->xdg_toplevel, title);
+ }
+ 
+ static void
+@@ -627,8 +594,6 @@ xwl_window_rootful_set_app_id(struct xwl_window *xwl_window)
+         libdecor_frame_set_app_id(xwl_window->libdecor_frame, app_id);
+     else
+ #endif
+-    if (xwl_window->xdg_toplevel)
+-        xdg_toplevel_set_app_id(xwl_window->xdg_toplevel, app_id);
+ }
+ 
+ static void
+@@ -740,14 +705,9 @@ xdg_surface_handle_configure(void *data,
+ 
+     if (xwl_screen->fullscreen)
+         xwl_window_set_fullscreen(xwl_window);
+-
+-    xdg_surface_ack_configure(xdg_surface, serial);
+-    wl_surface_commit(xwl_window->surface);
+ }
+ 
+-static const struct xdg_surface_listener xdg_surface_listener = {
+-    xdg_surface_handle_configure,
+-};
++static const void* xdg_surface_listener;
+ 
+ static void
+ xwl_window_surface_enter(void *data,
+@@ -776,10 +736,7 @@ xwl_window_surface_leave(void *data,
+         xwl_window->wl_output = NULL;
+ }
+ 
+-static const struct wl_surface_listener surface_listener = {
+-    xwl_window_surface_enter,
+-    xwl_window_surface_leave
+-};
++static const void* surface_listener;
+ 
+ static void
+ xdg_toplevel_handle_configure(void *data,
+@@ -809,10 +766,7 @@ xdg_toplevel_handle_close(void *data,
+     GiveUp(0);
+ }
+ 
+-static const struct xdg_toplevel_listener xdg_toplevel_listener = {
+-    xdg_toplevel_handle_configure,
+-    xdg_toplevel_handle_close,
+-};
++static const void* xdg_toplevel_listener;
+ 
+ static Bool
+ xwl_create_root_surface(struct xwl_window *xwl_window)
+@@ -835,56 +789,15 @@ xwl_create_root_surface(struct xwl_window *xwl_window)
+     else
+ #endif
+     {
+-        xwl_window->xdg_surface =
+-            xdg_wm_base_get_xdg_surface(xwl_screen->xdg_wm_base, xwl_window->surface);
+-        if (xwl_window->xdg_surface == NULL) {
+-            ErrorF("Failed creating xdg_wm_base xdg_surface\n");
+-            goto err_surf;
+-        }
+-
+-        xwl_window->xdg_toplevel =
+-            xdg_surface_get_toplevel(xwl_window->xdg_surface);
+-        if (xwl_window->xdg_surface == NULL) {
+-            ErrorF("Failed creating xdg_toplevel\n");
+-            goto err_surf;
+-        }
+-
+-        wl_surface_add_listener(xwl_window->surface,
+-                                &surface_listener, xwl_window);
+-
+-        xdg_surface_add_listener(xwl_window->xdg_surface,
+-                                 &xdg_surface_listener, xwl_window);
++        xwl_window->xdg_surface = 0;
+ 
+-        xdg_toplevel_add_listener(xwl_window->xdg_toplevel,
+-                                  &xdg_toplevel_listener,
+-                                  xwl_window);
+     }
+ 
+     xwl_window_rootful_update_title(xwl_window);
+     xwl_window_rootful_set_app_id(xwl_window);
+-    wl_surface_commit(xwl_window->surface);
+-
+-    region = wl_compositor_create_region(xwl_screen->compositor);
+-    if (region == NULL) {
+-        ErrorF("Failed creating region\n");
+-        goto err_surf;
+-    }
+-
+-    wl_region_add(region, 0, 0,
+-                  window->drawable.width, window->drawable.height);
+-    wl_surface_set_opaque_region(xwl_window->surface, region);
+-    wl_region_destroy(region);
+ 
+     return TRUE;
+ 
+-err_surf:
+-    if (xwl_window->xdg_toplevel)
+-        xdg_toplevel_destroy(xwl_window->xdg_toplevel);
+-    if (xwl_window->xdg_surface)
+-        xdg_surface_destroy(xwl_window->xdg_surface);
+-    wl_surface_destroy(xwl_window->surface);
+-
+-    return FALSE;
+ }
+ 
+ static Bool
+@@ -915,17 +828,12 @@ ensure_surface_for_window(WindowPtr window)
+ 
+     xwl_window->xwl_screen = xwl_screen;
+     xwl_window->window = window;
+-    xwl_window->surface = wl_compositor_create_surface(xwl_screen->compositor);
++    xwl_window->surface = 0;
+     if (xwl_window->surface == NULL) {
+         ErrorF("wl_display_create_surface failed\n");
+         goto err;
+     }
+ 
+-    if (xwl_screen->xwayland_shell) {
+-        xwl_window->xwayland_surface = xwayland_shell_v1_get_xwayland_surface(
+-            xwl_screen->xwayland_shell, xwl_window->surface);
+-    }
+-
+     if (!xwl_screen->rootless && !xwl_create_root_surface(xwl_window))
+         goto err;
+ 
+@@ -934,11 +842,8 @@ ensure_surface_for_window(WindowPtr window)
+         xwl_dmabuf_setup_feedback_for_window(xwl_window);
+ #endif
+ 
+-    wl_display_flush(xwl_screen->display);
+-
+     send_surface_id_event(xwl_window);
+ 
+-    wl_surface_set_user_data(xwl_window->surface, xwl_window);
+     xwl_window_set_xwayland_tag(xwl_window);
+ 
+     compRedirectWindow(serverClient, window, CompositeRedirectManual);
+@@ -967,11 +872,6 @@ ensure_surface_for_window(WindowPtr window)
+         xwl_window_check_resolution_change_emulation(xwl_window);
+     }
+ 
+-    if (xwl_screen->tearing_control_manager) {
+-        xwl_window->tearing_control = wp_tearing_control_manager_v1_get_tearing_control(
+-            xwl_screen->tearing_control_manager, xwl_window->surface);
+-    }
+-
+     return TRUE;
+ 
+ err:
+@@ -1036,7 +936,6 @@ xwl_surface_destroy_free_timer(struct xwl_wl_surface *xwl_wl_surface)
+ void
+ xwl_window_surface_do_destroy(struct xwl_wl_surface *xwl_wl_surface)
+ {
+-    wl_surface_destroy(xwl_wl_surface->wl_surface);
+     xorg_list_del(&xwl_wl_surface->link);
+     xwl_surface_destroy_free_timer(xwl_wl_surface);
+     free(xwl_wl_surface);
+@@ -1059,12 +958,10 @@ release_wl_surface_for_window_legacy_delay(struct xwl_window *xwl_window)
+ 
+     /* If the Xserver is terminating, destroy the surface immediately */
+     if ((dispatchException & DE_TERMINATE) == DE_TERMINATE) {
+-        wl_surface_destroy(xwl_window->surface);
+         return;
+     }
+ 
+     /* Break the wl_surface / xwl_window relationship */
+-    wl_surface_set_user_data(xwl_window->surface, NULL);
+     xwl_window_clear_xwayland_tag(xwl_window);
+ 
+     /* Schedule the destruction later, to mitigate the race between X11
+@@ -1083,8 +980,6 @@ release_wl_surface_for_window_legacy_delay(struct xwl_window *xwl_window)
+ static void
+ release_wl_surface_for_window_shell(struct xwl_window *xwl_window)
+ {
+-    xwayland_surface_v1_destroy(xwl_window->xwayland_surface);
+-    wl_surface_destroy(xwl_window->surface);
+ }
+ 
+ static void
+@@ -1127,9 +1022,6 @@ xwl_dmabuf_feedback_destroy(struct xwl_dmabuf_feedback *xwl_feedback)
+            xwl_feedback->format_table.len * sizeof(struct xwl_format_table_entry));
+     xwl_dmabuf_feedback_clear_dev_formats(xwl_feedback);
+ 
+-    if (xwl_feedback->dmabuf_feedback)
+-        zwp_linux_dmabuf_feedback_v1_destroy(xwl_feedback->dmabuf_feedback);
+-
+     xwl_feedback->dmabuf_feedback = NULL;
+ }
+ 
+@@ -1182,9 +1074,6 @@ xwl_unrealize_window(WindowPtr window)
+         xwl_present_for_each_frame_callback(xwl_window, xwl_present_unrealize_window);
+ #endif
+ 
+-    if (xwl_window->tearing_control)
+-        wp_tearing_control_v1_destroy(xwl_window->tearing_control);
+-
+     release_wl_surface_for_window(xwl_window);
+     xorg_list_del(&xwl_window->link_damage);
+     xorg_list_del(&xwl_window->link_window);
+@@ -1192,9 +1081,6 @@ xwl_unrealize_window(WindowPtr window)
+ 
+     xwl_window_buffers_dispose(xwl_window);
+ 
+-    if (xwl_window->frame_callback)
+-        wl_callback_destroy(xwl_window->frame_callback);
+-
+     free(xwl_window);
+     dixSetPrivate(&window->devPrivates, &xwl_window_private_key, NULL);
+ 
+@@ -1313,7 +1199,6 @@ frame_callback(void *data,
+ {
+     struct xwl_window *xwl_window = data;
+ 
+-    wl_callback_destroy (xwl_window->frame_callback);
+     xwl_window->frame_callback = NULL;
+ 
+ #ifdef GLAMOR_HAS_GBM
+@@ -1330,16 +1215,12 @@ frame_callback(void *data,
+ #endif
+ }
+ 
+-static const struct wl_callback_listener frame_listener = {
+-    frame_callback
+-};
++static const void* frame_listener = &frame_callback;
+ 
+ void
+ xwl_window_create_frame_callback(struct xwl_window *xwl_window)
+ {
+-    xwl_window->frame_callback = wl_surface_frame(xwl_window->surface);
+-    wl_callback_add_listener(xwl_window->frame_callback, &frame_listener,
+-                             xwl_window);
++    xwl_window->frame_callback = 0;
+ 
+ #ifdef GLAMOR_HAS_GBM
+     /* If we get called from frame_callback, it will take care of calling
+@@ -1410,8 +1291,6 @@ xwl_window_attach_buffer(struct xwl_window *xwl_window)
+     }
+ #endif
+ 
+-    wl_surface_attach(xwl_window->surface, buffer, 0, 0);
+-
+     /* Arbitrary limit to try to avoid flooding the Wayland
+      * connection. If we flood it too much anyway, this could
+      * abort in libwayland-client.
+diff --git a/hw/xwayland/xwayland-window.h b/hw/xwayland/xwayland-window.h
+index 7fbb2a6..7ef09c5 100644
+--- a/hw/xwayland/xwayland-window.h
++++ b/hw/xwayland/xwayland-window.h
+@@ -26,8 +26,6 @@
+ #ifndef XWAYLAND_WINDOW_H
+ #define XWAYLAND_WINDOW_H
+ 
+-#include <xwayland-config.h>
+-
+ #include <sys/types.h>
+ 
+ #include <stdio.h>
+@@ -37,7 +35,6 @@
+ #include <dix.h>
+ #include <propertyst.h>
+ #include <validate.h>
+-#include <wayland-util.h>
+ #include <xf86drm.h>
+ 
+ #include "xwayland-types.h"
+diff --git a/hw/xwayland/xwayland.c b/hw/xwayland/xwayland.c
+index 3f9c5c2..441859d 100644
+--- a/hw/xwayland/xwayland.c
++++ b/hw/xwayland/xwayland.c
+@@ -429,8 +429,6 @@ InitOutput(ScreenInfo * screen_info, int argc, char **argv)
+                           ARRAY_SIZE(xwayland_extensions), FALSE);
+     }
+ 
+-    wl_log_set_handler_client(xwl_log_handler);
+-
+     if (AddScreen(xwl_screen_init, argc, argv) == -1) {
+         FatalError("Couldn't add screen\n");
+     }
+diff --git a/include/meson.build b/include/meson.build
+index cf236e6..5d2a427 100644
+--- a/include/meson.build
++++ b/include/meson.build
+@@ -6,7 +6,7 @@ patch = version_split[2].to_int()
+ # convert to the old-style 1.x.y version scheme used up to 1.20.x for backwards compatibility
+ release = 1 * 10000000 + major * 100000 + minor * 1000 + patch
+ 
+-dri_dep = dependency('dri', required: build_glx)
++dri_dep = ''
+ 
+ conf_data = configuration_data()
+ conf_data.set('_DIX_CONFIG_H_', '1')
+@@ -197,9 +197,6 @@ conf_data.set('DAMAGE', '1')
+ conf_data.set('DBE', '1')
+ conf_data.set('DPMSExtension', build_dpms ? '1' : false)
+ conf_data.set('DRI3', build_dri3 ? '1' : false)
+-if build_glx
+-    conf_data.set_quoted('DRI_DRIVER_PATH', dri_dep.get_pkgconfig_variable('dridriverdir'))
+-endif
+ conf_data.set('HAS_SHM', build_mitshm ? '1' : false)
+ conf_data.set('MITSHM', build_mitshm ? '1' : false)
+ conf_data.set('PANORAMIX', build_xinerama ? '1' : false)
+diff --git a/meson.build b/meson.build
+index 4926c57..5c82e97 100644
+--- a/meson.build
++++ b/meson.build
+@@ -179,8 +179,6 @@ if (xwayland_path == '')
+ endif
+ 
+ xwayland_dep = [
+-    dependency('wayland-client', version: wayland_req, required: true),
+-    dependency('wayland-protocols', version: wayland_protocols_req, required: true),
+     dependency('libxcvt', fallback: ['libxcvt', 'libxcvt_dep'], required: true),
+ ]
+ 

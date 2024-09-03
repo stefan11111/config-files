@@ -1,0 +1,22 @@
+diff --git a/src/gbm/meson.build b/src/gbm/meson.build
+index 4592833154e..d3ee11cd169 100644
+--- a/src/gbm/meson.build
++++ b/src/gbm/meson.build
+@@ -16,7 +16,7 @@ args_gbm = [
+ ]
+ deps_gbm = []
+ incs_gbm = [
+-  include_directories('main'), inc_include, inc_src, inc_loader, inc_gallium, inc_st_dri, inc_gallium_aux
++  include_directories('main'), inc_include, inc_src, inc_loader, inc_gallium, inc_gallium_aux
+ ]
+ 
+ # TODO: fix includes to delete this
+@@ -42,7 +42,7 @@ libgbm = shared_library(
+   include_directories : incs_gbm,
+   c_args : [args_gbm],
+   link_args : [ld_args_gc_sections],
+-  link_with : [libloader, libgallium_dri],
++  link_with : [libloader],
+   dependencies : [deps_gbm, dep_dl, dep_thread, dep_libdrm, idep_mesautil, idep_xmlconfig],
+   gnu_symbol_visibility : 'hidden',
+   version : '1.0.0',

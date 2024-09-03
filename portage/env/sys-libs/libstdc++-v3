@@ -1,2 +1,2 @@
-#CFLAGS="-O3 -pipe -march=native"
-#CXXFLAGS="-O3 -pipe -march=native"
+CFLAGS="-O3 -pipe -march=native -std=c89"
+CXXFLAGS="-O3 -pipe -march=native -std=c89"

@@ -1,3 +1,5 @@
 #CFLAGS="-O3 -pipe -march=native -flto -fno-tree-vectorize"
 CFLAGS="${CFLAGS} -fno-fast-math"
 CXXFLAGS="${CXXFLAGS} -fno-mast-math"
+#CFLAGS="${CFLAGS} -U__FAST_MATH__"
+#CXXFLAGS="${CXXFLAGS} -U__FAST_MATH__"

@@ -1,2 +1,4 @@
 dev-libs/libressl
 app-benchmarks/phoronix-test-suite **
+#media-libs/mesa **
+#x11-base/xorg-server **

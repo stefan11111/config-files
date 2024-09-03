@@ -1,0 +1,16 @@
+diff --git a/dom/base/nsGlobalWindow.cpp b/dom/base/nsGlobalWindow.cpp
+index 7828f5bd52..9b7780a1f5 100644
+--- a/platform/dom/base/nsGlobalWindow.cpp
++++ b/platform/dom/base/nsGlobalWindow.cpp
+@@ -3543,9 +3543,11 @@ nsGlobalWindow::GetEventTargetParent(EventChainPreVisitor& aVisitor)
+ 
+   aVisitor.mCanHandle = true;
+   // Middle/right click shouldn't dispatch click event, use auxclick to instead.
++/*
+   if (mDoc->IsXULDocument()) {
+     aVisitor.mForceContentDispatch = true; //FIXME! Bug 329119
+   }
++*/
+   if (msg == eResize && aVisitor.mEvent->IsTrusted()) {
+     // QIing to window so that we can keep the old behavior also in case
+     // a child window is handling resize.

@@ -1,0 +1,39 @@
+diff --git a/dom/workers/WorkerPrivate.cpp b/dom/workers/WorkerPrivate.cpp
+index fb2e4d7b56..85bcc2ffef 100644
+--- a/platform/dom/workers/WorkerPrivate.cpp
++++ b/platform/dom/workers/WorkerPrivate.cpp
+@@ -5161,9 +5161,7 @@ WorkerPrivate::ScheduleDeletion(WorkerRanOrNot aRanOrNot)
+   if (WorkerRan == aRanOrNot) {
+     nsIThread* currentThread = NS_GetCurrentThread();
+     MOZ_ASSERT(currentThread);
+-    // On the worker thread WorkerRunnable will refuse to run if not nested
+-    // on top of a WorkerThreadPrimaryRunnable.
+-    Unused << NS_WARN_IF(NS_HasPendingEvents(currentThread));
++    MOZ_ASSERT(!NS_HasPendingEvents(currentThread));
+   }
+ #endif
+ 
+diff --git a/dom/workers/WorkerRunnable.cpp b/dom/workers/WorkerRunnable.cpp
+index eb56650b51..d44b54dba9 100644
+--- a/platform/dom/workers/WorkerRunnable.cpp
++++ b/platform/dom/workers/WorkerRunnable.cpp
+@@ -232,19 +232,6 @@ WorkerRunnable::Run()
+   bool targetIsWorkerThread = mBehavior == WorkerThreadModifyBusyCount ||
+                               mBehavior == WorkerThreadUnchangedBusyCount;
+ 
+-  if (targetIsWorkerThread) {
+-    // On a worker thread, a WorkerRunnable should only run when there is an
+-    // underlying WorkerThreadPrimaryRunnable active, which means we should
+-    // find a CycleCollectedJSContext.
+-    if (!CycleCollectedJSContext::Get()) {
+-      MOZ_DIAGNOSTIC_ASSERT(false,
+-                            "A WorkerRunnable was executed after "
+-                            "WorkerThreadPrimaryRunnable ended.");
+-
+-      return NS_OK;
+-    }
+-  }
+-
+ #ifdef DEBUG
+   MOZ_ASSERT_IF(mCallingCancelWithinRun, targetIsWorkerThread);
+   if (targetIsWorkerThread) {

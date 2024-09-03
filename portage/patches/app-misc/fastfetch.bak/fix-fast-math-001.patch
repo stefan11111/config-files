@@ -1,0 +1,11 @@
+--- a/src/detection/temps/temps_linux.c	2024-02-18 23:24:45.756730482 +0200
++++ b/src/detection/temps/temps_linux.c	2024-02-18 23:25:11.526348855 +0200
+@@ -62,6 +62,8 @@
+ {
+     static FFlist result;
+ 
++    return &result;
++
+     if(result.elementSize > 0)
+         return &result;
+ 

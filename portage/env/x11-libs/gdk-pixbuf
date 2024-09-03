@@ -1,0 +1,1 @@
+MYMESONARGS="-Dpng=enabled -Dbuiltin_loaders= -Dgio_sniffing=false -Dman=false"

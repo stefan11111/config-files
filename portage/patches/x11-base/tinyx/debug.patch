@@ -1,0 +1,16 @@
+diff --git a/dix/dixfonts.c b/dix/dixfonts.c
+index 667ff21..7d3ca08 100644
+--- a/dix/dixfonts.c
++++ b/dix/dixfonts.c
+@@ -1703,8 +1703,10 @@ SetFontPathElements(int npaths, unsigned char *paths, int *bad, Bool persist)
+                 fpe->name[len] = '\0';
+                 fpe->name_length = len;
+                 fpe->type = DetermineFPEType(fpe->name);
+-                if (fpe->type == -1)
++                if (fpe->type == -1){
+                     err = BadValue;
++                    ErrorF("bad value: %s", fpe->name);
++}
+                 else
+                     err = (*fpe_functions[fpe->type].init_fpe) (fpe);
+                 if (err != Successful) {

@@ -1,0 +1,64 @@
+diff --git a/gtk/gtkaccessible.c b/gtk/gtkaccessible.c
+index 968d0d7..447d62d 100644
+--- a/gtk/gtkaccessible.c
++++ b/gtk/gtkaccessible.c
+@@ -22,7 +22,6 @@
+ 
+ #include "gtkwidget.h"
+ #include "gtkintl.h"
+-#define HACK_TO_DEFINE_ACCESSIBLE_TYPE
+ #include "gtkaccessible.h"
+ 
+ 
+@@ -35,19 +34,18 @@
+ 
+ static void gtk_accessible_real_connect_widget_destroyed (GtkAccessible *accessible);
+ 
+-struct _GtkAccessible
++static inline GType
++get_type (void)
+ {
+-  GtkWidget *GSEAL (widget);
+-  char padding[sizeof(GtkObject) - sizeof(void*)];
+-};
+-
+-struct _GtkAccessibleClass
+-{
+-  void (*connect_widget_destroyed)              (GtkAccessible     *accessible);
+-  char padding[sizeof(GtkObjectClass) - sizeof(void (*)())];
+-};
++  static GType type;
++  if (!type) {
++    type = g_type_register_static (80, "BloatObject", &(const GTypeInfo){.class_size = sizeof(GtkAccessibleClass),
++                                                                         .instance_size = sizeof(GtkAccessible)}, 0) ;
++  }
++  return type;
++}
+ 
+-G_DEFINE_TYPE (GtkAccessible, gtk_accessible, GTK_TYPE_OBJECT)
++G_DEFINE_TYPE (GtkAccessible, gtk_accessible, get_type())
+ 
+ static void
+ gtk_accessible_init (GtkAccessible *object)
+diff --git a/gtk/gtkaccessible.h b/gtk/gtkaccessible.h
+index eb000ea..25b903b 100644
+--- a/gtk/gtkaccessible.h
++++ b/gtk/gtkaccessible.h
+@@ -38,8 +38,6 @@ G_BEGIN_DECLS
+ typedef struct _GtkAccessible                GtkAccessible;
+ typedef struct _GtkAccessibleClass           GtkAccessibleClass;
+ 
+-#ifndef HACK_TO_DEFINE_ACCESSIBLE_TYPE
+-
+   /*
+    * This object is a thin wrapper, in the GTK+ namespace
+    */
+@@ -63,8 +61,6 @@ struct _GtkAccessibleClass
+   void (*_gtk_reserved4) (void);
+ };
+ 
+-#endif
+-
+ GType gtk_accessible_get_type (void) G_GNUC_CONST;
+ 
+ void        gtk_accessible_set_widget                  (GtkAccessible     *accessible,

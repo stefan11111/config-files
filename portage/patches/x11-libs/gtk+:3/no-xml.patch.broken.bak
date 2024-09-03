@@ -1,0 +1,54 @@
+diff --git a/gtk/gtkprivate.c b/gtk/gtkprivate.c
+index b3278cc..0375e58 100644
+--- a/gtk/gtkprivate.c
++++ b/gtk/gtkprivate.c
+@@ -30,7 +30,6 @@
+ #include "gdk/gdk.h"
+ 
+ #include "gtkprivate.h"
+-#include "gtkresources.h"
+ 
+ 
+ #if !defined G_OS_WIN32 && !(defined GDK_WINDOWING_QUARTZ && defined QUARTZ_RELOCATION)
+@@ -253,10 +252,9 @@ _gtk_translate_keyboard_accel_state (GdkKeymap       *keymap,
+   return retval;
+ }
+ 
+-static gpointer
++static inline gpointer
+ register_resources (gpointer data)
+ {
+-  _gtk_register_resource ();
+   return NULL;
+ }
+ 
+diff --git a/gtk/meson.build b/gtk/meson.build
+index fc8f535..5aacf77 100644
+--- a/gtk/meson.build
++++ b/gtk/meson.build
+@@ -697,17 +697,6 @@ if sassc.found()
+   subdir('theme/HighContrast')
+ endif
+ 
+-gtkresources = gnome.compile_resources('gtkresources',
+-                                       gtk_gresources_xml,
+-                                       dependencies: theme_deps,
+-                                       source_dir: [
+-                                         # List in order of preference
+-                                         meson.current_build_dir(),
+-                                         meson.current_source_dir(),
+-                                       ],
+-                                       c_name: '_gtk',
+-                                       extra_args: '--manual-register')
+-
+ gtk_use_x11_sources = files([
+   'gtkplug.c',
+   'gtksocket.c',
+@@ -825,7 +814,6 @@ gtk_sources += [
+   gtk_deprecated_sources,
+   inspector_sources,
+   a11y_sources,
+-  gtkresources,
+   gtkmarshalers,
+   gtkprivatetypebuiltins,
+   gtktypebuiltins,

@@ -1,0 +1,32 @@
+--- a/glib/gi18n-lib.h	2024-08-02 01:24:47.882469327 +0300
++++ b/glib/gi18n-lib.h	2024-08-02 01:26:44.464108218 +0300
+@@ -29,10 +29,10 @@
+ #error You must define GETTEXT_PACKAGE before including gi18n-lib.h.  Did you forget to include config.h?
+ #endif
+ 
+-#define  _(String) ((char *) g_dgettext (GETTEXT_PACKAGE, String))
+-#define Q_(String) g_dpgettext (GETTEXT_PACKAGE, String, 0)
++#define  _(String) (String)
++#define Q_(String) (String)
+ #define N_(String) (String)
+-#define C_(Context,String) g_dpgettext (GETTEXT_PACKAGE, Context "\004" String, strlen (Context) + 1)
++#define C_(Context,String) (String)
+ #define NC_(Context, String) (String)
+ 
+ #endif  /* __G_I18N_LIB_H__ */
+--- a/glib/gi18n.h	2024-08-02 01:24:41.425896502 +0300
++++ b/glib/gi18n.h	2024-08-02 01:25:36.165100902 +0300
+@@ -25,10 +25,10 @@
+ #include <libintl.h>
+ #include <string.h>
+ 
+-#define  _(String) gettext (String)
+-#define Q_(String) g_dpgettext (NULL, String, 0)
++#define  _(String) (String)
++#define Q_(String) (String)
+ #define N_(String) (String)
+-#define C_(Context,String) g_dpgettext (NULL, Context "\004" String, strlen (Context) + 1)
++#define C_(Context,String) (String)
+ #define NC_(Context, String) (String)
+ 
+ #endif  /* __G_I18N_H__ */

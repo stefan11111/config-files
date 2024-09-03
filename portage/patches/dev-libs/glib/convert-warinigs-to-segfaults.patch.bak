@@ -1,0 +1,14 @@
+--- a/gobject/gtype.c	2024-04-15 17:17:19.483329618 +0300
++++ b/gobject/gtype.c	2024-04-15 17:17:54.782824443 +0300
+@@ -4298,8 +4298,10 @@
+       else
+ 	g_critical ("instance with invalid (NULL) class pointer");
+     }
+-  else
++  else {
+     g_critical ("invalid (NULL) pointer instance");
++    *(int*)(0) = 0;
++    }
+   
+   return FALSE;
+ }

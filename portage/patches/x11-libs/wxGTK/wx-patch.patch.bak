@@ -1,0 +1,21 @@
+--- a/src/gtk/win_gtk.cpp	2024-05-08 21:02:26.496885246 +0300
++++ b/src/gtk/win_gtk.cpp	2024-05-08 21:04:34.851740276 +0300
+@@ -367,13 +367,18 @@
+ GtkWidget* wxPizza::New(long windowStyle)
+ {
+     GtkWidget* widget = GTK_WIDGET(g_object_new(type(), NULL));
++if (!type()) { printf("type() is NULL\n"); }
++if (!widget) { printf("widget is NULL\n"); }
+     wxPizza* pizza = WX_PIZZA(widget);
++if (!pizza) { printf("pizza is NULL\n"); }
+     pizza->m_children = NULL;
+     pizza->m_scroll_x = 0;
+     pizza->m_scroll_y = 0;
+     pizza->m_windowStyle = windowStyle;
+ #ifdef __WXGTK3__
++printf("reached here 1\n");
+     gtk_widget_set_has_window(widget, true);
++printf("reached here 2\n");
+ #else
+     gtk_fixed_set_has_window(GTK_FIXED(widget), true);
+ #endif

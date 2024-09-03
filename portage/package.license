@@ -1,3 +1,6 @@
 x11-drivers/nvidia-drivers NVIDIA-r2
 app-arch/unrar unRAR
 games-util/*::steam-overlay ValveSteamLicense
+x11-base/xdirectfb X11
+x11-base/xfree X11
+#games-fps/* ut2003

@@ -1,3 +1,4 @@
 #app-shells/bash -readline
 sys-devel/gettext -xattr
 media-libs/mesa -opengl
+sys-devel/binutils -cet

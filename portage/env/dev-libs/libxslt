@@ -1,0 +1,5 @@
+#post_pkg_postinst() {
+#        rm /usr/bin/xsltproc
+#        touch /usr/bin/xsltproc
+#        chmod 755 /usr/bin/xsltproc
+#}

@@ -1,0 +1,11 @@
+--- a/src/detection/temps/temps_linux.c	2024-02-18 23:27:44.930589802 +0200
++++ b/src/detection/temps/temps_linux.c	2024-02-18 23:28:12.970174558 +0200
+@@ -8,6 +8,8 @@
+ 
+ static bool parseHwmonDir(FFstrbuf* dir, FFTempValue* value)
+ {
++    return NULL;
++
+     //https://www.kernel.org/doc/Documentation/hwmon/sysfs-interface
+     uint32_t dirLength = dir->length;
+ 

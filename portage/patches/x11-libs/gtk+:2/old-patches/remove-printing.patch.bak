@@ -15,7 +15,7 @@ diff --git a/configure.ac b/configure.ac
 index d2f117d..4753065 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -1343,129 +1343,6 @@ GDK_PIXBUF_LIBS=`$PKG_CONFIG --libs gdk-pixbuf-2.0`
+@@ -1240,129 +1240,6 @@ GDK_PIXBUF_LIBS=`$PKG_CONFIG --libs gdk-pixbuf-2.0`
  AC_SUBST(GDK_PIXBUF_LIBS)
  
  
@@ -145,9 +145,9 @@ index d2f117d..4753065 100644
  ################################################################
  # Strip -export-dynamic from the link lines of various libraries
  ################################################################
-@@ -1632,12 +1509,6 @@ gdk/directfb/Makefile
+@@ -1518,12 +1395,6 @@ gdk/x11/Makefile
+ gdk/directfb/Makefile
  gtk/Makefile
- gtk/makefile.msc
  gtk/gtkversion.h
 -modules/Makefile
 -modules/printbackends/Makefile
@@ -224,12 +224,9 @@ deleted file mode 100644
 index 463199e..0000000
 --- a/modules/printbackends/cups/Makefile.am
 +++ /dev/null
-@@ -1,40 +0,0 @@
+@@ -1,37 +0,0 @@
 -include $(top_srcdir)/Makefile.decl
 -
--if PLATFORM_WIN32
--no_undefined = -no-undefined
--endif
 -
 -INCLUDES = \
 -	-I$(top_srcdir) 				\
@@ -270,7 +267,7 @@ deleted file mode 100644
 index dbf9d51..0000000
 --- a/modules/printbackends/cups/gtkcupsutils.c
 +++ /dev/null
-@@ -1,1685 +0,0 @@
+@@ -1,1681 +0,0 @@
 -/* GTK - The GIMP Toolkit
 - * gtkcupsutils.h: Statemachine implementation of POST and GET 
 - * cups calls which can be used to create a non-blocking cups API
@@ -1346,11 +1343,7 @@ index dbf9d51..0000000
 -  else if (http_status == HTTP_ERROR)
 -    {
 -      int error = httpError (request->http);
--#ifdef G_OS_WIN32
--      if (error != WSAENETDOWN && error != WSAENETUNREACH)
--#else
 -      if (error != ENETDOWN && error != ENETUNREACH)	  
--#endif /* G_OS_WIN32 */
 -        {
 -          request->attempts++;
 -          goto again;
@@ -2218,7 +2211,7 @@ index 985f0d2..0000000
 -#include <cairo-ps.h>
 -
 -#include <glib/gstdio.h>
--#include <glib/gi18n-lib.h>
+-#include "gtk/gtkintl.h"
 -#include <gmodule.h>
 -
 -#include <gtk/gtk.h>
@@ -7268,8 +7261,8 @@ index 985f0d2..0000000
 -      time_t rawtime;
 -      time (&rawtime);
 -
--      actual_utc_time = g_memdup (gmtime (&rawtime), sizeof (struct tm));
--      actual_local_time = g_memdup (localtime (&rawtime), sizeof (struct tm));
+-      actual_utc_time = g_memdup2 (gmtime (&rawtime), sizeof (struct tm));
+-      actual_local_time = g_memdup2 (localtime (&rawtime), sizeof (struct tm));
 -
 -      diff_time.tm_hour = actual_utc_time->tm_hour - actual_local_time->tm_hour;
 -      diff_time.tm_min  = actual_utc_time->tm_min  - actual_local_time->tm_min;
@@ -7956,12 +7949,9 @@ deleted file mode 100644
 index 904f768..0000000
 --- a/modules/printbackends/file/Makefile.am
 +++ /dev/null
-@@ -1,38 +0,0 @@
+@@ -1,35 +0,0 @@
 -include $(top_srcdir)/Makefile.decl
 -
--if PLATFORM_WIN32
--no_undefined = -no-undefined
--endif
 -
 -backenddir = $(libdir)/gtk-2.0/$(GTK_BINARY_VERSION)/printbackends
 -
@@ -8000,7 +7990,7 @@ deleted file mode 100644
 index 20d157d..0000000
 --- a/modules/printbackends/file/gtkprintbackendfile.c
 +++ /dev/null
-@@ -1,809 +0,0 @@
+@@ -1,806 +0,0 @@
 -/* GTK - The GIMP Toolkit
 - * gtkprintbackendfile.c: Default implementation of GtkPrintBackend 
 - * for printing to a file
@@ -8037,7 +8027,7 @@ index 20d157d..0000000
 -#include <cairo-ps.h>
 -#include <cairo-svg.h>
 -
--#include <glib/gi18n-lib.h>
+-#include "gtk/gtkintl.h"
 -
 -#include "gtk/gtk.h"
 -#include "gtk/gtkprinter-private.h"
@@ -8225,7 +8215,7 @@ index 20d157d..0000000
 -  if (uri == NULL)
 -    { 
 -      const gchar *extension;
--      gchar *name, *locale_name, *path;
+-      gchar *name, *locale_name;
 -
 -      if (default_format)
 -        extension = default_format;
@@ -8257,7 +8247,7 @@ index 20d157d..0000000
 -      if (locale_name != NULL)
 -        {
 -	  gchar *current_dir = g_get_current_dir ();
--          path = g_build_filename (current_dir, locale_name, NULL);
+-          gchar *path = g_build_filename (current_dir, locale_name, NULL);
 -          g_free (locale_name);
 -
 -          uri = g_filename_to_uri (path, NULL, NULL);
@@ -8519,13 +8509,12 @@ index 20d157d..0000000
 -				    GtkPrinterOptionSet *set)
 -{
 -  GtkPrinterOption *format_option;
--  const gchar *value;
 -  gint i;
 -
 -  format_option = gtk_printer_option_set_lookup (set, "output-file-format");
 -  if (format_option && format_option->value)
 -    {
--      value = format_option->value;
+-      const gchar *value = format_option->value;
 -      if (value)
 -        {
 -	  for (i = 0; i < N_FORMATS; ++i)
@@ -8626,7 +8615,6 @@ index 20d157d..0000000
 -  OutputFormat format;
 -  gchar *uri;
 -  gint current_format = 0;
--  _OutputFormatChangedData *format_changed_data;
 -
 -  format = format_from_settings (settings);
 -
@@ -8634,7 +8622,7 @@ index 20d157d..0000000
 -
 -  option = gtk_printer_option_new ("gtk-n-up", _("Pages per _sheet:"), GTK_PRINTER_OPTION_TYPE_PICKONE);
 -  gtk_printer_option_choices_from_array (option, G_N_ELEMENTS (n_up),
--					 (char **) n_up, (char **) n_up /* FIXME i18n (localised digits)! */);
+-					 (char **) n_up, (char **) n_up /* FIXME (localised digits)! */);
 -  if (settings)
 -    pages_per_sheet = gtk_print_settings_get (settings, GTK_PRINT_SETTINGS_NUMBER_UP);
 -  if (pages_per_sheet)
@@ -8654,7 +8642,7 @@ index 20d157d..0000000
 -	      current_format = n_formats;
 -            }
 -          supported_formats[n_formats] = formats[FORMAT_PDF];
--	  display_format_names[n_formats] = _(format_names[FORMAT_PDF]);
+-	  display_format_names[n_formats] = (gchar*)format_names[FORMAT_PDF];
 -	  n_formats++;
 -	}
 -      if (capabilities & GTK_PRINT_CAPABILITY_GENERATE_PS)
@@ -8662,7 +8650,7 @@ index 20d157d..0000000
 -	  if (format == FORMAT_PS || format == N_FORMATS)
 -	    current_format = n_formats;
 -          supported_formats[n_formats] = formats[FORMAT_PS];
--          display_format_names[n_formats] = _(format_names[FORMAT_PS]);
+-          display_format_names[n_formats] = (gchar*)format_names[FORMAT_PS];
 -	  n_formats++;
 -	}
 -    }
@@ -8685,7 +8673,7 @@ index 20d157d..0000000
 -      for (n_formats = 0; n_formats < N_FORMATS; ++n_formats)
 -        {
 -	  supported_formats[n_formats] = formats[n_formats];
--          display_format_names[n_formats] = _(format_names[n_formats]);
+-          display_format_names[n_formats] = (gchar*)format_names[n_formats];
 -	}
 -    }
 -
@@ -8712,7 +8700,7 @@ index 20d157d..0000000
 -      gtk_printer_option_set_add (set, option);
 -
 -      set_printer_format_from_option_set (printer, set);
--      format_changed_data = g_new (_OutputFormatChangedData, 1);
+-      _OutputFormatChangedData *format_changed_data = g_new (_OutputFormatChangedData, 1);
 -      format_changed_data->printer = printer;
 -      format_changed_data->set = set;
 -      g_signal_connect_data (option, "changed",
@@ -8784,7 +8772,6 @@ index 20d157d..0000000
 -{
 -  GList *result = NULL;
 -  GList *papers, *p;
--  GtkPageSetup *page_setup;
 -
 -  papers = gtk_paper_size_get_paper_sizes (TRUE);
 -
@@ -8792,7 +8779,7 @@ index 20d157d..0000000
 -    {
 -      GtkPaperSize *paper_size = p->data;
 -
--      page_setup = gtk_page_setup_new ();
+-      GtkPageSetup *page_setup = gtk_page_setup_new ();
 -      gtk_page_setup_set_paper_size (page_setup, paper_size);
 -      gtk_paper_size_free (paper_size);
 -      result = g_list_prepend (result, page_setup);
@@ -8862,12 +8849,9 @@ deleted file mode 100644
 index 12b7fce..0000000
 --- a/modules/printbackends/lpr/Makefile.am
 +++ /dev/null
-@@ -1,34 +0,0 @@
+@@ -1,31 +0,0 @@
 -include $(top_srcdir)/Makefile.decl
 -
--if PLATFORM_WIN32
--no_undefined = -no-undefined
--endif
 -
 -INCLUDES = \
 -	-I$(top_srcdir) 				\
@@ -8936,7 +8920,7 @@ index 0ee856c..0000000
 -#include <cairo.h>
 -#include <cairo-ps.h>
 -
--#include <glib/gi18n-lib.h>
+-#include "gtk/gtkintl.h"
 -
 -#include <gtk/gtk.h>
 -#include "gtkprinter-private.h"
@@ -9447,10 +9431,7 @@ deleted file mode 100644
 index 671055b..0000000
 --- a/modules/printbackends/papi/Makefile.am
 +++ /dev/null
-@@ -1,34 +0,0 @@
--if OS_WIN32
--no_undefined = -no-undefined
--endif
+@@ -1,31 +0,0 @@
 -
 -INCLUDES = \
 -	-I$(top_srcdir) 				\
@@ -9487,7 +9468,7 @@ deleted file mode 100644
 index d349010..0000000
 --- a/modules/printbackends/papi/gtkprintbackendpapi.c
 +++ /dev/null
-@@ -1,863 +0,0 @@
+@@ -1,854 +0,0 @@
 -/* GTK - The GIMP Toolkit
 - * gtkprintbackendpapi.c: Default implementation of GtkPrintBackend 
 - * for printing to papi 
@@ -9523,7 +9504,7 @@ index d349010..0000000
 -#include <cairo.h>
 -#include <cairo-ps.h>
 -
--#include <glib/gi18n-lib.h>
+-#include "gtk/gtkintl.h"
 -
 -#include "gtk.h"
 -#include "gtkprintbackendpapi.h"
@@ -9551,10 +9532,6 @@ index d349010..0000000
 -
 -  char *default_printer;  
 -};
--
--typedef struct {
--  GtkPrinter *printer;
--} _PrinterStatus;
 -
 -static GObjectClass *backend_parent_class;
 -
@@ -9832,14 +9809,12 @@ index d349010..0000000
 -				    gpointer                user_data,
 -				    GDestroyNotify          dnotify)
 -{
--  GError *print_error = NULL;
 -  GtkPrinterPapi *printer;
 -  _PrintStreamData *ps;
 -  GtkPrintSettings *settings;
 -  gint argc;  
 -  gint in_fd;
 -  gchar **argv = NULL; 
--  const gchar *title;
 -  char *prtnm = NULL;
 -  GtkPrintDuplex val;
 -  papi_status_t pstatus = NULL;
@@ -9850,7 +9825,7 @@ index d349010..0000000
 -  settings = gtk_print_job_get_settings (job);
 -
 -  /* FIXME - the title should be set as the job-name */
--  title = gtk_print_job_get_title (job);
+-  /* const gchar *title = */gtk_print_job_get_title (job);
 -
 -  ps = g_new0 (_PrintStreamData, 1);
 -  ps->callback = callback;
@@ -10068,7 +10043,6 @@ index d349010..0000000
 -  for (i = 0; printers[i] != NULL; i++) 
 -    {
 -      GtkPrinter *printer;
--      char *name = NULL, *url = NULL;
 -      papi_attribute_t **attrs = NULL;
 -
 -          printer = gtk_print_backend_find_printer (backend, printers[i]);
@@ -10134,7 +10108,7 @@ index d349010..0000000
 -{
 -  GtkPrintBackend *backend;
 -  GtkPrinterPapi *papi_printer;
--  gboolean status_changed = FALSE;
+-  /* gboolean status_changed = FALSE; */
 -
 -  backend = gtk_printer_get_backend (printer);
 -  papi_printer = GTK_PRINTER_PAPI (printer);
@@ -10213,7 +10187,6 @@ index d349010..0000000
 -  GtkPageSet page_set;
 -  double scale;
 -  GtkPaperSize *papersize = NULL;
--  char *ppd_paper_name;
 -
 -  print_job->print_pages = gtk_print_settings_get_print_pages (settings);
 -  print_job->page_ranges = NULL;
@@ -10233,7 +10206,7 @@ index d349010..0000000
 -    print_job->scale = scale/100.0;
 -
 -  papersize = gtk_page_setup_get_paper_size (page_setup);
--  ppd_paper_name = gtk_paper_size_get_ppd_name (papersize);
+-  gtk_paper_size_get_ppd_name (papersize);
 -
 -  page_set = gtk_print_settings_get_page_set (settings);
 -  if (page_set == GTK_PAGE_SET_EVEN)
@@ -10287,7 +10260,6 @@ index d349010..0000000
 -  papi_service_t service;
 -  papi_attribute_t **attrs = NULL;
 -  papi_printer_t current_printer = NULL;
--  static int count = 0;
 -
 -  papi_printer = GTK_PRINTER_PAPI (printer);
 -  if (papiServiceCreate (&service, NULL, NULL, NULL, NULL, PAPI_ENCRYPT_NEVER,

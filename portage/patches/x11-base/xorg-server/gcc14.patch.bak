@@ -1,0 +1,14 @@
+--- a/os/access.c	2024-08-27 22:22:39.181016502 +0300
++++ b/os/access.c	2024-08-27 22:26:01.388009319 +0300
+@@ -1870,9 +1870,9 @@
+         if ((hp = _XGethostbyname(hostname, hparams)) != NULL) {
+ #ifdef h_addr                   /* new 4.3bsd version of gethostent */
+             /* iterate over the addresses */
+-            for (addrlist = hp->h_addr_list; *addrlist; addrlist++)
++            for (addrlist = (const char **)hp->h_addr_list; *addrlist; addrlist++)
+ #else
+-            addrlist = &hp->h_addr;
++            addrlist = (const char **)&hp->h_addr;
+ #endif
+             {
+                 struct sockaddr_in sin;

@@ -1,0 +1,36 @@
+--- a/gobject/gobject.c	2024-05-01 02:23:04.570797978 +0300
++++ b/gobject/gobject.c	2024-05-01 02:25:46.860801047 +0300
+@@ -2950,6 +2950,10 @@
+   GObject *object = _object;
+   va_list var_args;
+   
++  if (!object) {
++    return;
++  }
++
+   g_return_if_fail (G_IS_OBJECT (object));
+   
+   va_start (var_args, first_property_name);
+@@ -3775,6 +3779,10 @@
+   gint old_val;
+   gboolean object_already_finalized;
+ 
++  if (!object) {
++    return NULL;
++  }
++
+   g_return_val_if_fail (G_IS_OBJECT (object), NULL);
+   
+   old_val = g_atomic_int_add (&object->ref_count, 1);
+@@ -3807,6 +3815,11 @@
+   GObject *object = _object;
+   gint old_ref;
+   
++
++  if (!object) {
++    return NULL;
++  }
++
+   g_return_if_fail (G_IS_OBJECT (object));
+   
+   /* here we want to atomically do: if (ref_count>1) { ref_count--; return; } */

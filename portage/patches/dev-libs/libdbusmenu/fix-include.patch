@@ -1,0 +1,10 @@
+--- a/libdbusmenu-gtk/genericmenuitem.c	2024-02-24 00:00:53.039879387 +0200
++++ b/libdbusmenu-gtk/genericmenuitem.c	2024-02-24 00:01:07.109674204 +0200
+@@ -31,6 +31,7 @@
+ #endif
+ 
+ #include <gdk/gdk.h>
++#include <atk/atk.h>
+ 
+ #include "genericmenuitem.h"
+ 

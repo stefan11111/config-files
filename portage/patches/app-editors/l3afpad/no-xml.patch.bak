@@ -1,0 +1,41 @@
+diff --git a/Makefile.am b/Makefile.am
+index c1f9ef7..9768a98 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -1 +1 @@
+-SUBDIRS = data po src
++SUBDIRS = src data
+diff --git a/configure.ac b/configure.ac
+index b75c28d..3f07bbc 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -3,7 +3,6 @@ AM_INIT_AUTOMAKE($PACKAGE_TARNAME, $PACKAGE_VERSION)
+ AM_CONFIG_HEADER(config.h)
+ AM_MAINTAINER_MODE([enable])
+ AC_SYS_LARGEFILE
+-AC_PROG_INTLTOOL(, no-xml)	# require >= 0.31 for autoreconf
+ AC_PROG_CC
+ if test "$GCC" = "yes"; then
+ 	CFLAGS="$CFLAGS -Wall"
+@@ -65,5 +64,4 @@ AC_OUTPUT([
+ 	data/icons/192x192/Makefile
+ 	data/icons/256x256/Makefile
+ 	data/icons/Makefile
+-	po/Makefile.in
+ ])
+diff --git a/data/Makefile.am b/data/Makefile.am
+index 9baad91..339c149 100644
+--- a/data/Makefile.am
++++ b/data/Makefile.am
+@@ -1,9 +1,9 @@
+ SUBDIRS = icons
+ 
+ desktopdir       = $(datadir)/applications
+-desktop_in_files = l3afpad.desktop.in
++#desktop_in_files = l3afpad.desktop.in
+ desktop_DATA     = $(desktop_in_files:.desktop.in=.desktop)
+-@INTLTOOL_DESKTOP_RULE@
++#@INTLTOOL_DESKTOP_RULE@
+ 
+ pixmapsdir       = $(datadir)/pixmaps
+ pixmaps_DATA     = l3afpad.png l3afpad.xpm

@@ -1,1 +1,3 @@
 #-*virtual/dev-manager
+#-*virtual/ssh
+#-*app-arch/xz-utils

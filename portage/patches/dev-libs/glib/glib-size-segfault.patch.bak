@@ -1,0 +1,10 @@
+--- a/gobject/gtype.c	2024-08-14 17:07:38.065852382 +0300
++++ b/gobject/gtype.c	2024-08-14 17:07:49.879010535 +0300
+@@ -971,6 +971,7 @@
+ 	}
+       if (pnode && info->class_size < pnode->data->class.class_size)
+ 	{
++      *(char*)0 = 0;
+ 	  g_critical ("specified class size for type '%s' is smaller "
+ 		      "than the parent type's '%s' class size",
+ 		      type_name,

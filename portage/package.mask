@@ -19,10 +19,11 @@ dev-qt/qtnetwork::gentoo
 #dev-libs/openssl
 # go back to a static /dev
 >=sys-fs/static-dev-0.1-r3
+#sys-fs/static-dev
 sys-fs/eudev
 sys-fs/udev
 virtual/udev
-sys-auth/polkit
+#sys-auth/polkit
 sys-auth/consolekit
 sys-auth/rtkit
 media-sound/pulseaudio
@@ -30,22 +31,21 @@ media-sound/pulseaudio-daemon
 media-libs/libpulse
 sys-apps/systemd
 # purge systemd
-#sys-apps/openrc::gentoo
+sys-apps/openrc::gentoo
 sys-apps/systemd-utils
 # mask dbus
 #sys-apps/dbus
 # gtk3 without dbus
 #app-accessibility/at-spi2-core
 >=dev-libs/atk-2.46
-dev-util/gdbus-codegen::stefan_overlay
 #>x11-libs/gtk+-3.14.13
 #dev-libs/atk::gentoo
 #dev-libs/atk::stefan_overlay
 #x11-libs/gtk+::mv
 #x11-libs/gtk+::stefan_overlay
 # other bloat
-sys-libs/pam
-sys-auth/pambase
+#sys-libs/pam
+#sys-auth/pambase
 
 ## firefox debug mask
 
@@ -61,10 +61,14 @@ x11-drivers/xf86-video-nouveau::gentoo-static
 >=net-libs/libtorrent-rasterbar-2
 
 # stable nvidia-drivers
->x11-drivers/nvidia-drivers-525.147.05
+#>x11-drivers/nvidia-drivers-525.147.05
+x11-drivers/nvidia-drivers::gentoo
 
 # mask rust
 dev-lang/rust
 
 # Prevent steam overlay insanity
 #=games-util/steam-launcher-1.0.0.78-r2
+
+# Mask wxGTK::gentoo
+x11-libs/wxGTK:3.0-gtk3::gentoo
