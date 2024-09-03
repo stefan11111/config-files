@@ -17,15 +17,18 @@ fi
 
 # Put your fun stuff here.
 
-alias emergeall="rdo emerge --deep --update --newuse --verbose --ask --keep-going --autounmask-write --with-bdeps=y"
-alias emergeallk="rdo emerge --deep --update --newuse --verbose --ask --keep-going --autounmask-write --with-bdeps=y -X sys-kernel/gentoo-sources"
+#alias gettext_printf="printf"
+alias git-last="git log -p --"
+alias gentooradio="mpv http://radio.sussywebsite.xyz/listen/mpd.ogg"
+alias emergeall="rdo emerge --deep --update --newuse --verbose --ask --keep-going --autounmask-write --with-bdeps=y @smart-live-rebuild"
+alias emergeallk="rdo emerge --deep --update --newuse --verbose --ask --keep-going --autounmask-write --with-bdeps=y -X sys-kernel/gentoo-sources @smart-live-rebuild"
 alias startx="xinit -- vt$(tty | sed -e 's|/dev/tty||')"
-alias github="oathtool -b --totp <totp>"
+alias github="oathtool -b --totp SGIGCL766H6LOBPU"
 #alias startx="startx -- vt$(tty | sed -e 's|/dev/tty||')"
 #alias startx="startx -- vt$(tty | sed -e 's|/dev/pts/||')"
 #alias kirc-gentoo="cd /home/stefan/HDD1/irc && /usr/local/bin/kirc -c gentoo -n stefan11111"
-alias kirc-gentoo="cd /home/stefan/HDD1/logs && /usr/bin/kirc -c gentoo -n stefan11111 -o gentoo-log.txt"
-alias kirc="cd /home/stefan/HDD1/irc && kirc -s irc.rizon.net -c subsplease -n hentai_god"
+alias kirc-gentoo="/usr/bin/kirc -c gentoo -n stefan11111 -o /home/stefan/HDD1/logs/gentoo-log.txt"
+alias kirc="kirc -s irc.rizon.net -c subsplease -n hentai_god -d -D /home/stefan/HDD1/irc"
 alias doas="rdo"
 alias mpv="mpv --fullscreen"
 #alias leafpad="l3afpad"
